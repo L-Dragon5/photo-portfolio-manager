@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
     filter: 'grayscale(100%)',
     overflow: 'hidden',
     maxHeight: 200,
+    transition: 'all .5s',
     [theme.breakpoints.up('sm')]: {
       maxHeight: 350,
     },

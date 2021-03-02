@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
 
-import { Button, ButtonGroup, TextField } from '@material-ui/core';
+import { Box, Button, ButtonGroup, TextField } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { DropzoneArea } from 'material-ui-dropzone';
 
 const useStyles = makeStyles((theme) => ({
@@ -16,12 +17,30 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     marginBottom: theme.spacing(4),
   },
+  thumbnails: {
+    maxWidth: 600,
+  },
+  thumbnail: {
+    position: 'relative',
+    display: 'inline-flex',
+  },
+  thumbnailImage: {
+    width: 150,
+    padding: theme.spacing(1),
+    userSelect: 'none',
+  },
+  deleteIcon: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    cursor: 'pointer',
+  },
 }));
 
 const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
   const classes = useStyles();
 
-  const [photos, setPhotos] = useState(album.photos);
+  const [photos, setPhotos] = useState([]);
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
@@ -38,6 +57,21 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
         closeDrawer();
       },
     });
+  };
+
+  const handleDelete = (id) => {
+    Inertia.post(
+      `/admin/photo/destroy`,
+      {
+        id,
+      },
+      {
+        onSuccess: (page) => {
+          reloadPage();
+          closeDrawer();
+        },
+      },
+    );
   };
 
   const UploadButton = () => (
@@ -70,6 +104,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
       />
 
       <TextField
+        required
         fullWidth
         defaultValue={album.album_id}
         name="album_id"
@@ -81,6 +116,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
       <UploadButton />
 
       <TextField
+        required
         fullWidth
         defaultValue={album.url_alias}
         name="url_alias"
@@ -95,6 +131,25 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
         filesLimit={100}
         onChange={setPhotos}
       />
+
+      <Box className={classes.thumbnails}>
+        {album.photos?.map((photo) => (
+          <Box key={photo.id} className={classes.thumbnail}>
+            <img
+              key={photo.id}
+              src={`storage/${photo.location}`}
+              className={classes.thumbnailImage}
+              alt="thumbnail"
+              draggable={false}
+            />
+            <DeleteForeverIcon
+              className={classes.deleteIcon}
+              title="Delete image forever"
+              onClick={() => handleDelete(photo.id)}
+            />
+          </Box>
+        ))}
+      </Box>
 
       <ButtonGroup aria-label="add form buttons">
         <Button type="submit" variant="contained" color="primary">

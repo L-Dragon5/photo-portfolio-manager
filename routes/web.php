@@ -29,6 +29,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
     Route::post('album/store', [AlbumController::class, 'store']);
     Route::post('album/update', [AlbumController::class, 'update']);
     Route::post('album/destroy', [AlbumController::class, 'destroy']);
+    Route::post('photo/destroy', [PhotoController::class, 'destroy']);
 });
 
 

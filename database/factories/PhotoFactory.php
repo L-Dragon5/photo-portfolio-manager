@@ -23,7 +23,7 @@ class PhotoFactory extends Factory
     {
         return [
             'album_id' => $this->faker->numberBetween(1, 5),
-            'location' => 'placeholder.jpg',
+            'location' => 'placeholder.webp',
             'is_landscape' => $this->faker->boolean(35),
         ];
     }

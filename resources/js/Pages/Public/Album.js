@@ -23,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
     filter: 'grayscale(100%)',
     overflow: 'hidden',
+    transition: 'all .5s',
     '&:hover': {
       filter: 'grayscale(0%)',
     },
@@ -58,10 +59,6 @@ const useStyles = makeStyles((theme) => ({
       opacity: 1,
     },
   },
-  mainHeading: {
-    color: theme.palette.common.white,
-    margin: theme.spacing(4, 1),
-  },
   heading: {
     color: theme.palette.common.white,
     margin: theme.spacing(3, 0, 1, 1),
@@ -94,7 +91,7 @@ const Album = ({ album, title, breadcrumbs }) => {
         Home
       </InertiaLink>
       {breadcrumbs.map((breadcrumb) => (
-        <>
+        <React.Fragment key={breadcrumb.name}>
           {' '}
           &gt;{' '}
           <InertiaLink
@@ -103,7 +100,7 @@ const Album = ({ album, title, breadcrumbs }) => {
           >
             {breadcrumb.name}
           </InertiaLink>
-        </>
+        </React.Fragment>
       ))}{' '}
       &gt; {album.name}
     </Box>
@@ -113,10 +110,6 @@ const Album = ({ album, title, breadcrumbs }) => {
     return (
       <BaseLayout title={title}>
         <Breadcrumbs />
-
-        <Typography variant="h1" align="center" className={classes.mainHeading}>
-          {album.name}
-        </Typography>
 
         {album.albums.length > 0 && (
           <>
@@ -218,10 +211,6 @@ const Album = ({ album, title, breadcrumbs }) => {
   return (
     <BaseLayout title={title}>
       <Breadcrumbs />
-
-      <Typography variant="h1" align="center" className={classes.mainHeading}>
-        {album.name}
-      </Typography>
 
       <Typography variant="h2" align="center" className={classes.heading}>
         Nothing here

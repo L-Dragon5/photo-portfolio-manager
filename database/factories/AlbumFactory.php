@@ -25,7 +25,7 @@ class AlbumFactory extends Factory
         return [
             'album_id' => $this->faker->numberBetween(0, 3),
             'name' => $this->faker->name,
-            'cover_image' => 'placeholder.jpg',
+            'cover_image' => 'placeholder.webp',
             'url_alias' => Str::random(10),
         ];
     }

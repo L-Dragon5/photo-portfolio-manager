@@ -35,7 +35,7 @@ class AlbumController extends Controller
 
         foreach ($albums as $album) {
             if ($album->album_id === 0) {
-                $album->parent = '0';
+                $album->parent = '0 - Root';
             } else {
                 $album->parent = $album->parentAlbum->name;
             }
@@ -65,7 +65,7 @@ class AlbumController extends Controller
 
         $album = new Album;
         $album->name = $request->name;
-        $album->cover_image = 'placeholder.jpg';
+        $album->cover_image = 'placeholder.webp';
         
         // Check if parent album id is set.
         if (!empty($request->album_id)) {
@@ -84,18 +84,23 @@ class AlbumController extends Controller
         // Upload photos
         if (!empty($request->file('photos'))) {
             foreach ($request->file('photos') as $photo) {
-                $stored_photo = new Photo;
-                $stored_photo->album_id = $album->id;
-                $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
-                
-                list($width, $height) = getimagesize($photo);
-                if ($width > $height) {
-                    $stored_photo->is_landscape = true;
-                } else {
-                    $stored_photo->is_landscape = false;
+                // Check if file with same name already exists in album.
+                // If it doesn't, upload and save photo.
+                $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
+                if (empty($check_existing_photo)) {
+                    $stored_photo = new Photo;
+                    $stored_photo->album_id = $album->id;
+                    $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                    
+                    list($width, $height) = getimagesize($photo);
+                    if ($width > $height) {
+                        $stored_photo->is_landscape = true;
+                    } else {
+                        $stored_photo->is_landscape = false;
+                    }
+                    
+                    $stored_photo->save();
                 }
-                
-                $stored_photo->save();
             }
         }
 
@@ -129,7 +134,7 @@ class AlbumController extends Controller
         foreach ($album->albums as $child) {
             $child->is_landscape = false;
 
-            if ($child->cover_image !== 'placeholder.jpg') {
+            if ($child->cover_image !== 'placeholder.webp') {
                 $image = \Image::make(Storage::disk('public')->get($child->cover_image));
                 $width = $image->width();
                 $height = $image->height();
@@ -169,9 +174,9 @@ class AlbumController extends Controller
         $request->validate([
             'id' => 'numeric|required',
             'name' => 'string|required',
-            'album_id' => 'numeric|nullable',
+            'album_id' => 'numeric|required',
             'cover_image' => 'image|nullable',
-            'url_alias' => 'string|nullable',
+            'url_alias' => 'string|required',
             'photos' => 'array|nullable',
         ]);
 
@@ -184,18 +189,37 @@ class AlbumController extends Controller
             }
 
             // Check if parent album id is set.
-            if (!empty($request->album_id)) {
+            if (!empty($request->album_id) && $request->album_id !== $album->album_id) {
                 $album->album_id = $request->album_id;
             }
 
             // Check if a cover image has been uploaded.
             if (!empty($request->file('cover_image'))) {
-                $album->cover_image = $request->file('cover_image')->store('cover_images', 'public');
+                // Retrieve old image and prepare for deletion.
+                $old_image = $album->cover_image;
+
+                // Create image and resize image down if necessary.
+                $img = \Image::make($request->file('cover_image'))
+                    ->resize(1000, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })
+                    ->encode('webp');
+                $name = md5($img->__toString()) . '.webp';
+                $path = "cover_images/$name";
+                if (Storage::disk('public')->put($path, $img->__toString())) {
+                    $album->cover_image = $path;
+                }
+
+                // Delete old cover image if not placeholder.
+                if ($old_image !== 'placeholder.webp') {
+                    Storage::disk('public')->delete($old_image);
+                }
             }
 
-            // Check if custom url alias is set.
-            if (!empty($request->url_alias)) {
-                $album->url_alias = $request->url_alias;
+            // Check if url alias has changed.
+            if (!empty($request->url_alias) && strcmp($request->url_alias, $album->url_alias) !== 0) {
+                $album->url_alias = str_replace(' ', '-', strtolower($request->url_alias));
             }
 
             $success = $album->save();
@@ -203,18 +227,23 @@ class AlbumController extends Controller
             // Upload photos
             if (!empty($request->file('photos'))) {
                 foreach ($request->file('photos') as $photo) {
-                    $stored_photo = new Photo;
-                    $stored_photo->album_id = $album->id;
-                    $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
-                    
-                    list($width, $height) = getimagesize($photo);
-                    if ($width > $height) {
-                        $stored_photo->is_landscape = true;
-                    } else {
-                        $stored_photo->is_landscape = false;
+                    // Check if file with same name already exists in album.
+                    // If it doesn't, upload and save photo.
+                    $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
+                    if (empty($check_existing_photo)) {
+                        $stored_photo = new Photo;
+                        $stored_photo->album_id = $album->id;
+                        $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                        
+                        list($width, $height) = getimagesize($photo);
+                        if ($width > $height) {
+                            $stored_photo->is_landscape = true;
+                        } else {
+                            $stored_photo->is_landscape = false;
+                        }
+                        
+                        $stored_photo->save();
                     }
-                    
-                    $stored_photo->save();
                 }
             }
 
@@ -252,7 +281,7 @@ class AlbumController extends Controller
                 $photo->delete();
             }
 
-            if ($album->cover_image !== 'placeholder.jpg') {
+            if ($album->cover_image !== 'placeholder.webp') {
                 Storage::disk('public')->delete($album->cover_image);
             }
 
