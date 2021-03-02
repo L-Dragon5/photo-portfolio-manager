@@ -3,7 +3,7 @@ import { InertiaLink } from '@inertiajs/inertia-react';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 
-import { Box, Typography } from '@material-ui/core';
+import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
 import BaseLayout from './BaseLayout';
@@ -23,10 +23,6 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
     filter: 'grayscale(100%)',
     overflow: 'hidden',
-    maxHeight: 200,
-    [theme.breakpoints.up('sm')]: {
-      maxHeight: 350,
-    },
     '&:hover': {
       filter: 'grayscale(0%)',
     },
@@ -62,9 +58,13 @@ const useStyles = makeStyles((theme) => ({
       opacity: 1,
     },
   },
+  mainHeading: {
+    color: theme.palette.common.white,
+    margin: theme.spacing(4, 1),
+  },
   heading: {
     color: theme.palette.common.white,
-    margin: theme.spacing(2, 0, 1, 1),
+    margin: theme.spacing(3, 0, 1, 1),
   },
   breadcrumbs: {
     display: 'flex',
@@ -76,6 +76,9 @@ const useStyles = makeStyles((theme) => ({
   breadcrumbLink: {
     color: theme.palette.common.white,
     marginRight: theme.spacing(0.5),
+  },
+  button: {
+    marginLeft: theme.spacing(2),
   },
 }));
 
@@ -110,6 +113,11 @@ const Album = ({ album, title, breadcrumbs }) => {
     return (
       <BaseLayout title={title}>
         <Breadcrumbs />
+
+        <Typography variant="h1" align="center" className={classes.mainHeading}>
+          {album.name}
+        </Typography>
+
         {album.albums.length > 0 && (
           <>
             <Typography variant="h2" className={classes.heading}>
@@ -120,7 +128,11 @@ const Album = ({ album, title, breadcrumbs }) => {
                 <InertiaLink
                   key={childAlbum.id}
                   href={`${childAlbum.url_alias}/`}
-                  className={classes.gridBase}
+                  className={
+                    childAlbum.is_landscape
+                      ? `${classes.gridBase} ${classes.imageLandscape}`
+                      : `${classes.gridBase} ${classes.imagePortrait}`
+                  }
                 >
                   <img
                     src={`/storage/${childAlbum.cover_image}`}
@@ -140,7 +152,17 @@ const Album = ({ album, title, breadcrumbs }) => {
           <>
             <Typography variant="h2" className={classes.heading}>
               Photos
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                className={classes.button}
+                href={`/album-download/${album.id}`}
+              >
+                Download
+              </Button>
             </Typography>
+
             <Box className={classes.grid}>
               {album?.photos?.map((photo, index) => (
                 <Box
@@ -196,7 +218,12 @@ const Album = ({ album, title, breadcrumbs }) => {
   return (
     <BaseLayout title={title}>
       <Breadcrumbs />
-      <Typography variant="h2" className={classes.heading}>
+
+      <Typography variant="h1" align="center" className={classes.mainHeading}>
+        {album.name}
+      </Typography>
+
+      <Typography variant="h2" align="center" className={classes.heading}>
         Nothing here
       </Typography>
     </BaseLayout>

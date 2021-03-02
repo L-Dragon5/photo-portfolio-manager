@@ -16,22 +16,24 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 
 import AdminLayout from './AdminLayout';
+import ButtonAdd from './buttons/ButtonAdd';
+import ButtonEdit from './buttons/ButtonEdit';
+import ButtonDelete from './buttons/ButtonDelete';
+import FormAlbumAdd from './forms/FormAlbumAdd';
+import FormAlbumEdit from './forms/FormAlbumEdit';
+import FormAlbumDelete from './forms/FormAlbumDelete';
 
 const useStyles = makeStyles((theme) => ({
   contentRoot: {
     flexGrow: 1,
     padding: theme.spacing(2),
   },
+  text: {
+    color: theme.palette.common.white,
+  },
 }));
 
-const Index = ({
-  scheduleId,
-  availableLocations,
-  availableEventTypes,
-  minDate,
-  maxDate,
-  events,
-}) => {
+const Index = ({ albums }) => {
   const classes = useStyles();
 
   const [drawerStatus, setDrawerStatus] = useState(false);
@@ -44,16 +46,46 @@ const Index = ({
 
   const handleReload = () => {
     Inertia.reload({
-      only: ['events', 'minDate', 'maxDate', 'availableLocations'],
+      only: ['albums'],
     });
   };
 
+  const handleAdd = () => {
+    setDrawerContent(
+      <FormAlbumAdd closeDrawer={handleClose} reloadPage={handleReload} />,
+    );
+    setDrawerStatus(true);
+  };
+
+  const handleEdit = (album) => {
+    setDrawerContent(
+      <FormAlbumEdit
+        closeDrawer={handleClose}
+        reloadPage={handleReload}
+        album={album}
+      />,
+    );
+    setDrawerStatus(true);
+  };
+
+  const handleDelete = (albumId, albumName) => {
+    setDrawerContent(
+      <FormAlbumDelete
+        closeDrawer={handleClose}
+        reloadPage={handleReload}
+        albumId={albumId}
+        albumName={albumName}
+      />,
+    );
+    setDrawerStatus(true);
+  };
+
   return (
-    <AdminLayout title="Events" scheduleId={scheduleId}>
+    <AdminLayout title="Albums">
       <Box className={classes.contentRoot}>
         <Box className={classes.title}>
-          <Typography component="span" variant="h4">
-            Events
+          <Typography component="span" variant="h4" className={classes.text}>
+            Albums
           </Typography>
         </Box>
 
@@ -61,25 +93,40 @@ const Index = ({
           <Box>{drawerContent}</Box>
         </Drawer>
 
-        <ButtonAdd onClick={handleAdd}>Add Event</ButtonAdd>
+        <ButtonAdd onClick={handleAdd}>Add Album</ButtonAdd>
 
-        {events?.length ? (
+        {albums?.length > 0 ? (
           <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="table of event">
+            <Table className={classes.table} aria-label="table of album">
               <TableHead>
                 <TableRow>
+                  <TableCell>ID</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Date/Time</TableCell>
+                  <TableCell>Parent</TableCell>
+                  <TableCell>URL Alias</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                
+                {albums.map((album) => (
+                  <TableRow key={album.name}>
+                    <TableCell>{album.id}</TableCell>
+                    <TableCell>{album.name}</TableCell>
+                    <TableCell>{album.parent}</TableCell>
+                    <TableCell>{album.url_alias}</TableCell>
+                    <TableCell align="right">
+                      <ButtonEdit onClick={() => handleEdit(album)} />
+                      <ButtonDelete
+                        onClick={() => handleDelete(album.id, album.name)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
         ) : (
-          <Typography variant="body1">No events</Typography>
+          <Typography variant="body1">No albums</Typography>
         )}
       </Box>
     </AdminLayout>

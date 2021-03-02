@@ -19,12 +19,16 @@ use App\Http\Controllers\PhotoController;
 /***************
  * Form Routes *
  ***************/
+Route::get('/album-download/{album}', [AlbumController::class, 'download']);
+
 Route::group(['prefix' => 'admin'], function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
 Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
-    Route::post('album/create', [AlbumController::class, 'store']);
+    Route::post('album/store', [AlbumController::class, 'store']);
+    Route::post('album/update', [AlbumController::class, 'update']);
+    Route::post('album/destroy', [AlbumController::class, 'destroy']);
 });
 
 

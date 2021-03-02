@@ -16,7 +16,7 @@ const AdminLayout = ({ title, children }) => {
   return (
     <ThemeProvider theme={theme}>
       <Helmet>
-        <title>{title} | Fan Event Scheduler</title>
+        <title>{title} | Admin Panel </title>
       </Helmet>
       <CssBaseline />
       <main>{children}</main>

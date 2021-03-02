@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Album;
+use App\Models\Photo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Zip;
 
 class AlbumController extends Controller
 {
@@ -23,13 +26,26 @@ class AlbumController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display listing on admin page.
+     * 
+     * @return  \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
+    public function adminIndex() {
+        $albums = Album::with(['photos'])->orderBy('name')->get();
+
+        foreach ($albums as $album) {
+            if ($album->album_id === 0) {
+                $album->parent = '0';
+            } else {
+                $album->parent = $album->parentAlbum->name;
+            }
+        }
+
+        $albums = $albums->sortBy('parent')->values()->all();
+
+        return Inertia::render('Admin/Index', [
+            'albums' => $albums,
+        ])->withViewData(['title' => 'Admin Home']);
     }
 
     /**
@@ -40,13 +56,60 @@ class AlbumController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'string|required',
+            'album_id' => 'numeric|nullable',
+            'url_alias' => 'string|nullable',
+            'photos' => 'array|nullable',
+        ]);
+
+        $album = new Album;
+        $album->name = $request->name;
+        $album->cover_image = 'placeholder.jpg';
+        
+        // Check if parent album id is set.
+        if (!empty($request->album_id)) {
+            $album->album_id = $request->album_id;
+        }
+
+        // Check if custom url alias is set. If not, make one.
+        if (!empty($request->url_alias)) {
+            $album->url_alias = $request->url_alias;
+        } else {
+            $album->url_alias = str_replace(' ', '-', strtolower($request->name));
+        }
+
+        $success = $album->save();
+
+        // Upload photos
+        if (!empty($request->file('photos'))) {
+            foreach ($request->file('photos') as $photo) {
+                $stored_photo = new Photo;
+                $stored_photo->album_id = $album->id;
+                $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                
+                list($width, $height) = getimagesize($photo);
+                if ($width > $height) {
+                    $stored_photo->is_landscape = true;
+                } else {
+                    $stored_photo->is_landscape = false;
+                }
+                
+                $stored_photo->save();
+            }
+        }
+
+        if ($success) {
+            return back()->with('message', 'Created new album');
+        } else {
+            return back()->withErrors('Something went wrong while trying to create a new album');
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Album  $album
+     * @param  string  $alias
      * @return \Illuminate\Http\Response
      */
     public function show($alias)
@@ -59,12 +122,28 @@ class AlbumController extends Controller
                 ->with(['albums', 'photos'])
                 ->firstOrFail();
         } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
-            return back()->withErrors('Could not find location');
+            return back()->withErrors('Could not find album');
         }
 
+        // Set cover image path for child albums.
+        foreach ($album->albums as $child) {
+            $child->is_landscape = false;
+
+            if ($child->cover_image !== 'placeholder.jpg') {
+                $image = \Image::make(Storage::disk('public')->get($child->cover_image));
+                $width = $image->width();
+                $height = $image->height();
+                if ($width > $height) {
+                    $child->is_landscape = true;
+                } else {
+                    $child->is_landscape = false;
+                }
+            }
+        }
+
+        // Create breadcrumbs.
         $title = $album->name;
         $breadcrumbs = [];
-
         foreach (array_reverse($aliases) as $alias) {
             $parentAlbum = Album::where('url_alias', $alias)->first();
 
@@ -80,26 +159,73 @@ class AlbumController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Album  $album
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Album $album)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Album  $album
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Album $album)
+    public function update(Request $request)
     {
-        //
+        $request->validate([
+            'id' => 'numeric|required',
+            'name' => 'string|required',
+            'album_id' => 'numeric|nullable',
+            'cover_image' => 'image|nullable',
+            'url_alias' => 'string|nullable',
+            'photos' => 'array|nullable',
+        ]);
+
+        try {
+            $album = Album::findOrFail($request->id);
+
+            // Check if name has changed.
+            if (strcmp($request->name, $album->name) !== 0) {
+                $album->name = $request->name;
+            }
+
+            // Check if parent album id is set.
+            if (!empty($request->album_id)) {
+                $album->album_id = $request->album_id;
+            }
+
+            // Check if a cover image has been uploaded.
+            if (!empty($request->file('cover_image'))) {
+                $album->cover_image = $request->file('cover_image')->store('cover_images', 'public');
+            }
+
+            // Check if custom url alias is set.
+            if (!empty($request->url_alias)) {
+                $album->url_alias = $request->url_alias;
+            }
+
+            $success = $album->save();
+
+            // Upload photos
+            if (!empty($request->file('photos'))) {
+                foreach ($request->file('photos') as $photo) {
+                    $stored_photo = new Photo;
+                    $stored_photo->album_id = $album->id;
+                    $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                    
+                    list($width, $height) = getimagesize($photo);
+                    if ($width > $height) {
+                        $stored_photo->is_landscape = true;
+                    } else {
+                        $stored_photo->is_landscape = false;
+                    }
+                    
+                    $stored_photo->save();
+                }
+            }
+
+            if ($success) {
+                return back()->with('message', 'Updated album');
+            } else {
+                return back()->withErrors('Something went wrong while trying to update album');
+            }
+        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+            return back()->withErrors('Could not find album');
+        }
     }
 
     /**
@@ -108,8 +234,65 @@ class AlbumController extends Controller
      * @param  \App\Models\Album  $album
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Album $album)
+    public function destroy(Request $request)
     {
-        //
+        $request->validate([
+            'id' => 'numeric|required',
+        ]);
+
+        try {
+            // Get album and photos to delete.
+            $album = Album::where('id', $request->id)
+                ->with(['photos'])
+                ->firstOrFail();
+
+            // Iterate through photos and remove them.
+            foreach ($album->photos as $photo) {
+                Storage::disk('public')->delete($photo->location);
+                $photo->delete();
+            }
+
+            if ($album->cover_image !== 'placeholder.jpg') {
+                Storage::disk('public')->delete($album->cover_image);
+            }
+
+            // Set all child albums to root.
+            $child_albums = Album::where('album_id', $album->id)->get();
+            foreach ($child_albums as $child) {
+                $child->album_id = 0;
+                $child->save();
+            }
+
+            // Finally, delete album.
+            $album->delete();
+            
+            return back()->with('message', 'Removed album');
+        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+            return back()->withErrors('Could not find album');
+        }
+    }
+
+    /**
+     * Zip archive all photos in album and send download.
+     * 
+     * @param   integer  $album
+     * @return  \Illuminate\Http\Response
+     */
+    public function download($album) {
+        try {
+            $album = Album::where('id', $album)
+                ->with(['photos'])
+                ->firstOrFail();
+
+            $zip = Zip::create("$album->name.zip");
+
+            foreach ($album->photos as $photo) {
+                $zip->add("storage/$photo->location");
+            }
+
+            return $zip;
+        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+            return back()->withErrors('Could not find album');
+        }
     }
 }

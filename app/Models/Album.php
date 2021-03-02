@@ -19,7 +19,7 @@ class Album extends Model
     ];
 
     public function parentAlbum() {
-        return $this->belongsTo(Album::class);
+        return $this->belongsTo(Album::class, 'album_id');
     }
 
     public function albums() {
