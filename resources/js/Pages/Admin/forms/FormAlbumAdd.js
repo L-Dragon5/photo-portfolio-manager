@@ -17,10 +17,13 @@ const useStyles = makeStyles((theme) => ({
 const FormAlbumAdd = ({ closeDrawer, reloadPage }) => {
   const classes = useStyles();
 
+  const [submitting, setSubmitting] = useState(false);
   const [photos, setPhotos] = useState([]);
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
+
+    setSubmitting(true);
 
     const formData = new FormData(e.target);
     photos.forEach((photo) => {
@@ -70,7 +73,12 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage }) => {
       />
 
       <ButtonGroup aria-label="add form buttons">
-        <Button type="submit" variant="contained" color="primary">
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={submitting}
+        >
           Submit
         </Button>
         <Button

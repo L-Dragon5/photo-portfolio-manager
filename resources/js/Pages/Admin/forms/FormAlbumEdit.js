@@ -40,10 +40,13 @@ const useStyles = makeStyles((theme) => ({
 const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
   const classes = useStyles();
 
+  const [submitting, setSubmitting] = useState(false);
   const [photos, setPhotos] = useState([]);
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
+
+    setSubmitting(true);
 
     const formData = new FormData(e.target);
     formData.set('id', album.id);
@@ -152,7 +155,12 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
       </Box>
 
       <ButtonGroup aria-label="add form buttons">
-        <Button type="submit" variant="contained" color="primary">
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={submitting}
+        >
           Update
         </Button>
         <Button

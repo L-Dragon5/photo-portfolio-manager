@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { InertiaApp } from '@inertiajs/inertia-react';
+import { InertiaProgress } from '@inertiajs/progress';
 
 /**
  * First we will load all of this project's JavaScript dependencies which
@@ -20,4 +21,6 @@ if (typeof root !== 'undefined' && root !== null) {
     />,
     root,
   );
+
+  InertiaProgress.init();
 }

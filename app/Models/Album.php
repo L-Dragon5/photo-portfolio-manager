@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Album extends Model
 {
@@ -28,5 +29,17 @@ class Album extends Model
 
     public function photos() {
         return $this->hasMany(Photo::class)->orderBy('id');
+    }
+
+    protected static function booted() {
+        static::deleting(function ($album) {
+            if ($album->cover_image !== 'placeholder.webp') {
+                Storage::disk('public')->delete($album->cover_image);
+
+                Storage::disk('public')->deleteDirectory($album->id);
+                Storage::disk('public')->deleteDirectory('thumbnails/' . $album->id);
+                Storage::disk('public')->deleteDirectory('thumbnails/lazy/' . $album->id);
+            }
+        });
     }
 }

@@ -69,9 +69,6 @@ class PhotoController extends Controller
             $photo = Photo::where('id', $request->id)
                 ->firstOrFail();
 
-            // Delete photo off filesystem.
-            Storage::disk('public')->delete($photo->location);
-
             // Delete photo object and entry from DB.
             $photo->delete();
             

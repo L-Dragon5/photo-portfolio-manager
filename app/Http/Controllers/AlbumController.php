@@ -130,19 +130,16 @@ class AlbumController extends Controller
             return back()->withErrors('Could not find album');
         }
 
-        // Set cover image path for child albums.
+        // Set landscape flag for child album cover images.
         foreach ($album->albums as $child) {
-            $child->is_landscape = false;
-
-            if ($child->cover_image !== 'placeholder.webp') {
-                $image = \Image::make(Storage::disk('public')->get($child->cover_image));
-                $width = $image->width();
-                $height = $image->height();
-                if ($width > $height) {
-                    $child->is_landscape = true;
-                } else {
-                    $child->is_landscape = false;
-                }
+            // Set cover image path.
+            $img = \Image::make(Storage::disk('public')->get($child->cover_image));
+            $width = $img->width();
+            $height = $img->height();
+            if ($width > $height) {
+                $child->is_landscape = true;
+            } else {
+                $child->is_landscape = false;
             }
         }
 
@@ -272,17 +269,11 @@ class AlbumController extends Controller
         try {
             // Get album and photos to delete.
             $album = Album::where('id', $request->id)
-                ->with(['photos'])
                 ->firstOrFail();
 
             // Iterate through photos and remove them.
             foreach ($album->photos as $photo) {
-                Storage::disk('public')->delete($photo->location);
                 $photo->delete();
-            }
-
-            if ($album->cover_image !== 'placeholder.webp') {
-                Storage::disk('public')->delete($album->cover_image);
             }
 
             // Set all child albums to root.

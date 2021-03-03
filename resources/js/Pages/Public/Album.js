@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { InertiaLink } from '@inertiajs/inertia-react';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -72,10 +74,13 @@ const useStyles = makeStyles((theme) => ({
   },
   breadcrumbLink: {
     color: theme.palette.common.white,
-    marginRight: theme.spacing(0.5),
+    margin: theme.spacing(0, 0.5),
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  lazyWrapper: {
+    height: '100%',
   },
 }));
 
@@ -127,9 +132,10 @@ const Album = ({ album, title, breadcrumbs }) => {
                       : `${classes.gridBase} ${classes.imagePortrait}`
                   }
                 >
-                  <img
-                    src={`/storage/${childAlbum.cover_image}`}
+                  <LazyLoadImage
                     alt={childAlbum.name}
+                    effect="blur"
+                    src={`/storage/${childAlbum.cover_image}`}
                     className={classes.image}
                   />
                   <Typography variant="body1" className={classes.title}>
@@ -170,9 +176,12 @@ const Album = ({ album, title, breadcrumbs }) => {
                     setToggler(true);
                   }}
                 >
-                  <img
-                    src={`/storage/${photo.location}`}
+                  <LazyLoadImage
                     alt="cosplayer"
+                    effect="blur"
+                    src={photo.thumbnail}
+                    placeholderSrc={photo.lazy_thumbnail}
+                    wrapperClassName={classes.lazyWrapper}
                     className={classes.image}
                   />
                 </Box>
