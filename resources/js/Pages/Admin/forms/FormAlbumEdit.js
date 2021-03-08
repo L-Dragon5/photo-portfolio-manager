@@ -154,7 +154,8 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
       <DropzoneArea
         acceptedFiles={['image/*']}
         dropzoneText="Drag and drop an image here or click"
-        filesLimit={100}
+        filesLimit={150}
+        showAlerts={false}
         onChange={setPhotos}
       />
 

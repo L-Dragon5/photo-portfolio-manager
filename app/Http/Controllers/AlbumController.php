@@ -27,21 +27,24 @@ class AlbumController extends Controller
 
     /**
      * Display listing on admin page.
-     * 
+     *
      * @return  \Illuminate\Http\Response
      */
     public function adminIndex() {
-        $albums = Album::with(['photos'])->orderBy('name')->get();
+        $root_albums = Album::where('album_id', 0)->with(['photos'])->orderBy('name')->get();
+        $child_albums = Album::where('album_id', '<>', 0)->with(['photos'])->orderBy('name')->get();
+	$albums = collect([]);
 
-        foreach ($albums as $album) {
-            if ($album->album_id === 0) {
-                $album->parent = '0 - Root';
-            } else {
-                $album->parent = $album->parentAlbum->name;
+        foreach ($root_albums as $root) {
+            $root->parent = '0 - Root';
+	    $albums->push($root);
+
+            $children = $child_albums->filter(fn ($val, $key) => $val->album_id === $root->id)->values();
+            foreach ($children as $child) {
+                $child->parent = $child->parentAlbum->name;
+                $albums->push($child);
             }
         }
-
-        $albums = $albums->sortBy('parent')->values()->all();
 
         // Get all available albums.
         $available_albums = [];

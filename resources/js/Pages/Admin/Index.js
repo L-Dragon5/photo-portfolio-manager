@@ -116,7 +116,7 @@ const Index = ({ albums, availableAlbums }) => {
                 {albums.map((album) => (
                   <TableRow key={album.name}>
                     <TableCell>{album.id}</TableCell>
-                    <TableCell>{album.name}</TableCell>
+                    <TableCell>{album.album_id === 0 ? (<strong>{album.name}</strong>) : (album.name)}</TableCell>
                     <TableCell>{album.parent}</TableCell>
                     <TableCell>{album.url_alias}</TableCell>
                     <TableCell align="right">

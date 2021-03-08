@@ -136,6 +136,7 @@ const Album = ({ album, title, breadcrumbs }) => {
                     alt={childAlbum.name}
                     effect="blur"
                     src={`/storage/${childAlbum.cover_image}`}
+                    wrapperClassName={classes.lazyWrapper}
                     className={classes.image}
                   />
                   <Typography variant="body1" className={classes.title}>

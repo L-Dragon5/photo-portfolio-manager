@@ -88,7 +88,8 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
       <DropzoneArea
         acceptedFiles={['image/*']}
         dropzoneText="Drag and drop an image here or click"
-        filesLimit={100}
+        filesLimit={150}
+        showAlerts={false}
         onChange={setPhotos}
       />
 
