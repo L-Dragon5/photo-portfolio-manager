@@ -133,9 +133,19 @@ class AlbumController extends Controller
         $url_alias = array_pop($aliases);
 
         try {
-            $album = Album::where('url_alias', $url_alias)
-                ->with(['albums', 'photos'])
-                ->firstOrFail();
+            if (count($aliases) > 0) {
+                $parent_alias = end($aliases);
+                $parent_album = Album::where('url_alias', $parent_alias)->firstOrFail();
+
+                $album = Album::where('url_alias', $url_alias)
+                    ->where('album_id', $parent_album->id)
+                    ->with(['albums', 'photos'])
+                    ->firstOrFail();
+            } else {
+                $album = Album::where('url_alias', $url_alias)
+                    ->with(['albums', 'photos'])
+                    ->firstOrFail();
+            }
         } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
