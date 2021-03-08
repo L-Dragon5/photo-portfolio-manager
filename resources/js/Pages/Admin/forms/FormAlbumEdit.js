@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
 
-import { Box, Button, ButtonGroup, TextField } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
+  TextField,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { DropzoneArea } from 'material-ui-dropzone';
@@ -37,11 +46,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
+const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
   const classes = useStyles();
 
   const [submitting, setSubmitting] = useState(false);
   const [photos, setPhotos] = useState([]);
+  const [parentAlbum, setParentAlbum] = useState(album.album_id);
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
@@ -50,6 +60,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
 
     const formData = new FormData(e.target);
     formData.set('id', album.id);
+    formData.set('album_id', parentAlbum);
     photos.forEach((photo) => {
       formData.append('photos[]', photo);
     });
@@ -106,15 +117,27 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, album }) => {
         className={classes.formField}
       />
 
-      <TextField
-        required
-        fullWidth
-        defaultValue={album.album_id}
-        name="album_id"
-        variant="outlined"
-        label="Parent Album ID"
-        className={classes.formField}
-      />
+      <FormControl fullWidth variant="outlined" className={classes.formField}>
+        <InputLabel id="select-album-label">Parent Album</InputLabel>
+        <Select
+          labelId="select-album-label"
+          id="select-album"
+          value={parentAlbum}
+          onChange={(e) => setParentAlbum(e.target.value)}
+          label="Parent Album"
+        >
+          <MenuItem value={0}>Root</MenuItem>
+          {availableAlbums?.map((a) => {
+            if (a.id !== album.id) {
+              return (
+                <MenuItem key={a.id} value={a.id}>
+                  {a.name}
+                </MenuItem>
+              );
+            }
+          })}
+        </Select>
+      </FormControl>
 
       <UploadButton />
 

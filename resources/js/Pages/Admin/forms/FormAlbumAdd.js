@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
 
-import { Button, ButtonGroup, TextField } from '@material-ui/core';
+import {
+  Button,
+  ButtonGroup,
+  InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
+  TextField,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { DropzoneArea } from 'material-ui-dropzone';
 
@@ -14,11 +22,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const FormAlbumAdd = ({ closeDrawer, reloadPage }) => {
+const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
   const classes = useStyles();
 
   const [submitting, setSubmitting] = useState(false);
   const [photos, setPhotos] = useState([]);
+  const [parentAlbum, setParentAlbum] = useState(0);
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
@@ -26,6 +35,7 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage }) => {
     setSubmitting(true);
 
     const formData = new FormData(e.target);
+    formData.set('album_id', parentAlbum);
     photos.forEach((photo) => {
       formData.append('photos[]', photo);
     });
@@ -49,13 +59,23 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage }) => {
         className={classes.formField}
       />
 
-      <TextField
-        fullWidth
-        name="album_id"
-        variant="outlined"
-        label="Parent Album ID"
-        className={classes.formField}
-      />
+      <FormControl fullWidth variant="outlined" className={classes.formField}>
+        <InputLabel id="select-album-label">Parent Album</InputLabel>
+        <Select
+          labelId="select-album-label"
+          id="select-album"
+          value={parentAlbum}
+          onChange={(e) => setParentAlbum(e.target.value)}
+          label="Parent Album"
+        >
+          <MenuItem value={0}>Root</MenuItem>
+          {availableAlbums?.map((album) => (
+            <MenuItem key={album.id} value={album.id}>
+              {album.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       <TextField
         fullWidth

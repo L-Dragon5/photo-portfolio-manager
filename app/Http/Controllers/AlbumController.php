@@ -43,8 +43,15 @@ class AlbumController extends Controller
 
         $albums = $albums->sortBy('parent')->values()->all();
 
+        // Get all available albums.
+        $available_albums = [];
+        foreach (Album::all() as $album) {
+            $available_albums[] = ['id' => $album->id, 'name' => $album->name];
+        }
+
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
+            'availableAlbums' => $available_albums,
         ])->withViewData(['title' => 'Admin Home']);
     }
 
@@ -186,7 +193,7 @@ class AlbumController extends Controller
             }
 
             // Check if parent album id is set.
-            if (!empty($request->album_id) && $request->album_id !== $album->album_id) {
+            if (isset($request->album_id) && $request->album_id !== $album->album_id) {
                 $album->album_id = $request->album_id;
             }
 

@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Index = ({ albums }) => {
+const Index = ({ albums, availableAlbums }) => {
   const classes = useStyles();
 
   const [drawerStatus, setDrawerStatus] = useState(false);
@@ -52,7 +52,11 @@ const Index = ({ albums }) => {
 
   const handleAdd = () => {
     setDrawerContent(
-      <FormAlbumAdd closeDrawer={handleClose} reloadPage={handleReload} />,
+      <FormAlbumAdd
+        closeDrawer={handleClose}
+        reloadPage={handleReload}
+        availableAlbums={availableAlbums}
+      />,
     );
     setDrawerStatus(true);
   };
@@ -62,6 +66,7 @@ const Index = ({ albums }) => {
       <FormAlbumEdit
         closeDrawer={handleClose}
         reloadPage={handleReload}
+        availableAlbums={availableAlbums}
         album={album}
       />,
     );
