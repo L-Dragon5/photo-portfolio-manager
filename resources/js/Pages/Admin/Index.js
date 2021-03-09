@@ -102,7 +102,7 @@ const Index = ({ albums, availableAlbums }) => {
 
         {albums?.length > 0 ? (
           <TableContainer component={Paper}>
-            <Table className={classes.table} aria-label="table of album">
+            <Table stickyHeader className={classes.table} aria-label="table of album">
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
