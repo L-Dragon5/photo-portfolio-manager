@@ -44,5 +44,16 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 
 // Public Routes
-Route::get('/', [AlbumController::class, 'index']);
+Route::get('/', [AlbumController::class, 'index'])->name('home');
+
+// Redirects
+Route::redirect('/misc-shoots/', '/location-shoots/');
+Route::redirect('/misc-shoots/{param}', '/location-shoots/{param}');
+
+// Base to get alias and display albums accordingly
 Route::get('/{alias}', [AlbumController::class, 'show'])->where('alias', '.*');
+
+// Fallback
+Route::fallback(function () {
+    return redirect()->route('home');
+});
