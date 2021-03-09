@@ -48,6 +48,23 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
     });
   };
 
+  const UploadButton = () => (
+    <div className={classes.uploadButton}>
+      <label htmlFor="album-button-file">
+        <input
+          accept="image/*"
+          name="cover_image"
+          style={{ display: 'none' }}
+          id="album-button-file"
+          type="file"
+        />
+        <Button variant="contained" color="primary" component="span">
+          Upload Image
+        </Button>
+      </label>
+    </div>
+  );
+
   return (
     <form className={classes.form} onSubmit={handleAddSubmit}>
       <TextField
@@ -76,6 +93,8 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
           ))}
         </Select>
       </FormControl>
+
+      <UploadButton />
 
       <TextField
         fullWidth

@@ -69,6 +69,7 @@ class AlbumController extends Controller
         $request->validate([
             'name' => 'string|required',
             'album_id' => 'numeric|nullable',
+            'cover_image' => 'image|nullable',
             'url_alias' => 'string|nullable',
             'photos' => 'array|nullable',
         ]);
@@ -80,6 +81,22 @@ class AlbumController extends Controller
         // Check if parent album id is set.
         if (!empty($request->album_id)) {
             $album->album_id = $request->album_id;
+        }
+
+        // Check if a cover image has been uploaded.
+        if (!empty($request->file('cover_image'))) {
+            // Create image and resize image down if necessary.
+            $img = \Image::make($request->file('cover_image'))
+                ->resize(1000, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->encode('webp');
+            $name = md5($img->__toString()) . '.webp';
+            $path = "cover_images/$name";
+            if (Storage::disk('public')->put($path, $img->__toString())) {
+                $album->cover_image = $path;
+            }
         }
 
         // Check if custom url alias is set. If not, make one.

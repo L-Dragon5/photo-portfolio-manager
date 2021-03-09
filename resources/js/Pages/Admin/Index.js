@@ -101,8 +101,12 @@ const Index = ({ albums, availableAlbums }) => {
         <ButtonAdd onClick={handleAdd}>Add Album</ButtonAdd>
 
         {albums?.length > 0 ? (
-          <TableContainer component={Paper}>
-            <Table stickyHeader className={classes.table} aria-label="table of album">
+          <TableContainer component={Paper} style={{ maxHeight: '80vh' }}>
+            <Table
+              stickyHeader
+              className={classes.table}
+              aria-label="table of album"
+            >
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
@@ -116,7 +120,13 @@ const Index = ({ albums, availableAlbums }) => {
                 {albums.map((album) => (
                   <TableRow key={album.name}>
                     <TableCell>{album.id}</TableCell>
-                    <TableCell>{album.album_id === 0 ? (<strong>{album.name}</strong>) : (album.name)}</TableCell>
+                    <TableCell>
+                      {album.album_id === 0 ? (
+                        <strong>{album.name}</strong>
+                      ) : (
+                        album.name
+                      )}
+                    </TableCell>
                     <TableCell>{album.parent}</TableCell>
                     <TableCell>{album.url_alias}</TableCell>
                     <TableCell align="right">
