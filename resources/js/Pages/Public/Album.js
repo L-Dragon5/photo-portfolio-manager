@@ -7,17 +7,22 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 
 import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import GetAppIcon from '@material-ui/icons/GetApp';
 
 import BaseLayout from './BaseLayout';
 
 const useStyles = makeStyles((theme) => ({
   grid: {
-    display: 'grid',
-    gap: 12,
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gridAutoFlow: 'dense',
+    display: 'flex',
+    flexDirection: 'column',
     padding: theme.spacing(1),
     animation: `$fadeIn 1s`,
+    [theme.breakpoints.up('sm')]: {
+      display: 'grid',
+      gap: 12,
+      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+      gridAutoFlow: 'dense',
+    },
   },
   gridBase: {
     position: 'relative',
@@ -110,6 +115,21 @@ const Album = ({ album, title, breadcrumbs }) => {
       &gt; {album.name}
     </Box>
   );
+
+  const DownloadButton = () => {
+    const location = `/storage/${album.photos[photoIndex]?.location}`;
+    const name = location.split('/').pop();
+
+    return (
+      <a
+        download={name}
+        href={location}
+        style={{ color: 'white', position: 'relative', top: 7 }}
+      >
+        <GetAppIcon />
+      </a>
+    );
+  };
 
   if (album.albums.length || album.photos.length) {
     return (
@@ -210,6 +230,7 @@ const Album = ({ album, title, breadcrumbs }) => {
                 onMoveNextRequest={() =>
                   setPhotoIndex((photoIndex + 1) % album.photos.length)
                 }
+                toolbarButtons={[<DownloadButton />]}
               />
             )}
           </>
