@@ -85,6 +85,37 @@ const Index = ({ albums, availableAlbums }) => {
     setDrawerStatus(true);
   };
 
+  const AlbumRowComponent = ({ treeAlbums, level = 0 }) => {
+    return (
+      <>
+        {treeAlbums.map((album) => (
+          <React.Fragment key={album.name}>
+            <TableRow key={album.name}>
+              <TableCell>{album.id}</TableCell>
+              <TableCell>
+                {'='.repeat(level)} {album.name}
+              </TableCell>
+              <TableCell>{album.parent}</TableCell>
+              <TableCell>{album.url_alias}</TableCell>
+              <TableCell align="right">
+                <ButtonEdit onClick={() => handleEdit(album)} />
+                <ButtonDelete
+                  onClick={() => handleDelete(album.id, album.name)}
+                />
+              </TableCell>
+            </TableRow>
+            {album.child_albums && (
+              <AlbumRowComponent
+                treeAlbums={album.child_albums}
+                level={level + 1}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </>
+    );
+  };
+
   return (
     <AdminLayout title="Albums">
       <Box className={classes.contentRoot}>
@@ -117,26 +148,7 @@ const Index = ({ albums, availableAlbums }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {albums.map((album) => (
-                  <TableRow key={album.name}>
-                    <TableCell>{album.id}</TableCell>
-                    <TableCell>
-                      {album.album_id === 0 ? (
-                        <strong>{album.name}</strong>
-                      ) : (
-                        album.name
-                      )}
-                    </TableCell>
-                    <TableCell>{album.parent}</TableCell>
-                    <TableCell>{album.url_alias}</TableCell>
-                    <TableCell align="right">
-                      <ButtonEdit onClick={() => handleEdit(album)} />
-                      <ButtonDelete
-                        onClick={() => handleDelete(album.id, album.name)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <AlbumRowComponent treeAlbums={albums} />
               </TableBody>
             </Table>
           </TableContainer>

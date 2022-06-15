@@ -31,30 +31,13 @@ class AlbumController extends Controller
      * @return  \Illuminate\Http\Response
      */
     public function adminIndex() {
-        $root_albums = Album::where('album_id', 0)->with(['photos'])->orderBy('name')->get();
-        $child_albums = Album::where('album_id', '<>', 0)->with(['photos'])->orderBy('name')->get();
-	$albums = collect([]);
-
-        foreach ($root_albums as $root) {
-            $root->parent = '0 - Root';
-	    $albums->push($root);
-
-            $children = $child_albums->filter(fn ($val, $key) => $val->album_id === $root->id)->values();
-            foreach ($children as $child) {
-                $child->parent = $child->parentAlbum->name;
-                $albums->push($child);
-            }
-        }
-
-        // Get all available albums.
-        $available_albums = [];
-        foreach (Album::all() as $album) {
-            $available_albums[] = ['id' => $album->id, 'name' => $album->name];
-        }
+        $available_albums = Album::with(['photos'])->orderBy('name')->get();
+        $albums = $this->buildTree($available_albums);
+        $flatTreeAlbums = $this->flattenTree($albums);
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
-            'availableAlbums' => $available_albums,
+            'availableAlbums' => $flatTreeAlbums,
         ])->withViewData(['title' => 'Admin Home']);
     }
 
@@ -183,11 +166,19 @@ class AlbumController extends Controller
         // Create breadcrumbs.
         $title = $album->name;
         $breadcrumbs = [];
-        foreach (array_reverse($aliases) as $alias) {
-            $parentAlbum = Album::where('url_alias', $alias)->first();
+        if (count($aliases) > 1) {
+            for ($i = 0; $i < count($aliases); $i++) {
+                $parentAlbum = Album::where('url_alias', $aliases[$i])->first();
 
-            $title .= ' - ' . $parentAlbum->name;
-            $breadcrumbs[] = ['url_alias' => $alias, 'name' => $parentAlbum->name];
+                if ($i > 0) {
+                    $breadcrumbs[] = ['url_alias' => $breadcrumbs[$i-1]['url_alias'] . '/' . $parentAlbum->url_alias, 'name' => $parentAlbum->name];
+                } else {
+                    $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
+                }
+            }
+        } else if (count($aliases) === 1) {
+            $parentAlbum = Album::where('url_alias', reset($aliases))->first();
+            $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
         }
 
         return Inertia::render('Public/Album', [
@@ -351,5 +342,60 @@ class AlbumController extends Controller
         } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
+    }
+
+    /**
+     * Turns albums flat array into tree.
+     * 
+     * @param   \Illuminate\Database\Eloquent\Collection    $albums
+     * @param   integer     $parent_id
+     * @return  \Illuminate\Support\Collection
+     */
+    private function buildTree(\Illuminate\Database\Eloquent\Collection $albums, $parent_id = 0) {
+        $branch = collect([]);
+
+        foreach ($albums as $album) {
+            if ($album->album_id === $parent_id) {
+                if ($album->album_id === 0) {
+                    $album->parent = '0 - Root';
+                } else {
+                    $album->parent = $album->parentAlbum->name;
+                }
+
+                $children = $this->buildTree($albums, $album['id']);
+                if ($children->isNotEmpty()) {
+                    $album['child_albums'] = $children;
+                }
+
+                $branch->push($album);
+            }
+        }
+
+        return $branch;
+    }
+
+    /**
+     * Turns albums tree into sorted flat array for available albums.
+     * 
+     * @param   \Illuminate\Support\Collection    $albums
+     * @param   integer     $level
+     * @return  array
+     */
+    private function flattenTree(\Illuminate\Support\Collection $albums, $level = 0) {
+        $flatArray = [];
+
+        $albums = $albums->toArray();
+        foreach ($albums as $album) {
+            if (isset($album['child_albums']) && !empty($album['child_albums'])) {
+                $album['name'] = str_repeat('=', $level) . ' ' . $album['name'];
+                $flatArray[] = $album;
+                $flatArray = array_merge($flatArray, $this->flattenTree($album['child_albums'], $level + 1));
+            } else {
+                $album['name'] = str_repeat('=', $level) . ' ' . $album['name'];
+                $flatArray[] = ($album);
+            }
+        }
+
+        return $flatArray;
     }
 }
