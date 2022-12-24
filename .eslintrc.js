@@ -10,6 +10,7 @@ module.exports = {
     jest: true,
     node: true,
   },
+  plugins: ['simple-import-sort'],
   rules: {
     'jsx-a11y/href-no-hash': ['off'],
     'react/jsx-filename-extension': ['warn', { extensions: ['.js', '.jsx'] }],
@@ -28,6 +29,13 @@ module.exports = {
       },
     ],
     'import/no-extraneous-dependencies': 'off',
+    'import/no-dynamic-require': 'off',
+    'global-require': 'off',
     'no-console': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/function-component-definition': 'off',
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
+    'react/no-unstable-nested-components': 'off',
   },
 };

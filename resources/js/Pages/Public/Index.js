@@ -76,7 +76,7 @@ const Index = ({ albums }) => {
             className={classes.gridBase}
           >
             <img
-              src={`/storage/${album.cover_image}`}
+              src={album.cover_image}
               alt={album.name}
               className={classes.image}
             />

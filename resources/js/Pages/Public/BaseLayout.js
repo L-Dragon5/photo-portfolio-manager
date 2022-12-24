@@ -42,7 +42,7 @@ const BaseLayout = ({ title, children }) => {
       <Box component="header" className={classes.header}>
         <InertiaLink href="/">
           <div className={classes.logo}>
-            <img src="/storage/logo-white.webp" alt="logo" />
+            <img src="logo-white.webp" alt="logo" />
           </div>
         </InertiaLink>
       </Box>

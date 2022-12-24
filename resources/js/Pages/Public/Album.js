@@ -117,7 +117,7 @@ const Album = ({ album, title, breadcrumbs }) => {
   );
 
   const DownloadButton = () => {
-    const location = `/storage/${album.photos[photoIndex]?.location}`;
+    const location = album.photos[photoIndex]?.location;
     const name = location.split('/').pop();
 
     return (
@@ -155,7 +155,7 @@ const Album = ({ album, title, breadcrumbs }) => {
                   <LazyLoadImage
                     alt={childAlbum.name}
                     effect="blur"
-                    src={`/storage/${childAlbum.cover_image}`}
+                    src={childAlbum.cover_image}
                     wrapperClassName={classes.lazyWrapper}
                     className={classes.image}
                   />
@@ -211,15 +211,15 @@ const Album = ({ album, title, breadcrumbs }) => {
             {toggler && (
               <Lightbox
                 animationOnKeyInput
-                mainSrc={`/storage/${album.photos[photoIndex]?.location}`}
-                nextSrc={`/storage/${
+                mainSrc={album.photos[photoIndex]?.location}
+                nextSrc={
                   album.photos[(photoIndex + 1) % album.photos.length]?.location
-                }`}
-                prevSrc={`/storage/${
+                }
+                prevSrc={
                   album.photos[
                     (photoIndex + album.photos.length - 1) % album.photos.length
                   ]?.location
-                }`}
+                }
                 onCloseRequest={() => setToggler(false)}
                 onMovePrevRequest={() =>
                   setPhotoIndex(

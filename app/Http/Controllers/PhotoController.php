@@ -71,7 +71,7 @@ class PhotoController extends Controller
 
             // Delete photo object and entry from DB.
             $photo->delete();
-            
+
             return back()->with('message', 'Removed photo');
         } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
             return back()->withErrors('Could not find photo');

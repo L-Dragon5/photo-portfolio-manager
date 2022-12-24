@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
 use App\Models\Album;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Zip;
 
 class AlbumController extends Controller
@@ -30,7 +30,8 @@ class AlbumController extends Controller
      *
      * @return  \Illuminate\Http\Response
      */
-    public function adminIndex() {
+    public function adminIndex()
+    {
         $available_albums = Album::with(['photos'])->orderBy('name')->get();
         $albums = $this->buildTree($available_albums);
         $flatTreeAlbums = $this->flattenTree($albums);
@@ -60,7 +61,7 @@ class AlbumController extends Controller
         $album = new Album;
         $album->name = $request->name;
         $album->cover_image = 'placeholder.webp';
-        
+
         // Check if parent album id is set.
         if (!empty($request->album_id)) {
             $album->album_id = $request->album_id;
@@ -77,7 +78,7 @@ class AlbumController extends Controller
                 ->encode('webp');
             $name = md5($img->__toString()) . '.webp';
             $path = "cover_images/$name";
-            if (Storage::disk('public')->put($path, $img->__toString())) {
+            if (Storage::put($path, $img->__toString())) {
                 $album->cover_image = $path;
             }
         }
@@ -101,14 +102,14 @@ class AlbumController extends Controller
                     $stored_photo = new Photo;
                     $stored_photo->album_id = $album->id;
                     $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
-                    
-                    list($width, $height) = getimagesize($photo);
+
+                    [$width, $height] = getimagesize($photo);
                     if ($width > $height) {
                         $stored_photo->is_landscape = true;
                     } else {
                         $stored_photo->is_landscape = false;
                     }
-                    
+
                     $stored_photo->save();
                 }
             }
@@ -153,7 +154,7 @@ class AlbumController extends Controller
         // Set landscape flag for child album cover images.
         foreach ($album->albums as $child) {
             // Set cover image path.
-            $img = \Image::make(Storage::disk('public')->get($child->cover_image));
+            $img = \Image::make(Storage::get($child->cover_image));
             $width = $img->width();
             $height = $img->height();
             if ($width > $height) {
@@ -171,12 +172,12 @@ class AlbumController extends Controller
                 $parentAlbum = Album::where('url_alias', $aliases[$i])->first();
 
                 if ($i > 0) {
-                    $breadcrumbs[] = ['url_alias' => $breadcrumbs[$i-1]['url_alias'] . '/' . $parentAlbum->url_alias, 'name' => $parentAlbum->name];
+                    $breadcrumbs[] = ['url_alias' => $breadcrumbs[$i - 1]['url_alias'] . '/' . $parentAlbum->url_alias, 'name' => $parentAlbum->name];
                 } else {
                     $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
                 }
             }
-        } else if (count($aliases) === 1) {
+        } elseif (count($aliases) === 1) {
             $parentAlbum = Album::where('url_alias', reset($aliases))->first();
             $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
         }
@@ -232,13 +233,13 @@ class AlbumController extends Controller
                     ->encode('webp');
                 $name = md5($img->__toString()) . '.webp';
                 $path = "cover_images/$name";
-                if (Storage::disk('public')->put($path, $img->__toString())) {
+                if (Storage::put($path, $img->__toString())) {
                     $album->cover_image = $path;
                 }
 
                 // Delete old cover image if not placeholder.
                 if ($old_image !== 'placeholder.webp') {
-                    Storage::disk('public')->delete($old_image);
+                    Storage::delete($old_image);
                 }
             }
 
@@ -259,14 +260,14 @@ class AlbumController extends Controller
                         $stored_photo = new Photo;
                         $stored_photo->album_id = $album->id;
                         $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
-                        
-                        list($width, $height) = getimagesize($photo);
+
+                        [$width, $height] = getimagesize($photo);
                         if ($width > $height) {
                             $stored_photo->is_landscape = true;
                         } else {
                             $stored_photo->is_landscape = false;
                         }
-                        
+
                         $stored_photo->save();
                     }
                 }
@@ -313,7 +314,7 @@ class AlbumController extends Controller
 
             // Finally, delete album.
             $album->delete();
-            
+
             return back()->with('message', 'Removed album');
         } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
@@ -322,11 +323,12 @@ class AlbumController extends Controller
 
     /**
      * Zip archive all photos in album and send download.
-     * 
-     * @param   integer  $album
+     *
+     * @param  int  $album
      * @return  \Illuminate\Http\Response
      */
-    public function download($album) {
+    public function download($album)
+    {
         try {
             $album = Album::where('id', $album)
                 ->with(['photos'])
@@ -335,7 +337,7 @@ class AlbumController extends Controller
             $zip = Zip::create("$album->name.zip");
 
             foreach ($album->photos as $photo) {
-                $zip->add("storage/$photo->location");
+                $zip->add(Storage::get($photo->location));
             }
 
             return $zip;
@@ -346,12 +348,13 @@ class AlbumController extends Controller
 
     /**
      * Turns albums flat array into tree.
-     * 
-     * @param   \Illuminate\Database\Eloquent\Collection    $albums
-     * @param   integer     $parent_id
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection  $albums
+     * @param  int  $parent_id
      * @return  \Illuminate\Support\Collection
      */
-    private function buildTree(\Illuminate\Database\Eloquent\Collection $albums, $parent_id = 0) {
+    private function buildTree(\Illuminate\Database\Eloquent\Collection $albums, $parent_id = 0)
+    {
         $branch = collect([]);
 
         foreach ($albums as $album) {
@@ -376,12 +379,13 @@ class AlbumController extends Controller
 
     /**
      * Turns albums tree into sorted flat array for available albums.
-     * 
-     * @param   \Illuminate\Support\Collection    $albums
-     * @param   integer     $level
+     *
+     * @param  \Illuminate\Support\Collection  $albums
+     * @param  int  $level
      * @return  array
      */
-    private function flattenTree(\Illuminate\Support\Collection $albums, $level = 0) {
+    private function flattenTree(\Illuminate\Support\Collection $albums, $level = 0)
+    {
         $flatArray = [];
 
         $albums = $albums->toArray();

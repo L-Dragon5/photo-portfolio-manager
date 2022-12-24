@@ -164,7 +164,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
           <Box key={photo.id} className={classes.thumbnail}>
             <img
               key={photo.id}
-              src={`storage/${photo.location}`}
+              src={photo.location}
               className={classes.thumbnailImage}
               alt="thumbnail"
               draggable={false}
