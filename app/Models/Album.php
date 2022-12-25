@@ -34,11 +34,6 @@ class Album extends Model
 
     protected static function booted()
     {
-        static::retrieved(function ($album) {
-            // Set thumbnail paths.
-            $album->cover_image = Storage::url($album->cover_image);
-        });
-
         static::deleting(function ($album) {
             if ($album->cover_image !== 'placeholder.webp') {
                 Storage::delete($album->cover_image);

@@ -1,4 +1,4 @@
-service: photo-portfolio-manager
+service: photo-portfolio
 
 provider:
     name: aws
@@ -55,12 +55,13 @@ functions:
 constructs:
   website:
     type: server-side-website
-    # domain:
-      #- l-dragon.photography
-      #- www.l-dragon.photography
-    # redirectToMainDomain: true
-    # certificate:
+    domain:
+      - l-dragon.photography
+      - www.l-dragon.photography
+    redirectToMainDomain: true
+    certificate: arn:aws:acm:us-east-1:725746735290:certificate/eb78a77e-0b45-47a0-a30b-4e0262339f8b
     assets:
+      '/css/*': 'public/css'
       '/js/*': public/js
       '/favicon.ico': public/favicon.ico
       '/robots.txt': public/robots.txt

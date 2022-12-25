@@ -20,6 +20,11 @@ class AlbumController extends Controller
     {
         $albums = Album::where('album_id', 0)->orderBy('name')->get();
 
+        foreach ($albums as &$album) {
+            // Retrieve URL for display.
+            $album->cover_image = Storage::url($album->cover_image);
+        }
+
         return Inertia::render('Public/Index', [
             'albums' => $albums,
         ])->withViewData(['title' => 'Home']);
@@ -35,6 +40,11 @@ class AlbumController extends Controller
         $available_albums = Album::with(['photos'])->orderBy('name')->get();
         $albums = $this->buildTree($available_albums);
         $flatTreeAlbums = $this->flattenTree($albums);
+
+        foreach ($albums as &$album) {
+            // Retrieve URL for display.
+            $album->cover_image = Storage::url($album->cover_image);
+        }
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
@@ -152,7 +162,7 @@ class AlbumController extends Controller
         }
 
         // Set landscape flag for child album cover images.
-        foreach ($album->albums as $child) {
+        foreach ($album->albums as &$child) {
             // Set cover image path.
             $img = \Image::make(Storage::get($child->cover_image));
             $width = $img->width();
@@ -162,6 +172,8 @@ class AlbumController extends Controller
             } else {
                 $child->is_landscape = false;
             }
+
+            $child->cover_image = Storage::url($child->cover_image);
         }
 
         // Create breadcrumbs.
@@ -181,6 +193,9 @@ class AlbumController extends Controller
             $parentAlbum = Album::where('url_alias', reset($aliases))->first();
             $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
         }
+
+        // Retrieve URL for display.
+        $album->cover_image = Storage::url($album->cover_image);
 
         return Inertia::render('Public/Album', [
             'album' => $album,

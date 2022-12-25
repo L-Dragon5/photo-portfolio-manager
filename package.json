@@ -7,7 +7,7 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production && mix --production --mix-config=webpack.ssr.mix.js"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.18.2",
@@ -40,6 +40,7 @@
         "@inertiajs/inertia": "^0.11.0",
         "@inertiajs/inertia-react": "^0.8.0",
         "@inertiajs/progress": "^0.2.7",
+        "@inertiajs/server": "^0.1.0",
         "@material-ui/core": "^4.12.4",
         "@material-ui/icons": "^4.11.3",
         "material-ui-dropzone": "^3.5.0",

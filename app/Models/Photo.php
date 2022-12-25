@@ -27,6 +27,9 @@ class Photo extends Model
             // Set thumbnail paths.
             $photo->thumbnail = str_replace('jpg', 'webp', Storage::url('thumbnails/' . $photo->location));
             $photo->lazy_thumbnail = str_replace('jpg', 'webp', Storage::url('thumbnails/lazy/' . $photo->location));
+
+            // Set URL path of image.
+            $photo->location = Storage::url($photo->location);
         });
 
         static::created(function ($photo) {
