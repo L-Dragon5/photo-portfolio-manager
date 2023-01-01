@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { InertiaLink } from '@inertiajs/inertia-react';
-import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
+import { InertiaLink } from '@inertiajs/inertia-react';
 import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import React, { useState } from 'react';
+import Lightbox from 'react-image-lightbox';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 import BaseLayout from './BaseLayout';
 
@@ -95,6 +95,8 @@ const Album = ({ album, title, breadcrumbs }) => {
   const [toggler, setToggler] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
+  const { pathname } = window.location;
+
   const Breadcrumbs = () => (
     <Box className={classes.breadcrumbs}>
       <InertiaLink href="/" className={classes.breadcrumbLink}>
@@ -145,7 +147,7 @@ const Album = ({ album, title, breadcrumbs }) => {
               {album.albums?.map((childAlbum) => (
                 <InertiaLink
                   key={childAlbum.id}
-                  href={`${childAlbum.url_alias}/`}
+                  href={`${pathname}/${childAlbum.url_alias}/`}
                   className={
                     childAlbum.is_landscape
                       ? `${classes.gridBase} ${classes.imageLandscape}`
@@ -172,15 +174,17 @@ const Album = ({ album, title, breadcrumbs }) => {
           <>
             <Typography variant="h2" className={classes.heading}>
               Photos
-              <Button
-                variant="outlined"
-                color="primary"
-                size="large"
-                className={classes.button}
-                href={`/album-download/${album.id}`}
-              >
-                Download
-              </Button>
+              {false && (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  size="large"
+                  className={classes.button}
+                  href={`/album-download/${album._id}`}
+                >
+                  Download
+                </Button>
+              )}
             </Typography>
 
             <Box className={classes.grid}>

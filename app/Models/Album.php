@@ -10,6 +10,7 @@ class Album extends Model
 {
     use HasFactory;
     public $timestamps = false;
+    protected $keyType = 'int';
     protected $fillable = [
         'name',
         'album_id',

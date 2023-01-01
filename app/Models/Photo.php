@@ -10,6 +10,7 @@ class Photo extends Model
 {
     use HasFactory;
     public $timestamps = false;
+    protected $keyType = 'int';
     protected $fillable = [
         'album_id',
         'location',

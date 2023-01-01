@@ -18,21 +18,7 @@ return [
 
     'ssr' => [
 
-        'enabled' => true,
-
-        'sidecar' => [
-            // The Sidecar function that handles the SSR.
-            'handler' => \Hammerstone\Sidecar\Inertia\SSR::class,
-
-            // Log some stats on how long each Lambda request takes.
-            'timings' => false,
-
-            // Throw exceptions, should they occur.
-            'debug' => env('APP_DEBUG', false),
-
-            // Compile Ziggy routes with the Lambda function.
-            'ziggy' => false,
-        ],
+        'enabled' => false,
 
     ],
 

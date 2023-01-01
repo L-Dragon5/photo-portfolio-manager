@@ -42,6 +42,7 @@ functions:
         layers:
             - ${bref:layer.php-80-fpm}
             - ${bref-extra:mongodb-php-80}
+            - ${bref-extra:gd-php-80}
         events:
             - httpApi: '*'
     # This function lets us run artisan commands in Lambda

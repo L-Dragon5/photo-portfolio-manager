@@ -107,11 +107,11 @@ class AlbumController extends Controller
             foreach ($request->file('photos') as $photo) {
                 // Check if file with same name already exists in album.
                 // If it doesn't, upload and save photo.
-                $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
+                $check_existing_photo = Photo::where('location', $album->_id . '/' . $photo->getClientOriginalName())->first();
                 if (empty($check_existing_photo)) {
                     $stored_photo = new Photo;
-                    $stored_photo->album_id = $album->id;
-                    $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                    $stored_photo->album_id = $album->_id;
+                    $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName(), 'public');
 
                     [$width, $height] = getimagesize($photo);
                     if ($width > $height) {
@@ -149,7 +149,7 @@ class AlbumController extends Controller
                 $parent_album = Album::where('url_alias', $parent_alias)->firstOrFail();
 
                 $album = Album::where('url_alias', $url_alias)
-                    ->where('album_id', $parent_album->id)
+                    ->where('album_id', $parent_album->_id)
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
             } else {
@@ -270,11 +270,11 @@ class AlbumController extends Controller
                 foreach ($request->file('photos') as $photo) {
                     // Check if file with same name already exists in album.
                     // If it doesn't, upload and save photo.
-                    $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
+                    $check_existing_photo = Photo::where('location', $album->_id . '/' . $photo->getClientOriginalName())->first();
                     if (empty($check_existing_photo)) {
                         $stored_photo = new Photo;
-                        $stored_photo->album_id = $album->id;
-                        $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName(), 'public');
+                        $stored_photo->album_id = $album->_id;
+                        $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName(), 'public');
 
                         [$width, $height] = getimagesize($photo);
                         if ($width > $height) {
@@ -321,7 +321,7 @@ class AlbumController extends Controller
             }
 
             // Set all child albums to root.
-            $child_albums = Album::where('album_id', $album->id)->get();
+            $child_albums = Album::where('album_id', $album->_id)->get();
             foreach ($child_albums as $child) {
                 $child->album_id = 0;
                 $child->save();
@@ -345,14 +345,16 @@ class AlbumController extends Controller
     public function download($album)
     {
         try {
-            $album = Album::where('id', $album)
+            $album = Album::where('_id', intval($album))
                 ->with(['photos'])
                 ->firstOrFail();
-
+            
             $zip = Zip::create("$album->name.zip");
 
             foreach ($album->photos as $photo) {
-                $zip->add(Storage::get($photo->location));
+                if (!empty($photo->location)) {
+                    $zip->add($photo->location);
+                }
             }
 
             return $zip;
@@ -380,7 +382,7 @@ class AlbumController extends Controller
                     $album->parent = $album->parentAlbum->name;
                 }
 
-                $children = $this->buildTree($albums, $album['id']);
+                $children = $this->buildTree($albums, $album['_id']);
                 if ($children->isNotEmpty()) {
                     $album['child_albums'] = $children;
                 }
