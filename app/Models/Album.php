@@ -30,7 +30,7 @@ class Album extends Model
 
     public function photos()
     {
-        return $this->hasMany(Photo::class)->orderBy('id');
+        return $this->hasMany(Photo::class)->orderBy('_id');
     }
 
     protected static function booted()
@@ -39,9 +39,9 @@ class Album extends Model
             if ($album->cover_image !== 'placeholder.webp') {
                 Storage::delete($album->cover_image);
 
-                Storage::deleteDirectory($album->id);
-                Storage::deleteDirectory('thumbnails/' . $album->id);
-                Storage::deleteDirectory('thumbnails/lazy/' . $album->id);
+                Storage::deleteDirectory($album->_id);
+                Storage::deleteDirectory('thumbnails/' . $album->_id);
+                Storage::deleteDirectory('thumbnails/lazy/' . $album->_id);
             }
         });
     }

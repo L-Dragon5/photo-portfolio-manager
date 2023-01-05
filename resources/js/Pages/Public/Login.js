@@ -1,20 +1,20 @@
-import React, { useCallback } from 'react';
 import { Inertia } from '@inertiajs/inertia';
-
+import { useForm } from '@inertiajs/inertia-react';
 import {
+  Box,
   Button,
   CssBaseline,
-  TextField,
   Paper,
-  Box,
+  TextField,
   Typography,
 } from '@material-ui/core';
+import { pink, teal } from '@material-ui/core/colors';
 import {
   createMuiTheme,
   makeStyles,
   ThemeProvider,
 } from '@material-ui/core/styles';
-import { teal, pink } from '@material-ui/core/colors';
+import React, { useCallback } from 'react';
 
 const theme = createMuiTheme({
   palette: {
@@ -46,13 +46,15 @@ const useStyles = makeStyles((theme) => ({
 const LoginPage = () => {
   const classes = useStyles();
 
-  const handleSubmit = useCallback((e) => {
+  const { data, setData, post, processing, errors } = useForm({
+    email: '',
+    password: '',
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target);
-
-    Inertia.post('/admin/login', formData);
-  }, []);
+    post('/admin/login');
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -75,6 +77,8 @@ const LoginPage = () => {
             name="email"
             autoComplete="email"
             autoFocus
+            value={data.email}
+            onChange={(e) => setData('email', e.target.value)}
           />
           <TextField
             variant="outlined"
@@ -86,6 +90,8 @@ const LoginPage = () => {
             type="password"
             id="password"
             autoComplete="current-password"
+            value={data.password}
+            onChange={(e) => setData('password', e.target.value)}
           />
           <Button
             type="submit"
@@ -93,6 +99,7 @@ const LoginPage = () => {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={processing}
           >
             Sign In
           </Button>

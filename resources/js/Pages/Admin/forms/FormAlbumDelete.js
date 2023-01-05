@@ -22,7 +22,7 @@ const FormAlbumDelete = ({ closeDrawer, reloadPage, albumId, albumName }) => {
     Inertia.post(
       `/admin/album/destroy`,
       {
-        id: albumId,
+        _id: albumId,
       },
       {
         onSuccess: (page) => {

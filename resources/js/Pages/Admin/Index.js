@@ -1,27 +1,26 @@
-import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
-
 import {
   Box,
   Drawer,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import React, { useState } from 'react';
 
 import AdminLayout from './AdminLayout';
 import ButtonAdd from './buttons/ButtonAdd';
-import ButtonEdit from './buttons/ButtonEdit';
 import ButtonDelete from './buttons/ButtonDelete';
+import ButtonEdit from './buttons/ButtonEdit';
 import FormAlbumAdd from './forms/FormAlbumAdd';
-import FormAlbumEdit from './forms/FormAlbumEdit';
 import FormAlbumDelete from './forms/FormAlbumDelete';
+import FormAlbumEdit from './forms/FormAlbumEdit';
 
 const useStyles = makeStyles((theme) => ({
   contentRoot: {
@@ -91,7 +90,7 @@ const Index = ({ albums, availableAlbums }) => {
         {treeAlbums.map((album) => (
           <React.Fragment key={album.name}>
             <TableRow key={album.name}>
-              <TableCell>{album.id}</TableCell>
+              <TableCell>{album._id}</TableCell>
               <TableCell>
                 {'='.repeat(level)} {album.name}
               </TableCell>
@@ -100,7 +99,7 @@ const Index = ({ albums, availableAlbums }) => {
               <TableCell align="right">
                 <ButtonEdit onClick={() => handleEdit(album)} />
                 <ButtonDelete
-                  onClick={() => handleDelete(album.id, album.name)}
+                  onClick={() => handleDelete(album._id, album.name)}
                 />
               </TableCell>
             </TableRow>

@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
-
 import {
   Button,
   ButtonGroup,
-  InputLabel,
   FormControl,
-  Select,
+  InputLabel,
   MenuItem,
+  Select,
   TextField,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { DropzoneArea } from 'material-ui-dropzone';
+import React, { useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -87,7 +86,7 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
         >
           <MenuItem value={0}>Root</MenuItem>
           {availableAlbums?.map((album) => (
-            <MenuItem key={album.id} value={album.id}>
+            <MenuItem key={album._id} value={album._id}>
               {album.name}
             </MenuItem>
           ))}

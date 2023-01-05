@@ -62,7 +62,7 @@ class AlbumController extends Controller
     {
         $request->validate([
             'name' => 'string|required',
-            'album_id' => 'numeric|nullable',
+            'album_id' => 'nullable',
             'cover_image' => 'image|nullable',
             'url_alias' => 'string|nullable',
             'photos' => 'array|nullable',
@@ -111,7 +111,7 @@ class AlbumController extends Controller
                 if (empty($check_existing_photo)) {
                     $stored_photo = new Photo;
                     $stored_photo->album_id = $album->_id;
-                    $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName(), 'public');
+                    $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName());
 
                     [$width, $height] = getimagesize($photo);
                     if ($width > $height) {
@@ -213,16 +213,16 @@ class AlbumController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'id' => 'numeric|required',
+            '_id' => 'required',
             'name' => 'string|required',
-            'album_id' => 'numeric|required',
+            'album_id' => 'required',
             'cover_image' => 'image|nullable',
             'url_alias' => 'string|required',
             'photos' => 'array|nullable',
         ]);
 
         try {
-            $album = Album::findOrFail($request->id);
+            $album = Album::findOrFail($request->_id);
 
             // Check if name has changed.
             if (strcmp($request->name, $album->name) !== 0) {
@@ -274,7 +274,7 @@ class AlbumController extends Controller
                     if (empty($check_existing_photo)) {
                         $stored_photo = new Photo;
                         $stored_photo->album_id = $album->_id;
-                        $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName(), 'public');
+                        $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName());
 
                         [$width, $height] = getimagesize($photo);
                         if ($width > $height) {
@@ -307,12 +307,12 @@ class AlbumController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            'id' => 'numeric|required',
+            '_id' => 'required',
         ]);
 
         try {
             // Get album and photos to delete.
-            $album = Album::where('id', $request->id)
+            $album = Album::where('_id', $request->_id)
                 ->firstOrFail();
 
             // Iterate through photos and remove them.

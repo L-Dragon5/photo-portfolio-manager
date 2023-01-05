@@ -70,7 +70,7 @@ const Index = ({ albums }) => {
       <Box className={classes.grid}>
         {albums?.map((album) => (
           <InertiaLink
-            key={album.id}
+            key={album._id}
             href={`/${album.url_alias}/`}
             className={classes.gridBase}
           >

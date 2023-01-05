@@ -146,7 +146,7 @@ const Album = ({ album, title, breadcrumbs }) => {
             <Box className={classes.grid}>
               {album.albums?.map((childAlbum) => (
                 <InertiaLink
-                  key={childAlbum.id}
+                  key={childAlbum._id}
                   href={`${pathname}/${childAlbum.url_alias}/`}
                   className={
                     childAlbum.is_landscape
@@ -190,7 +190,7 @@ const Album = ({ album, title, breadcrumbs }) => {
             <Box className={classes.grid}>
               {album?.photos?.map((photo, index) => (
                 <Box
-                  key={photo.id}
+                  key={photo._id}
                   className={
                     photo.is_landscape
                       ? classes.imageLandscape

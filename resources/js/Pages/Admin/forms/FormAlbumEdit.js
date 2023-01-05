@@ -59,7 +59,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
     setSubmitting(true);
 
     const formData = new FormData(e.target);
-    formData.set('id', album.id);
+    formData.set('_id', album._id);
     formData.set('album_id', parentAlbum);
     photos.forEach((photo) => {
       formData.append('photos[]', photo);
@@ -73,11 +73,11 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
     });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (_id) => {
     Inertia.post(
       `/admin/photo/destroy`,
       {
-        id,
+        _id,
       },
       {
         onSuccess: (page) => {
@@ -128,9 +128,9 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
         >
           <MenuItem value={0}>Root</MenuItem>
           {availableAlbums?.map((a) => {
-            if (a.id !== album.id) {
+            if (a._id !== album._id) {
               return (
-                <MenuItem key={a.id} value={a.id}>
+                <MenuItem key={a._id} value={a._id}>
                   {a.name}
                 </MenuItem>
               );
@@ -161,9 +161,9 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
 
       <Box className={classes.thumbnails}>
         {album.photos?.map((photo) => (
-          <Box key={photo.id} className={classes.thumbnail}>
+          <Box key={photo._id} className={classes.thumbnail}>
             <img
-              key={photo.id}
+              key={photo._id}
               src={photo.location}
               className={classes.thumbnailImage}
               alt="thumbnail"
@@ -172,7 +172,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
             <DeleteForeverIcon
               className={classes.deleteIcon}
               title="Delete image forever"
-              onClick={() => handleDelete(photo.id)}
+              onClick={() => handleDelete(photo._id)}
             />
           </Box>
         ))}

@@ -61,12 +61,12 @@ class PhotoController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            'id' => 'numeric|required',
+            '_id' => 'numeric|required',
         ]);
 
         try {
             // Get photo to delete.
-            $photo = Photo::where('id', $request->id)
+            $photo = Photo::where('_id', $request->_id)
                 ->firstOrFail();
 
             // Delete photo object and entry from DB.
