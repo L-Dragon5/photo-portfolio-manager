@@ -7,7 +7,11 @@ provider:
     # The stage of the application, e.g. dev, production, staging… ('dev' is the default)
     stage: production
     runtime: provided.al2
+    apiGateway:
+        binaryMediaTypes:
+            - '*/*'
     environment:
+      BREF_BINARY_RESPONSES: '1'
       # ENV variable for Laravel
       AWS_BUCKET: !Ref PhotoPortfolioImages
     iam:
