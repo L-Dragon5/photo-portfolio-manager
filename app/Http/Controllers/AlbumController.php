@@ -157,7 +157,7 @@ class AlbumController extends Controller
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
             }
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
 
@@ -293,7 +293,7 @@ class AlbumController extends Controller
             } else {
                 return back()->withErrors('Something went wrong while trying to update album');
             }
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
     }
@@ -331,7 +331,7 @@ class AlbumController extends Controller
             $album->delete();
 
             return back()->with('message', 'Removed album');
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
     }
@@ -345,22 +345,30 @@ class AlbumController extends Controller
     public function download($album)
     {
         $album_id = is_numeric($album) ? intval($album) : $album;
-        try {
-            $album_db = Album::where('_id', $album_id)
-                ->with(['photos'])
-                ->firstOrFail();
-            
-            $zip = Zip::create("{$album_db->name}.zip");
-
-            foreach ($album_db->photos as $photo) {
-                if (!empty($photo->location)) {
-                    $zip->add($photo->location);
+        $filename = "zips/{$album_id}.zip";
+        $zip = Storage::has($filename);
+        if ($zip) {
+            return Storage::url($filename);
+        } else {
+            try {
+                $album_db = Album::where('_id', $album_id)
+                    ->with(['photos'])
+                    ->firstOrFail();
+                
+                $zip = Zip::create("{$album_id}.zip");
+    
+                foreach ($album_db->photos as $photo) {
+                    if (!empty($photo->location)) {
+                        $zip->add($photo->location);
+                    }
                 }
-            }
 
-            return $zip;
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
-            return back()->withErrors('Could not find album');
+                $zip->saveTo('s3://photo-portfolio-production-photoportfolioimages-zo958yhaaa6q/zips');
+
+                return Storage::url($filename);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                return back()->withErrors('Could not find album');
+            }
         }
     }
 

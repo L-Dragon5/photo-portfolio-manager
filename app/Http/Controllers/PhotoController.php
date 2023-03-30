@@ -73,7 +73,7 @@ class PhotoController extends Controller
             $photo->delete();
 
             return back()->with('message', 'Removed photo');
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find photo');
         }
     }
@@ -92,7 +92,7 @@ class PhotoController extends Controller
                 ->firstOrFail();
 
             return file_get_contents($photo_db->location);
-        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');
         }
     }

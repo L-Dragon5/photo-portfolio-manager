@@ -95,6 +95,7 @@ const Album = ({ album, title, breadcrumbs }) => {
 
   const [toggler, setToggler] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { pathname } = window.location;
 
@@ -151,6 +152,22 @@ const Album = ({ album, title, breadcrumbs }) => {
     );
   };
 
+  const albumDownload = () => {
+    setIsDownloading(true);
+    axios({
+      url: `/album-download/${album._id}`,
+      method: 'GET',
+    }).then((response) => {
+      const href = response.data;
+      const link = document.createElement('a');
+      link.href = href;
+      link.setAttribute('download', `${album._id}.zip`); // or any other extension
+      document.body.appendChild(link);
+      link.click();
+      setIsDownloading(false);
+    });
+  };
+
   if (album.albums.length || album.photos.length) {
     return (
       <BaseLayout title={title}>
@@ -197,9 +214,10 @@ const Album = ({ album, title, breadcrumbs }) => {
                 color="primary"
                 size="large"
                 className={classes.button}
-                href={`/album-download/${album._id}`}
+                onClick={albumDownload}
+                disabled={isDownloading}
               >
-                Download
+                {isDownloading ? 'Downloading...' : 'Download'}
               </Button>
             </Typography>
 
