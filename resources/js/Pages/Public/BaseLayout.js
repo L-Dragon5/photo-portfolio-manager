@@ -2,14 +2,14 @@ import { InertiaLink } from '@inertiajs/inertia-react';
 import { Box, CssBaseline } from '@material-ui/core';
 import { pink, teal } from '@material-ui/core/colors';
 import {
-  createMuiTheme,
+  createTheme,
   makeStyles,
   ThemeProvider,
 } from '@material-ui/core/styles';
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: teal,
     secondary: pink,

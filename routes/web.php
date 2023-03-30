@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
  * Form Routes *
  ***************/
 Route::get('/album-download/{album}', [AlbumController::class, 'download']);
+Route::get('/photo-download/{photo}', [PhotoController::class, 'download']);
 
 Route::group(['prefix' => 'admin'], function () {
     Route::post('login', [AuthController::class, 'login']);

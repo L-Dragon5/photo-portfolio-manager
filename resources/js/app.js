@@ -1,7 +1,7 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import { InertiaApp } from '@inertiajs/inertia-react';
 import { InertiaProgress } from '@inertiajs/progress';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 /**
  * First we will load all of this project's JavaScript dependencies which

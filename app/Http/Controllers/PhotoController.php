@@ -77,4 +77,23 @@ class PhotoController extends Controller
             return back()->withErrors('Could not find photo');
         }
     }
+
+    /**
+     * Send download link for photo.
+     *
+     * @param  string  $photo
+     * @return  \Illuminate\Http\Response
+     */
+    public function download($photo)
+    {
+        $photo_id = is_numeric($photo) ? intval($photo) : $photo;
+        try {
+            $photo_db = Photo::where('_id', $photo_id)
+                ->firstOrFail();
+
+            return file_get_contents($photo_db->location);
+        } catch (\Illuminate\Database\Eloqeunt\ModelNotFoundException $e) {
+            return back()->withErrors('Could not find album');
+        }
+    }
 }

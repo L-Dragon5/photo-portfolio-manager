@@ -5,6 +5,7 @@ import { InertiaLink } from '@inertiajs/inertia-react';
 import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import axios from 'axios';
 import React, { useState } from 'react';
 import Lightbox from 'react-image-lightbox';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -122,14 +123,31 @@ const Album = ({ album, title, breadcrumbs }) => {
     const location = album.photos[photoIndex]?.location;
     const name = location.split('/').pop();
 
+    const doClick = () => {
+      axios({
+        url: `/photo-download/${album.photos[photoIndex]?._id}`,
+        method: 'GET',
+        responseType: 'blob',
+      }).then((response) => {
+        const href = URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = href;
+        link.setAttribute('download', name); // or any other extension
+        document.body.appendChild(link);
+        link.click();
+      });
+    };
+
     return (
-      <a
-        download={name}
-        href={location}
-        style={{ color: 'white', position: 'relative', top: 7 }}
-      >
-        <GetAppIcon />
-      </a>
+      <GetAppIcon
+        onClick={doClick}
+        style={{
+          color: 'white',
+          position: 'relative',
+          top: 7,
+          cursor: 'pointer',
+        }}
+      />
     );
   };
 
@@ -174,17 +192,15 @@ const Album = ({ album, title, breadcrumbs }) => {
           <>
             <Typography variant="h2" className={classes.heading}>
               Photos
-              {false && (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="large"
-                  className={classes.button}
-                  href={`/album-download/${album._id}`}
-                >
-                  Download
-                </Button>
-              )}
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                className={classes.button}
+                href={`/album-download/${album._id}`}
+              >
+                Download
+              </Button>
             </Typography>
 
             <Box className={classes.grid}>

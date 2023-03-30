@@ -339,19 +339,20 @@ class AlbumController extends Controller
     /**
      * Zip archive all photos in album and send download.
      *
-     * @param  int  $album
+     * @param  string  $album
      * @return  \Illuminate\Http\Response
      */
     public function download($album)
     {
+        $album_id = is_numeric($album) ? intval($album) : $album;
         try {
-            $album = Album::where('_id', intval($album))
+            $album_db = Album::where('_id', $album_id)
                 ->with(['photos'])
                 ->firstOrFail();
             
-            $zip = Zip::create("$album->name.zip");
+            $zip = Zip::create("{$album_db->name}.zip");
 
-            foreach ($album->photos as $photo) {
+            foreach ($album_db->photos as $photo) {
                 if (!empty($photo->location)) {
                     $zip->add($photo->location);
                 }
