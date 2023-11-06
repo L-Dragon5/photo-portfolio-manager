@@ -1,4 +1,4 @@
-import { InertiaLink } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/react';
 import { Box, CssBaseline } from '@material-ui/core';
 import { pink, teal } from '@material-ui/core/colors';
 import {
@@ -39,14 +39,14 @@ const BaseLayout = ({ title, children }) => {
       </Helmet>
       <CssBaseline />
       <Box component="header" className={classes.header}>
-        <InertiaLink href="/">
+        <Link href="/">
           <div className={classes.logo}>
             <img
               src="https://photo-portfolio-production-photoportfolioimages-zo958yhaaa6q.s3.amazonaws.com/logo-white.webp"
               alt="logo"
             />
           </div>
-        </InertiaLink>
+        </Link>
       </Box>
       <Box component="main">{children}</Box>
     </ThemeProvider>

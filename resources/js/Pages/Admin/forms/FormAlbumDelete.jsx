@@ -1,8 +1,7 @@
-import React from 'react';
-import { Inertia } from '@inertiajs/inertia';
-
+import { router } from '@inertiajs/react';
 import { Button, ButtonGroup, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import React from 'react';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -19,7 +18,7 @@ const FormAlbumDelete = ({ closeDrawer, reloadPage, albumId, albumName }) => {
   const handleDeleteSubmit = (e) => {
     e.preventDefault();
 
-    Inertia.post(
+    router.post(
       `/admin/album/destroy`,
       {
         _id: albumId,

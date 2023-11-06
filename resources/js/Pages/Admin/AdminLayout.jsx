@@ -1,9 +1,8 @@
+import { CssBaseline } from '@material-ui/core';
+import { pink, teal } from '@material-ui/core/colors';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import React from 'react';
 import { Helmet } from 'react-helmet';
-
-import { CssBaseline } from '@material-ui/core';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import { teal, pink } from '@material-ui/core/colors';
 
 const theme = createMuiTheme({
   palette: {

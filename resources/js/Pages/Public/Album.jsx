@@ -1,7 +1,7 @@
 import 'react-image-lightbox/style.css';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
-import { InertiaLink } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/react';
 import { Box, Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import GetAppIcon from '@material-ui/icons/GetApp';
@@ -101,19 +101,19 @@ const Album = ({ album, title, breadcrumbs }) => {
 
   const Breadcrumbs = () => (
     <Box className={classes.breadcrumbs}>
-      <InertiaLink href="/" className={classes.breadcrumbLink}>
+      <Link href="/" className={classes.breadcrumbLink}>
         Home
-      </InertiaLink>
+      </Link>
       {breadcrumbs.map((breadcrumb) => (
         <React.Fragment key={breadcrumb.name}>
           {' '}
           &gt;{' '}
-          <InertiaLink
+          <Link
             href={`/${breadcrumb.url_alias}/`}
             className={classes.breadcrumbLink}
           >
             {breadcrumb.name}
-          </InertiaLink>
+          </Link>
         </React.Fragment>
       ))}{' '}
       &gt; {album.name}
@@ -180,7 +180,7 @@ const Album = ({ album, title, breadcrumbs }) => {
             </Typography>
             <Box className={classes.grid}>
               {album.albums?.map((childAlbum) => (
-                <InertiaLink
+                <Link
                   key={childAlbum._id}
                   href={`${pathname}/${childAlbum.url_alias}/`}
                   className={
@@ -199,7 +199,7 @@ const Album = ({ album, title, breadcrumbs }) => {
                   <Typography variant="body1" className={classes.title}>
                     {childAlbum.name}
                   </Typography>
-                </InertiaLink>
+                </Link>
               ))}
             </Box>
           </>

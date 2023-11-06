@@ -1,4 +1,4 @@
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import {
   Button,
   ButtonGroup,
@@ -39,7 +39,7 @@ const FormAlbumAdd = ({ closeDrawer, reloadPage, availableAlbums }) => {
       formData.append('photos[]', photo);
     });
 
-    Inertia.post(`/admin/album/store`, formData, {
+    router.post(`/admin/album/store`, formData, {
       onSuccess: (page) => {
         reloadPage();
         closeDrawer();

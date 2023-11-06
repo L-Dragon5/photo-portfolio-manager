@@ -1,4 +1,4 @@
-import { InertiaLink } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/react';
 import { Box, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import React from 'react';
@@ -69,7 +69,7 @@ const Index = ({ albums }) => {
     <BaseLayout title="Home">
       <Box className={classes.grid}>
         {albums?.map((album) => (
-          <InertiaLink
+          <Link
             key={album._id}
             href={`/${album.url_alias}/`}
             className={classes.gridBase}
@@ -82,7 +82,7 @@ const Index = ({ albums }) => {
             <Typography variant="body1" className={classes.title}>
               {album.name}
             </Typography>
-          </InertiaLink>
+          </Link>
         ))}
       </Box>
     </BaseLayout>

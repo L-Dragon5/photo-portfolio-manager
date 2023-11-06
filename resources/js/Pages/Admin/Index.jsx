@@ -1,4 +1,4 @@
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/react';
 import {
   Box,
   Drawer,
@@ -44,7 +44,7 @@ const Index = ({ albums, availableAlbums }) => {
   };
 
   const handleReload = () => {
-    Inertia.reload({
+    router.reload({
       only: ['albums'],
     });
   };

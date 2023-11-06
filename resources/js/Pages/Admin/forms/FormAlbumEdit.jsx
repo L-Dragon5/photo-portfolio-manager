@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import { Inertia } from '@inertiajs/inertia';
-
+import { router } from '@inertiajs/react';
 import {
   Box,
   Button,
   ButtonGroup,
-  InputLabel,
   FormControl,
-  Select,
+  InputLabel,
   MenuItem,
+  Select,
   TextField,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { DropzoneArea } from 'material-ui-dropzone';
+import React, { useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -65,7 +64,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
       formData.append('photos[]', photo);
     });
 
-    Inertia.post(`/admin/album/update`, formData, {
+    router.post(`/admin/album/update`, formData, {
       onSuccess: (page) => {
         reloadPage();
         closeDrawer();
@@ -74,7 +73,7 @@ const FormAlbumEdit = ({ closeDrawer, reloadPage, availableAlbums, album }) => {
   };
 
   const handleDelete = (_id) => {
-    Inertia.post(
+    router.post(
       `/admin/photo/destroy`,
       {
         _id,
