@@ -12,7 +12,8 @@
         @endif
     </title>
 
-    @vite('resources/js/app.js')
+    @viteReactRefresh
+    @vite('resources/js/app.jsx')
     @inertiaHead
 </head>
 <body>

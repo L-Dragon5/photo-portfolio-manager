@@ -1,17 +1,21 @@
-import 'react-image-lightbox/style.css';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
-import { Link } from '@inertiajs/react';
-import { Box, Button, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import axios from 'axios';
+import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Button,
+  Heading,
+} from '@chakra-ui/react';
+import { Link, router } from '@inertiajs/react';
 import React, { useState } from 'react';
-import Lightbox from 'react-image-lightbox';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 import BaseLayout from './BaseLayout';
 
+/*
 const useStyles = makeStyles((theme) => ({
   grid: {
     display: 'flex',
@@ -89,47 +93,41 @@ const useStyles = makeStyles((theme) => ({
     height: '100%',
   },
 }));
+*/
 
-const Album = ({ album, title, breadcrumbs }) => {
-  const classes = useStyles();
-
-  const [toggler, setToggler] = useState(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const { pathname } = window.location;
-
-  const Breadcrumbs = () => (
-    <Box className={classes.breadcrumbs}>
-      <Link href="/" className={classes.breadcrumbLink}>
+const Breadcrumbs = ({ albumName, breadcrumbs }) => (
+  <Breadcrumb separator={<ChevronRightIcon color="gray.500" />}>
+    <BreadcrumbItem>
+      <BreadcrumbLink as={Link} href="/">
         Home
-      </Link>
-      {breadcrumbs.map((breadcrumb) => (
-        <React.Fragment key={breadcrumb.name}>
-          {' '}
-          &gt;{' '}
-          <Link
-            href={`/${breadcrumb.url_alias}/`}
-            className={classes.breadcrumbLink}
-          >
-            {breadcrumb.name}
-          </Link>
-        </React.Fragment>
-      ))}{' '}
-      &gt; {album.name}
-    </Box>
-  );
+      </BreadcrumbLink>
+    </BreadcrumbItem>
 
-  const DownloadButton = () => {
-    const location = album.photos[photoIndex]?.location;
-    const name = location.split('/').pop();
+    {breadcrumbs?.map((breadcrumb) => (
+      <BreadcrumbItem>
+        <BreadcrumbLink as={Link} href={`/${breadcrumb.url_alias}/`}>
+          {breadcrumb.name}
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+    ))}
 
-    const doClick = () => {
-      axios({
+    <BreadcrumbItem isCurrentPage>
+      <BreadcrumbLink>{albumName}</BreadcrumbLink>
+    </BreadcrumbItem>
+  </Breadcrumb>
+);
+
+const DownloadButton = ({ album, photoIndex }) => {
+  const location = album.photos[photoIndex]?.location;
+  const name = location.split('/').pop();
+
+  const doClick = () => {
+    router
+      .get({
         url: `/photo-download/${album.photos[photoIndex]?._id}`,
-        method: 'GET',
         responseType: 'blob',
-      }).then((response) => {
+      })
+      .then((response) => {
         const href = URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = href;
@@ -137,41 +135,50 @@ const Album = ({ album, title, breadcrumbs }) => {
         document.body.appendChild(link);
         link.click();
       });
-    };
-
-    return (
-      <GetAppIcon
-        onClick={doClick}
-        style={{
-          color: 'white',
-          position: 'relative',
-          top: 7,
-          cursor: 'pointer',
-        }}
-      />
-    );
   };
+
+  return (
+    <DownloadIcon
+      onClick={doClick}
+      style={{
+        color: 'white',
+        position: 'relative',
+        top: 7,
+        cursor: 'pointer',
+      }}
+    />
+  );
+};
+
+const Album = ({ album, title, breadcrumbs }) => {
+  const [toggler, setToggler] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const { pathname } = window.location;
 
   const albumDownload = () => {
     setIsDownloading(true);
-    axios({
-      url: `/album-download/${album._id}`,
-      method: 'GET',
-    }).then((response) => {
-      const href = response.data;
-      const link = document.createElement('a');
-      link.href = href;
-      link.setAttribute('download', `${album._id}.zip`); // or any other extension
-      document.body.appendChild(link);
-      link.click();
-      setIsDownloading(false);
-    });
+    router
+      .get({
+        url: `/album-download/${album._id}`,
+      })
+      .then((response) => {
+        const href = response.data;
+        const link = document.createElement('a');
+        link.href = href;
+        link.setAttribute('download', `${album._id}.zip`); // or any other extension
+        document.body.appendChild(link);
+        link.click();
+        setIsDownloading(false);
+      });
   };
 
+  /*
   if (album.albums.length || album.photos.length) {
     return (
       <BaseLayout title={title}>
-        <Breadcrumbs />
+        <Breadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
 
         {album.albums.length > 0 && (
           <>
@@ -268,7 +275,9 @@ const Album = ({ album, title, breadcrumbs }) => {
                 onMoveNextRequest={() =>
                   setPhotoIndex((photoIndex + 1) % album.photos.length)
                 }
-                toolbarButtons={[<DownloadButton />]}
+                toolbarButtons={[
+                  <DownloadButton album={album} photoIndex={photoIndex} />,
+                ]}
               />
             )}
           </>
@@ -276,14 +285,15 @@ const Album = ({ album, title, breadcrumbs }) => {
       </BaseLayout>
     );
   }
+  */
 
   return (
     <BaseLayout title={title}>
-      <Breadcrumbs />
+      <Breadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
 
-      <Typography variant="h2" align="center" className={classes.heading}>
+      <Heading size="2xl" align="center">
         Nothing here
-      </Typography>
+      </Heading>
     </BaseLayout>
   );
 };

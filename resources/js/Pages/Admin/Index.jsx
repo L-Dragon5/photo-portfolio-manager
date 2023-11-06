@@ -1,4 +1,6 @@
-import { router } from '@inertiajs/react';
+import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { Button, IconButton } from '@chakra-ui/react';
+import { Head, router } from '@inertiajs/react';
 import {
   Box,
   Drawer,
@@ -14,10 +16,6 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import React, { useState } from 'react';
 
-import AdminLayout from './AdminLayout';
-import ButtonAdd from './buttons/ButtonAdd';
-import ButtonDelete from './buttons/ButtonDelete';
-import ButtonEdit from './buttons/ButtonEdit';
 import FormAlbumAdd from './forms/FormAlbumAdd';
 import FormAlbumDelete from './forms/FormAlbumDelete';
 import FormAlbumEdit from './forms/FormAlbumEdit';
@@ -84,39 +82,46 @@ const Index = ({ albums, availableAlbums }) => {
     setDrawerStatus(true);
   };
 
-  const AlbumRowComponent = ({ treeAlbums, level = 0 }) => {
+  const AlbumRowComponent = ({ treeAlbums = [], level = 0 }) => {
+    /*
     return (
-      <>
-        {treeAlbums.map((album) => (
-          <React.Fragment key={album.name}>
-            <TableRow key={album.name}>
-              <TableCell>{album._id}</TableCell>
-              <TableCell>
-                {'='.repeat(level)} {album.name}
-              </TableCell>
-              <TableCell>{album.parent}</TableCell>
-              <TableCell>{album.url_alias}</TableCell>
-              <TableCell align="right">
-                <ButtonEdit onClick={() => handleEdit(album)} />
-                <ButtonDelete
-                  onClick={() => handleDelete(album._id, album.name)}
-                />
-              </TableCell>
-            </TableRow>
-            {album.child_albums && (
-              <AlbumRowComponent
-                treeAlbums={album.child_albums}
-                level={level + 1}
+      {treeAlbums.map((album) => (
+        <React.Fragment key={album.name}>
+          <TableRow key={album.name}>
+            <TableCell>{album._id}</TableCell>
+            <TableCell>
+              {'='.repeat(level)} {album.name}
+            </TableCell>
+            <TableCell>{album.parent}</TableCell>
+            <TableCell>{album.url_alias}</TableCell>
+            <TableCell align="right">
+              <IconButton
+                aria-label="Edit album"
+                icon={<EditIcon />}
+                onClick={() => handleEdit(album)}
               />
-            )}
-          </React.Fragment>
-        ))}
-      </>
+              <IconButton
+                aria-label="Delete album"
+                icon={<DeleteIcon />}
+                onClick={() => handleDelete(album._id, album.name)}
+              />
+            </TableCell>
+          </TableRow>
+          {album.child_albums && (
+            <AlbumRowComponent
+              treeAlbums={album.child_albums}
+              level={level + 1}
+            />
+          )}
+        </React.Fragment>
+      ))}
     );
+    */
   };
 
   return (
-    <AdminLayout title="Albums">
+    <>
+      <Head title="Albums | Admin Panel" />
       <Box className={classes.contentRoot}>
         <Box className={classes.title}>
           <Typography component="span" variant="h4" className={classes.text}>
@@ -128,7 +133,7 @@ const Index = ({ albums, availableAlbums }) => {
           <Box>{drawerContent}</Box>
         </Drawer>
 
-        <ButtonAdd onClick={handleAdd}>Add Album</ButtonAdd>
+        <Button leftIcon={<AddIcon />} variant="solid" colorScheme="teal" onClick={handleAdd}>Add Album</Button>
 
         {albums?.length > 0 ? (
           <TableContainer component={Paper} style={{ maxHeight: '80vh' }}>
@@ -155,7 +160,7 @@ const Index = ({ albums, availableAlbums }) => {
           <Typography variant="body1">No albums</Typography>
         )}
       </Box>
-    </AdminLayout>
+    </>
   );
 };
 

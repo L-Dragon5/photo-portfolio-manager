@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PhotoController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,11 +21,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/album-download/{album}', [AlbumController::class, 'download']);
 Route::get('/photo-download/{photo}', [PhotoController::class, 'download']);
 
-Route::group(['prefix' => 'admin'], function () {
-    Route::post('login', [AuthController::class, 'login']);
-});
-
-Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
+Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::post('album/store', [AlbumController::class, 'store']);
     Route::post('album/update', [AlbumController::class, 'update']);
     Route::post('album/destroy', [AlbumController::class, 'destroy']);
@@ -36,12 +31,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
 /******************
  * Display Routes *
  ******************/
-Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
+Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::get('/', [AlbumController::class, 'adminIndex'])->name('admin-base');
 });
-
-// Authentication Routes
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 
 // Public Routes
 Route::get('/', [AlbumController::class, 'index'])->name('home');
