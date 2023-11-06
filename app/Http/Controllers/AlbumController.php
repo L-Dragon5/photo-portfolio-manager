@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\Event;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,16 +19,25 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::where('album_id', 0)->orderBy('name')->get();
-
-        foreach ($albums as &$album) {
-            // Retrieve URL for display.
-            $album->cover_image = Storage::url($album->cover_image);
-        }
+        $photos = Photo::where('is_featured', 1)->inRandomOrder()->limit(20)->get();
 
         return Inertia::render('Public/Index', [
-            'albums' => $albums,
-        ])->withViewData(['title' => 'Home']);
+            'featuredPhotos' => $photos,
+        ])->withViewData(['title' => 'Featured']);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexEvents()
+    {
+        $events = Event::orderBy('name', 'ASC')->get();
+
+        return Inertia::render('Public/Events', [
+            'events' => $events,
+        ])->withViewData(['title' => 'Events']);
     }
 
     /**
@@ -55,7 +65,6 @@ class AlbumController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -207,7 +216,6 @@ class AlbumController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request)
@@ -354,9 +362,9 @@ class AlbumController extends Controller
                 $album_db = Album::where('_id', $album_id)
                     ->with(['photos'])
                     ->firstOrFail();
-                
+
                 $zip = Zip::create("{$album_id}.zip");
-    
+
                 foreach ($album_db->photos as $photo) {
                     if (!empty($photo->location)) {
                         $zip->add($photo->location);
@@ -375,7 +383,6 @@ class AlbumController extends Controller
     /**
      * Turns albums flat array into tree.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $albums
      * @param  int  $parent_id
      * @return  \Illuminate\Support\Collection
      */
@@ -406,7 +413,6 @@ class AlbumController extends Controller
     /**
      * Turns albums tree into sorted flat array for available albums.
      *
-     * @param  \Illuminate\Support\Collection  $albums
      * @param  int  $level
      * @return  array
      */

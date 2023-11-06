@@ -15,10 +15,16 @@ class CreateAlbumsTable extends Migration
     {
         Schema::create('albums', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('album_id')->default(0);
+            $table->foreignId('event_id')->nullable();
+            $table->foreignId('album_id')->nullable();
             $table->string('name', 255);
-            $table->string('cover_image', 255)->nullable();
+            $table->text('notes');
+            $table->foreignId('cover_image')->nullable();
             $table->string('url_alias', 255);
+            $table->string('password', 16)->nullable();
+            $table->date('date_taken');
+            $table->boolean('is_public')->default(0);
+            $table->timestamps();
         });
     }
 

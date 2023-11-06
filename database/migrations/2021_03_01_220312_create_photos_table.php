@@ -15,9 +15,15 @@ class CreatePhotosTable extends Migration
     {
         Schema::create('photos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('album_id');
-            $table->string('location', 255);
-            $table->boolean('is_landscape');
+            $table->foreignId('album_id');
+            $table->string('filename', 255);
+            $table->boolean('is_landscape')->default(0);
+            $table->boolean('is_selected')->default(0);
+            $table->boolean('is_preview')->default(0);
+            $table->boolean('is_featured')->default(0);
+            $table->timestamps();
+
+            $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');
         });
     }
 

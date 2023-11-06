@@ -38,23 +38,23 @@ class GenerateZips extends Command
             if ($album->photos->isNotEmpty()) {
                 $album_id = is_numeric($album->_id) ? intval($album->_id) : $album->_id;
                 $filename = "zips/{$album_id}.zip";
-                
+
                 if (!Storage::has($filename)) {
                     try {
                         $album_db = Album::where('_id', $album_id)
                             ->with(['photos'])
                             ->firstOrFail();
-                        
+
                         $zip = Zip::create("{$album_id}.zip");
-            
+
                         foreach ($album_db->photos as $photo) {
                             if (!empty($photo->location)) {
                                 $zip->add($photo->location);
                             }
                         }
-        
+
                         $zip->saveTo('s3://photo-portfolio-production-photoportfolioimages-zo958yhaaa6q/zips');
-        
+
                         $this->info('Created new zip: ' . $filename);
                     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
                         $this->error('Could not find album: ' . $album_id);
@@ -66,7 +66,7 @@ class GenerateZips extends Command
         }
 
         $bar->finish();
-        
+
         return Command::SUCCESS;
     }
 }

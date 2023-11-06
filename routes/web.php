@@ -37,6 +37,8 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
 
 // Public Routes
 Route::get('/', [AlbumController::class, 'index'])->name('home');
+Route::get('/events', [AlbumController::class, 'indexEvents'])->name('events');
+Route::get('/on-location', [AlbumController::class, 'indexLocation'])->name('on-location');
 
 // Redirects
 Route::redirect('/misc-shoots/', '/location-shoots/');
