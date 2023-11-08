@@ -1,167 +1,195 @@
 import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
-import { Button, IconButton } from '@chakra-ui/react';
-import { Head, router } from '@inertiajs/react';
 import {
-  Box,
-  Drawer,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import React, { useState } from 'react';
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Button,
+  Heading,
+  HStack,
+  IconButton,
+  Image,
+  LinkBox,
+  LinkOverlay,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  SimpleGrid,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { Link, router } from '@inertiajs/react';
+import React, { useRef, useState } from 'react';
 
-import FormAlbumAdd from './forms/FormAlbumAdd';
-import FormAlbumDelete from './forms/FormAlbumDelete';
-import FormAlbumEdit from './forms/FormAlbumEdit';
+import AdminLayout from './components/AdminLayout';
+import AddAlbum from './forms/AddAlbum';
+import EditAlbum from './forms/EditAlbum';
 
-const useStyles = makeStyles((theme) => ({
-  contentRoot: {
-    flexGrow: 1,
-    padding: theme.spacing(2),
-  },
-  text: {
-    color: theme.palette.common.white,
-  },
-}));
+const Index = ({ albums, events }) => {
+  const [modifyAlbum, setModifyAlbum] = useState(null);
 
-const Index = ({ albums, availableAlbums }) => {
-  const classes = useStyles();
+  const {
+    isOpen: isAlertOpen,
+    onOpen: onAlertOpen,
+    onClose: onAlertClose,
+  } = useDisclosure();
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose,
+  } = useDisclosure();
+  const cancelRef = useRef();
 
-  const [drawerStatus, setDrawerStatus] = useState(false);
-  const [drawerContent, setDrawerContent] = useState('');
-
-  const handleClose = () => {
-    setDrawerStatus(false);
-    setDrawerContent('');
-  };
-
-  const handleReload = () => {
+  const reloadPage = () => {
     router.reload({
       only: ['albums'],
     });
   };
 
-  const handleAdd = () => {
-    setDrawerContent(
-      <FormAlbumAdd
-        closeDrawer={handleClose}
-        reloadPage={handleReload}
-        availableAlbums={availableAlbums}
-      />,
-    );
-    setDrawerStatus(true);
+  const handleModalClose = () => {
+    onModalClose();
+    setModifyAlbum(null);
   };
 
-  const handleEdit = (album) => {
-    setDrawerContent(
-      <FormAlbumEdit
-        closeDrawer={handleClose}
-        reloadPage={handleReload}
-        availableAlbums={availableAlbums}
-        album={album}
-      />,
-    );
-    setDrawerStatus(true);
+  const onEditClick = (e, albumObj) => {
+    e.stopPropagation();
+    setModifyAlbum(albumObj);
+    onModalOpen();
   };
 
-  const handleDelete = (albumId, albumName) => {
-    setDrawerContent(
-      <FormAlbumDelete
-        closeDrawer={handleClose}
-        reloadPage={handleReload}
-        albumId={albumId}
-        albumName={albumName}
-      />,
-    );
-    setDrawerStatus(true);
+  const onDeleteClick = (e, albumObj) => {
+    e.stopPropagation();
+    setModifyAlbum(albumObj);
+    onAlertOpen();
   };
 
-  const AlbumRowComponent = ({ treeAlbums = [], level = 0 }) => {
-    /*
-    return (
-      {treeAlbums.map((album) => (
-        <React.Fragment key={album.name}>
-          <TableRow key={album.name}>
-            <TableCell>{album._id}</TableCell>
-            <TableCell>
-              {'='.repeat(level)} {album.name}
-            </TableCell>
-            <TableCell>{album.parent}</TableCell>
-            <TableCell>{album.url_alias}</TableCell>
-            <TableCell align="right">
-              <IconButton
-                aria-label="Edit album"
-                icon={<EditIcon />}
-                onClick={() => handleEdit(album)}
-              />
-              <IconButton
-                aria-label="Delete album"
-                icon={<DeleteIcon />}
-                onClick={() => handleDelete(album._id, album.name)}
-              />
-            </TableCell>
-          </TableRow>
-          {album.child_albums && (
-            <AlbumRowComponent
-              treeAlbums={album.child_albums}
-              level={level + 1}
-            />
-          )}
-        </React.Fragment>
-      ))}
+  const handleDelete = () => {
+    router.post(
+      `/admin/album/destroy`,
+      {
+        id: modifyAlbum?.id,
+      },
+      {
+        onSuccess: () => {
+          reloadPage();
+          onAlertClose();
+        },
+      },
     );
-    */
   };
 
   return (
     <>
-      <Head title="Albums | Admin Panel" />
-      <Box className={classes.contentRoot}>
-        <Box className={classes.title}>
-          <Typography component="span" variant="h4" className={classes.text}>
-            Albums
-          </Typography>
-        </Box>
+      <HStack justifyContent="space-between" w="full">
+        <Heading size="lg">Albums</Heading>
+        <Button
+          leftIcon={<AddIcon />}
+          variant="solid"
+          colorScheme="teal"
+          onClick={onModalOpen}
+        >
+          Add Album
+        </Button>
+      </HStack>
+      <SimpleGrid minChildWidth="350px" spacing="12px" w="full">
+        {albums?.map((album) => (
+          <LinkBox key={album.id} rounded="md" position="relative">
+            <Image src={album.cover_image} alt={album.name} rounded="md" />
+            <LinkOverlay as={Link} href={`/${album.url_alias}/`}>
+              <Heading
+                size="sm"
+                position="absolute"
+                bottom="0"
+                textAlign="center"
+              >
+                {album.name}
+              </Heading>
+            </LinkOverlay>
+            <HStack>
+              <IconButton
+                aria-label="Edit album"
+                icon={<EditIcon />}
+                onClick={(e) =>
+                  onEditClick(e, { id: album.id, name: album.name })
+                }
+              />
+              <IconButton
+                aria-label="Delete album"
+                icon={<DeleteIcon />}
+                onClick={(e) =>
+                  onDeleteClick(e, { id: album.id, name: album.name })
+                }
+              />
+            </HStack>
+          </LinkBox>
+        ))}
+      </SimpleGrid>
 
-        <Drawer anchor="right" open={drawerStatus}>
-          <Box>{drawerContent}</Box>
-        </Drawer>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        closeOnOverlayClick={false}
+        scrollBehavior="inside"
+        size="5xl"
+      >
+        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
+        <ModalContent>
+          <ModalHeader>
+            {modifyAlbum !== null
+              ? `Edit Album - ${modifyAlbum.name}`
+              : 'Add Album'}
+          </ModalHeader>
+          <ModalBody>
+            {modifyAlbum !== null ? (
+              <EditAlbum
+                reloadPage={reloadPage}
+                onClose={onModalClose}
+                events={events}
+              />
+            ) : (
+              <AddAlbum
+                reloadPage={reloadPage}
+                onClose={onModalClose}
+                events={events}
+              />
+            )}
+          </ModalBody>
+          <ModalCloseButton />
+        </ModalContent>
+      </Modal>
 
-        <Button leftIcon={<AddIcon />} variant="solid" colorScheme="teal" onClick={handleAdd}>Add Album</Button>
-
-        {albums?.length > 0 ? (
-          <TableContainer component={Paper} style={{ maxHeight: '80vh' }}>
-            <Table
-              stickyHeader
-              className={classes.table}
-              aria-label="table of album"
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Parent</TableCell>
-                  <TableCell>URL Alias</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <AlbumRowComponent treeAlbums={albums} />
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Typography variant="body1">No albums</Typography>
-        )}
-      </Box>
+      <AlertDialog
+        isOpen={isAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onAlertClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Album - {modifyAlbum?.name}
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              Are you sure? You can't undo this action afterwards.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onAlertClose}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDelete}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };
+
+Index.layout = (page) => <AdminLayout title="All Albums">{page}</AdminLayout>;
 
 export default Index;

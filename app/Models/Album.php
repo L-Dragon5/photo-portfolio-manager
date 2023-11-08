@@ -11,9 +11,14 @@ class Album extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'event_id',
         'album_id',
+        'notes',
         'cover_image',
         'url_alias',
+        'password',
+        'date_taken',
+        'is_public',
     ];
 
     public function parentAlbum()

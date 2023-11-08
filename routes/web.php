@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 /***************
  * Form Routes *
  ***************/
-Route::get('/album-download/{album}', [AlbumController::class, 'download']);
+Route::get('/album-download/{album}', [PublicController::class, 'download']);
 Route::get('/photo-download/{photo}', [PhotoController::class, 'download']);
 
 Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
@@ -26,6 +28,10 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::post('album/update', [AlbumController::class, 'update']);
     Route::post('album/destroy', [AlbumController::class, 'destroy']);
     Route::post('photo/destroy', [PhotoController::class, 'destroy']);
+
+    Route::resource('events', EventController::class)->except([
+        'create', 'edit'
+    ]);
 });
 
 /******************
@@ -36,9 +42,9 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
 });
 
 // Public Routes
-Route::get('/', [AlbumController::class, 'index'])->name('home');
-Route::get('/events', [AlbumController::class, 'indexEvents'])->name('events');
-Route::get('/on-location', [AlbumController::class, 'indexLocation'])->name('on-location');
+Route::get('/', [PublicController::class, 'index'])->name('home');
+Route::get('/events', [PublicController::class, 'indexEvents'])->name('events');
+Route::get('/on-location', [PublicController::class, 'indexLocation'])->name('on-location');
 
 // Redirects
 Route::redirect('/misc-shoots/', '/location-shoots/');

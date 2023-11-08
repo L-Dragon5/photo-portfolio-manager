@@ -59,6 +59,11 @@ class EventsTableSeeder extends Seeder
                 'end_date' => '2019-11-17',
             ],
             [
+                'name' => 'ANYC 2023',
+                'start_date' => '2023-11-17',
+                'end_date' => '2023-11-19',
+            ],
+            [
                 'name' => 'AUSA 2016',
                 'start_date' => '2016-10-21',
                 'end_date' => '2016-10-23',
@@ -77,11 +82,6 @@ class EventsTableSeeder extends Seeder
                 'name' => 'AWA 2023',
                 'start_date' => '2023-10-26',
                 'end_date' => '2023-10-29',
-            ],
-            [
-                'name' => 'Buffalo Cherry Blossom Festival 2019',
-                'start_date' => null,
-                'end_date' => null,
             ],
             [
                 'name' => 'CharaExpo 2018',
@@ -140,18 +140,18 @@ class EventsTableSeeder extends Seeder
             ],
             [
                 'name' => 'Cosplay Snow Festival 2014',
-                'start_date' => null,
-                'end_date' => null,
+                'start_date' => '2014-12-06',
+                'end_date' => '2014-12-06',
             ],
             [
                 'name' => 'Cosplay Snow Festival 2016',
-                'start_date' => null,
-                'end_date' => null,
+                'start_date' => '2016-12-03',
+                'end_date' => '2016-12-03',
             ],
             [
                 'name' => 'Cosplay Snow Festival 2019',
-                'start_date' => null,
-                'end_date' => null,
+                'start_date' => '2019-01-26',
+                'end_date' => '2019-01-26',
             ],
             [
                 'name' => 'Castle Point Anime Con 2023',
@@ -160,13 +160,13 @@ class EventsTableSeeder extends Seeder
             ],
             [
                 'name' => 'DC Sakura Matsuri 2022',
-                'start_date' => null,
-                'end_date' => null,
+                'start_date' => '2022-04-09',
+                'end_date' => '2022-04-10',
             ],
             [
                 'name' => 'DC Sakura Matsuri 2023',
-                'start_date' => null,
-                'end_date' => null,
+                'start_date' => '2023-04-15',
+                'end_date' => '2023-04-16',
             ],
             [
                 'name' => 'Fan World 2016',

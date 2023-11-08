@@ -23,7 +23,7 @@ class AlbumController extends Controller
 
         return Inertia::render('Public/Index', [
             'featuredPhotos' => $photos,
-        ])->withViewData(['title' => 'Featured']);
+        ]);
     }
 
     /**
@@ -37,7 +37,7 @@ class AlbumController extends Controller
 
         return Inertia::render('Public/Events', [
             'events' => $events,
-        ])->withViewData(['title' => 'Events']);
+        ]);
     }
 
     /**
@@ -47,9 +47,8 @@ class AlbumController extends Controller
      */
     public function adminIndex()
     {
-        $available_albums = Album::with(['photos'])->orderBy('name')->get();
-        $albums = $this->buildTree($available_albums);
-        $flatTreeAlbums = $this->flattenTree($albums);
+        $albums = Album::orderBy('date_taken', 'DESC')->get();
+        $events = Event::orderBy('name', 'ASC')->get();
 
         foreach ($albums as &$album) {
             // Retrieve URL for display.
@@ -58,8 +57,8 @@ class AlbumController extends Controller
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
-            'availableAlbums' => $flatTreeAlbums,
-        ])->withViewData(['title' => 'Admin Home']);
+            'events' => $events
+        ]);
     }
 
     /**
