@@ -44,7 +44,12 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
 // Public Routes
 Route::get('/', [PublicController::class, 'index'])->name('home');
 Route::get('/events', [PublicController::class, 'indexEvents'])->name('events');
+Route::get('/events/{id}', [PublicController::class, 'showEvent']);
+Route::get('/events/{id}/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
 Route::get('/on-location', [PublicController::class, 'indexLocation'])->name('on-location');
+Route::get('/on-location/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
+Route::get('/press', [PublicController::class, 'indexPress'])->name('press');
+Route::get('/press/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
 
 // Redirects
 Route::redirect('/misc-shoots/', '/location-shoots/');

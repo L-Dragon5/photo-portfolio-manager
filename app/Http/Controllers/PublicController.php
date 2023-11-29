@@ -13,7 +13,7 @@ use Zip;
 class PublicController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display featured photos that I like.
      *
      * @return \Illuminate\Http\Response
      */
@@ -27,9 +27,9 @@ class PublicController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display list of events.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function indexEvents()
     {
@@ -41,9 +41,9 @@ class PublicController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display listing of location shoots..
      *
-     * @return \Illuminate\Http\Response
+     * @return \Inertia\Response
      */
     public function indexLocation()
     {
@@ -58,29 +58,79 @@ class PublicController extends Controller
     }
 
     /**
+     * Display listing of press shoots.
+     * 
+     * @return \Inertia\Response
+     */
+    public function indexPress()
+    {
+        $albums = Album::where([
+            ['is_public', '=',  true],
+            ['is_press', '=', true],
+        ])->orderBy('name', 'ASC')->get();
+
+        return Inertia::render('Public/Press', [
+            'albums' => $albums,
+        ]);
+    }
+
+    /**
+     * Display albums of specified event.
+     * 
+     * @return \Inertia\Response
+     */
+    public function showEvent($id)
+    {
+        $event = Event::find($id);
+
+        return Inertia::render('Public/SingleEvent', [
+            'event' => $event,
+            'albums' => $event->albums,
+        ]);
+    }
+
+    /**
      * Display the specified resource.
      *
-     * @param  string  $alias
+     * @param \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function show($alias)
+    public function showAlbum(Request $request)
     {
-        $aliases = explode('/', $alias);
-        $url_alias = array_pop($aliases);
+        $queries = explode('/', $request->getRequestUri());
+        array_shift($queries);
+
+        $type = array_shift($queries);
+        $eventId = null;
+        if ($type === 'events') {
+            $eventId = array_shift($queries);
+        }
+
+        $albumToPresentId = array_pop($queries);
 
         try {
-            if (count($aliases) > 0) {
-                $parent_alias = end($aliases);
-                $parent_album = Album::where('url_alias', $parent_alias)->firstOrFail();
-
+            if (count($queries) > 0) {
+                $parentAlbumId = end($queries);
+                if (is_numeric($parentAlbumId)) {
+                    $parentAlbum = Album::findOrFail($parentAlbumId);
+                } else {
+                    $parentAlbum = Album::where('url_alias', $parentAlbumId)->firstOrFail();
+                }
+                
                 $album = Album::where('url_alias', $url_alias)
                     ->where('album_id', $parent_album->_id)
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
             } else {
-                $album = Album::where('url_alias', $url_alias)
+                if (is_numeric($albumToPresentId)) {
+                    $album = Album::findOrFail($albumToPresentId)
+                    ->with(['albums', 'photos']);
+                } else {
+                    $album = Album::where('url_alias', $albumToPresentId)
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
+                }
+               
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find album');

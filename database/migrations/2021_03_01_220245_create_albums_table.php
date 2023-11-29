@@ -23,6 +23,7 @@ class CreateAlbumsTable extends Migration
             $table->string('url_alias', 255);
             $table->string('password', 16)->nullable();
             $table->date('date_taken');
+            $table->boolean('is_press')->default(0);
             $table->boolean('is_public')->default(0);
             $table->timestamps();
         });
