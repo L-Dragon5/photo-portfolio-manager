@@ -15,7 +15,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { Link, usePage } from '@inertiajs/react';
-import React from 'react';
 
 const LinkItems = [
   { name: 'Featured', href: '/' },

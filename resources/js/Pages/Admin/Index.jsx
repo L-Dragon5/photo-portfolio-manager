@@ -23,7 +23,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { Link, router } from '@inertiajs/react';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddAlbum from './forms/AddAlbum';

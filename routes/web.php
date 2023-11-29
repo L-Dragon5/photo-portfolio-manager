@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Route;
  * Form Routes *
  ***************/
 Route::get('/album-download/{album}', [PublicController::class, 'download']);
-Route::get('/photo-download/{photo}', [PhotoController::class, 'download']);
 
 Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::post('album/store', [AlbumController::class, 'store']);

@@ -6,7 +6,6 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { Link } from '@inertiajs/react';
-import React from 'react';
 
 import BaseLayout from './components/BaseLayout';
 

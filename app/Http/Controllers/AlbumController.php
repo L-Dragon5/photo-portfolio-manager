@@ -115,11 +115,11 @@ class AlbumController extends Controller
             foreach ($request->file('photos') as $photo) {
                 // Check if file with same name already exists in album.
                 // If it doesn't, upload and save photo.
-                $check_existing_photo = Photo::where('location', $album->_id . '/' . $photo->getClientOriginalName())->first();
+                $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
                 if (empty($check_existing_photo)) {
                     $stored_photo = new Photo;
-                    $stored_photo->album_id = $album->_id;
-                    $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName());
+                    $stored_photo->album_id = $album->id;
+                    $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName());
 
                     [$width, $height] = getimagesize($photo);
                     if ($width > $height) {
@@ -157,7 +157,7 @@ class AlbumController extends Controller
                 $parent_album = Album::where('url_alias', $parent_alias)->firstOrFail();
 
                 $album = Album::where('url_alias', $url_alias)
-                    ->where('album_id', $parent_album->_id)
+                    ->where('album_id', $parent_album->id)
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
             } else {
@@ -220,7 +220,7 @@ class AlbumController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            '_id' => 'required',
+            'id' => 'required',
             'name' => 'string|required',
             'album_id' => 'required',
             'cover_image' => 'image|nullable',
@@ -229,7 +229,7 @@ class AlbumController extends Controller
         ]);
 
         try {
-            $album = Album::findOrFail($request->_id);
+            $album = Album::findOrFail($request->id);
 
             // Check if name has changed.
             if (strcmp($request->name, $album->name) !== 0) {
@@ -277,11 +277,11 @@ class AlbumController extends Controller
                 foreach ($request->file('photos') as $photo) {
                     // Check if file with same name already exists in album.
                     // If it doesn't, upload and save photo.
-                    $check_existing_photo = Photo::where('location', $album->_id . '/' . $photo->getClientOriginalName())->first();
+                    $check_existing_photo = Photo::where('location', $album->id . '/' . $photo->getClientOriginalName())->first();
                     if (empty($check_existing_photo)) {
                         $stored_photo = new Photo;
-                        $stored_photo->album_id = $album->_id;
-                        $stored_photo->location = $photo->storeAs($album->_id, $photo->getClientOriginalName());
+                        $stored_photo->album_id = $album->id;
+                        $stored_photo->location = $photo->storeAs($album->id, $photo->getClientOriginalName());
 
                         [$width, $height] = getimagesize($photo);
                         if ($width > $height) {
@@ -314,12 +314,12 @@ class AlbumController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            '_id' => 'required',
+            'id' => 'required',
         ]);
 
         try {
             // Get album and photos to delete.
-            $album = Album::where('_id', $request->_id)
+            $album = Album::where('id', $request->id)
                 ->firstOrFail();
 
             // Iterate through photos and remove them.
@@ -328,7 +328,7 @@ class AlbumController extends Controller
             }
 
             // Set all child albums to root.
-            $child_albums = Album::where('album_id', $album->_id)->get();
+            $child_albums = Album::where('album_id', $album->id)->get();
             foreach ($child_albums as $child) {
                 $child->album_id = 0;
                 $child->save();
@@ -358,7 +358,7 @@ class AlbumController extends Controller
             return Storage::url($filename);
         } else {
             try {
-                $album_db = Album::where('_id', $album_id)
+                $album_db = Album::where('id', $album_id)
                     ->with(['photos'])
                     ->firstOrFail();
 
@@ -397,7 +397,7 @@ class AlbumController extends Controller
                     $album->parent = $album->parentAlbum->name;
                 }
 
-                $children = $this->buildTree($albums, $album['_id']);
+                $children = $this->buildTree($albums, $album['id']);
                 if ($children->isNotEmpty()) {
                     $album['child_albums'] = $children;
                 }

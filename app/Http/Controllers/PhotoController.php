@@ -56,12 +56,12 @@ class PhotoController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            '_id' => 'numeric|required',
+            'id' => 'numeric|required',
         ]);
 
         try {
             // Get photo to delete.
-            $photo = Photo::where('_id', $request->_id)
+            $photo = Photo::where('id', $request->id)
                 ->firstOrFail();
 
             // Delete photo object and entry from DB.
@@ -70,25 +70,6 @@ class PhotoController extends Controller
             return back()->with('message', 'Removed photo');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->withErrors('Could not find photo');
-        }
-    }
-
-    /**
-     * Send download link for photo.
-     *
-     * @param  string  $photo
-     * @return  \Illuminate\Http\Response
-     */
-    public function download($photo)
-    {
-        $photo_id = is_numeric($photo) ? intval($photo) : $photo;
-        try {
-            $photo_db = Photo::where('_id', $photo_id)
-                ->firstOrFail();
-
-            return file_get_contents($photo_db->location);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return back()->withErrors('Could not find album');
         }
     }
 }

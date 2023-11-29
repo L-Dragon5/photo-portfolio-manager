@@ -1,6 +1,5 @@
 import { Box, Flex, useColorModeValue } from '@chakra-ui/react';
 import { Head } from '@inertiajs/react';
-import React from 'react';
 
 import SidebarNav from './SidebarNav';
 

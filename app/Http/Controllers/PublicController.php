@@ -117,8 +117,8 @@ class PublicController extends Controller
                     $parentAlbum = Album::where('url_alias', $parentAlbumId)->firstOrFail();
                 }
                 
-                $album = Album::where('url_alias', $url_alias)
-                    ->where('album_id', $parent_album->_id)
+                $album = Album::where('url_alias', $albumToPresentId)
+                    ->where('album_id', $parentAlbumId)
                     ->with(['albums', 'photos'])
                     ->firstOrFail();
             } else {
@@ -133,7 +133,7 @@ class PublicController extends Controller
                
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return back()->withErrors('Could not find album');
+            return Inertia::render('Public/AlbumNotFound');
         }
 
         // Set landscape flag for child album cover images.
@@ -152,11 +152,10 @@ class PublicController extends Controller
         }
 
         // Create breadcrumbs.
-        $title = $album->name;
         $breadcrumbs = [];
-        if (count($aliases) > 1) {
-            for ($i = 0; $i < count($aliases); $i++) {
-                $parentAlbum = Album::where('url_alias', $aliases[$i])->first();
+        if (count($queries) > 1) {
+            for ($i = 0; $i < count($queries); $i++) {
+                $parentAlbum = Album::where('url_alias', $queries[$i])->first();
 
                 if ($i > 0) {
                     $breadcrumbs[] = ['url_alias' => $breadcrumbs[$i - 1]['url_alias'] . '/' . $parentAlbum->url_alias, 'name' => $parentAlbum->name];
@@ -164,8 +163,8 @@ class PublicController extends Controller
                     $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
                 }
             }
-        } elseif (count($aliases) === 1) {
-            $parentAlbum = Album::where('url_alias', reset($aliases))->first();
+        } elseif (count($queries) === 1) {
+            $parentAlbum = Album::where('url_alias', reset($queries))->first();
             $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
         }
 
@@ -174,9 +173,8 @@ class PublicController extends Controller
 
         return Inertia::render('Public/Album', [
             'album' => $album,
-            'title' => $title,
-            'breadcrumbs' => $breadcrumbs,
-        ])->withViewData(['title' => $title]);
+            'breadcrumbs' => isset($breadcrumbs) ? $breadcrumbs : [],
+        ]);
     }
 
     /**
@@ -194,7 +192,7 @@ class PublicController extends Controller
             return Storage::url($filename);
         } else {
             try {
-                $album_db = Album::where('_id', $album_id)
+                $album_db = Album::where('id', $album_id)
                     ->with(['photos'])
                     ->firstOrFail();
 

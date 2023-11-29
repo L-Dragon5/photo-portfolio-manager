@@ -36,12 +36,12 @@ class GenerateZips extends Command
 
         foreach ($albums as $album) {
             if ($album->photos->isNotEmpty()) {
-                $album_id = is_numeric($album->_id) ? intval($album->_id) : $album->_id;
+                $album_id = is_numeric($album->id) ? intval($album->id) : $album->id;
                 $filename = "zips/{$album_id}.zip";
 
                 if (!Storage::has($filename)) {
                     try {
-                        $album_db = Album::where('_id', $album_id)
+                        $album_db = Album::where('id', $album_id)
                             ->with(['photos'])
                             ->firstOrFail();
 

@@ -20,11 +20,11 @@ const EditAlbum = ({ events, reloadPage, onClose }) => {
     });
   };
 
-  const handleDelete = (_id) => {
+  const handleDelete = (id) => {
     router.post(
       `/admin/photo/destroy`,
       {
-        _id,
+        id,
       },
       {
         onSuccess: () => {
