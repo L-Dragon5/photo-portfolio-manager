@@ -30,39 +30,25 @@ import { router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
-import AddEvent from './forms/AddEvent';
-import EditEvent from './forms/EditEvent';
+import AddCosplayer from './forms/AddCosplayer';
+import EditCosplayer from './forms/EditCosplayer';
 
-const Events = ({ events }) => {
+const Cosplayers = ({ cosplayers }) => {
   const [sortingOption, setSortingOption] = useState('name-asc');
-  const [activeEvents, setActiveEvents] = useState(events);
-  const [modifyEvent, setModifyEvent] = useState(null);
+  const [activeCosplayers, setActiveCosplayers] = useState(cosplayers);
+  const [modifyCosplayer, setModifyCosplayer] = useState(null);
 
   useEffect(() => {
     if (sortingOption === 'name-asc') {
-      setActiveEvents(events);
+      setActiveCosplayers(cosplayers);
     } else if (sortingOption === 'name-desc') {
-      setActiveEvents(events.toReversed());
-    } else if (sortingOption === 'date-asc') {
-      setActiveEvents(
-        events.toSorted(
-          (a, b) =>
-            new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
-        ),
-      );
-    } else if (sortingOption === 'date-desc') {
-      setActiveEvents(
-        events.toSorted(
-          (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
-        ),
-      );
+      setActiveCosplayers(cosplayers.toReversed());
     }
   }, [sortingOption]);
 
   useEffect(() => {
-    setActiveEvents(events);
-  }, [events]);
+    setActiveCosplayers(cosplayers);
+  }, [cosplayers]);
 
   const {
     isOpen: isAlertOpen,
@@ -78,27 +64,27 @@ const Events = ({ events }) => {
 
   const reloadPage = () => {
     router.reload({
-      only: ['events'],
+      only: ['cosplayers'],
     });
   };
 
   const handleModalClose = () => {
     onModalClose();
-    setModifyEvent(null);
+    setModifyCosplayer(null);
   };
 
-  const onEditClick = (e, eventObj) => {
-    setModifyEvent(eventObj);
+  const onEditClick = (e, cosplayerObj) => {
+    setModifyCosplayer(cosplayerObj);
     onModalOpen();
   };
 
-  const onDeleteClick = (e, eventObj) => {
-    setModifyEvent(eventObj);
+  const onDeleteClick = (e, cosplayerObj) => {
+    setModifyCosplayer(cosplayerObj);
     onAlertOpen();
   };
 
   const handleDelete = () => {
-    router.delete(`/admin/events/${modifyEvent.id}`, {
+    router.delete(`/admin/cosplayers/${modifyCosplayer.id}`, {
       onSuccess: () => {
         reloadPage();
         onAlertClose();
@@ -115,8 +101,6 @@ const Events = ({ events }) => {
         >
           <option value="name-asc">Name - A to Z</option>
           <option value="name-desc">Name - Z to A</option>
-          <option value="date-asc">Date - Oldest to Recent</option>
-          <option value="date-desc">Date - Recent to Oldest</option>
         </Select>
         <Button
           colorScheme="teal"
@@ -124,7 +108,7 @@ const Events = ({ events }) => {
           w="50%"
           onClick={onModalOpen}
         >
-          Add Event
+          Add Cosplayer
         </Button>
       </HStack>
 
@@ -133,36 +117,50 @@ const Events = ({ events }) => {
           <Thead>
             <Tr>
               <Th>Name</Th>
-              <Th>URL Alias</Th>
-              <Th>Start Date</Th>
-              <Th>End Date</Th>
+              <Th>Instagram</Th>
+              <Th>Twitter</Th>
               <Th>Options</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {activeEvents?.map((event) => (
-              <Tr key={event.id}>
-                <Td>{event.name}</Td>
-                <Td>{event?.url_alias ?? 'N/A'}</Td>
+            {activeCosplayers?.map((cosplayer) => (
+              <Tr key={cosplayer.id}>
+                <Td>{cosplayer.name}</Td>
                 <Td>
-                  {event.start_date &&
-                    new Date(event.start_date).toLocaleDateString()}
+                  {cosplayer?.instagram ? (
+                    <Link
+                      href={`https://instagram.com/${cosplayer.instagram}`}
+                      isExternal
+                    >
+                      {cosplayer.instagram}
+                    </Link>
+                  ) : (
+                    'N/A'
+                  )}
                 </Td>
                 <Td>
-                  {event.end_date &&
-                    new Date(event.end_date).toLocaleDateString()}
+                  {cosplayer?.twitter ? (
+                    <Link
+                      href={`https://x.com/${cosplayer.twitter}`}
+                      isExternal
+                    >
+                      {cosplayer.twitter}
+                    </Link>
+                  ) : (
+                    'N/A'
+                  )}
                 </Td>
                 <Td>
                   <HStack>
                     <IconButton
-                      aria-label="Edit event"
+                      aria-label="Edit cosplayer"
                       icon={<EditIcon />}
-                      onClick={(e) => onEditClick(e, event)}
+                      onClick={(e) => onEditClick(e, cosplayer)}
                     />
                     <IconButton
-                      aria-label="Delete event"
+                      aria-label="Delete cosplayer"
                       icon={<DeleteIcon />}
-                      onClick={(e) => onDeleteClick(e, event)}
+                      onClick={(e) => onDeleteClick(e, cosplayer)}
                     />
                   </HStack>
                 </Td>
@@ -182,19 +180,19 @@ const Events = ({ events }) => {
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
         <ModalContent>
           <ModalHeader>
-            {modifyEvent !== null
-              ? `Edit Event - ${modifyEvent.name}`
-              : 'Add Event'}
+            {modifyCosplayer !== null
+              ? `Edit Cosplayer - ${modifyCosplayer.name}`
+              : 'Add Cosplayer'}
           </ModalHeader>
           <ModalBody>
-            {modifyEvent !== null ? (
-              <EditEvent
+            {modifyCosplayer !== null ? (
+              <EditCosplayer
                 reloadPage={reloadPage}
                 onClose={onModalClose}
-                event={modifyEvent}
+                cosplayer={modifyCosplayer}
               />
             ) : (
-              <AddEvent reloadPage={reloadPage} onClose={onModalClose} />
+              <AddCosplayer reloadPage={reloadPage} onClose={onModalClose} />
             )}
           </ModalBody>
           <ModalCloseButton />
@@ -209,7 +207,7 @@ const Events = ({ events }) => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Event - {modifyEvent?.name}
+              Delete Cosplayer - {modifyCosplayer?.name}
             </AlertDialogHeader>
             <AlertDialogBody>
               Are you sure? You can't undo this action afterwards.
@@ -229,6 +227,8 @@ const Events = ({ events }) => {
   );
 };
 
-Events.layout = (page) => <AdminLayout title="All Events">{page}</AdminLayout>;
+Cosplayers.layout = (page) => (
+  <AdminLayout title="All Cosplayers">{page}</AdminLayout>
+);
 
-export default Events;
+export default Cosplayers;

@@ -63,7 +63,10 @@ const Events = ({ events }) => {
             p={4}
             _hover={{ bg: useColorModeValue('blue.200', 'blue.800') }}
           >
-            <LinkOverlay as={Link} href={`/events/${event.id}/`}>
+            <LinkOverlay
+              as={Link}
+              href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
+            >
               <Heading size="md" textAlign="center">
                 {event.name}
               </Heading>

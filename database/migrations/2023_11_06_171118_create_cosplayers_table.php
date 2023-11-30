@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('cosplayers', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->string('instagram', 255);
-            $table->string('twitter', 255);
+            $table->string('instagram', 255)->nullable();
+            $table->string('twitter', 255)->nullable();
             $table->timestamps();
         });
     }

@@ -26,15 +26,11 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Event $event)
-    {
-        //
+        Event::create([
+            ...$request->validated(),
+            'url_alias' => $this->nameToUrlAlias($request->name),
+        ]);
+        return to_route('events.index');
     }
 
     /**
@@ -42,7 +38,8 @@ class EventController extends Controller
      */
     public function update(UpdateEventRequest $request, Event $event)
     {
-        //
+        $event->update($request->validated());
+        return to_route('events.index');
     }
 
     /**
@@ -50,6 +47,12 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+        $event->delete();
+        return to_route('events.index');
+    }
+
+    private function nameToUrlAlias($inputString)
+    {
+        return str_replace(' ', '-', str_replace('-', '', strtolower($inputString)));
     }
 }

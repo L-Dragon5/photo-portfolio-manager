@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreEventRequest extends FormRequest
+class StoreCosplayerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,8 +23,8 @@ class StoreEventRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
+            'instagram' => 'nullable|string|max:255',
+            'twitter' => 'nullable|string|max:255',
         ];
     }
 }

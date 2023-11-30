@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
+            $table->string('url_alias', 255);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->timestamps();

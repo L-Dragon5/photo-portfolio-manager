@@ -38,7 +38,7 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
       photos,
     }));
 
-    post(`/admin/album/store`, {
+    post(`/admin/album`, {
       onSuccess: () => {
         reloadPage();
         onClose();

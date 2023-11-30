@@ -36,6 +36,11 @@ class Album extends Model
         return $this->hasMany(Photo::class)->orderBy('id');
     }
 
+    public function cosplayers()
+    {
+        return $this->belongsToMany(Cosplayer::class);
+    }
+
     protected static function booted()
     {
         static::deleting(function ($album) {

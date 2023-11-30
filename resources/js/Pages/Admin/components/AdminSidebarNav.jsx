@@ -19,7 +19,7 @@ import { Link, usePage } from '@inertiajs/react';
 const LinkItems = [
   { name: 'All Albums', href: '/admin' },
   { name: 'All Events', href: '/admin/events' },
-  { name: 'Cosplayers', href: '/admin/cosplayers' },
+  { name: 'All Cosplayers', href: '/admin/cosplayers' },
 ];
 
 function AdminSidebarNav() {

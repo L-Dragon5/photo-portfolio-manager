@@ -13,39 +13,11 @@ use Zip;
 class AlbumController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $photos = Photo::where('is_featured', 1)->inRandomOrder()->limit(20)->get();
-
-        return Inertia::render('Public/Index', [
-            'featuredPhotos' => $photos,
-        ]);
-    }
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function indexEvents()
-    {
-        $events = Event::orderBy('name', 'ASC')->get();
-
-        return Inertia::render('Public/Events', [
-            'events' => $events,
-        ]);
-    }
-
-    /**
      * Display listing on admin page.
      *
      * @return  \Illuminate\Http\Response
      */
-    public function adminIndex()
+    public function index()
     {
         $albums = Album::orderBy('date_taken', 'DESC')->get();
         $events = Event::orderBy('name', 'ASC')->get();
@@ -432,5 +404,10 @@ class AlbumController extends Controller
         }
 
         return $flatArray;
+    }
+
+    private function nameToUrlAlias($inputString)
+    {
+        return str_replace(' ', '-', str_replace('-', '', strtolower($inputString)));
     }
 }
