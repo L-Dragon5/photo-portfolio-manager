@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.7",
         "laravel/ui": "^4.0",
         "league/flysystem-aws-s3-v3": "^3.10",
+        "spatie/laravel-medialibrary": "^10.0.0",
         "stechstudio/laravel-zipstream": "^4.0"
     },
     "require-dev": {

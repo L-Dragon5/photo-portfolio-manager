@@ -19,7 +19,7 @@ class CreateAlbumsTable extends Migration
             $table->foreignId('album_id')->nullable();
             $table->string('name', 255);
             $table->text('notes');
-            $table->foreignId('cover_image')->nullable();
+            $table->foreignId('cover_image_id')->nullable();
             $table->string('url_alias', 255);
             $table->string('password', 16)->nullable();
             $table->date('date_taken');

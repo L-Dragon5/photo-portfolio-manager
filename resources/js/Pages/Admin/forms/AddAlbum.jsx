@@ -1,8 +1,10 @@
 import { AddIcon } from '@chakra-ui/icons';
 import {
   Button,
+  Checkbox,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   HStack,
   Input,
@@ -26,6 +28,7 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
       notes: '',
       url_alias: '',
       date_taken: '',
+      is_press: false,
       is_public: false,
     },
   );
@@ -38,7 +41,7 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
       photos,
     }));
 
-    post(`/admin/album`, {
+    post(`/admin/albums`, {
       onSuccess: () => {
         reloadPage();
         onClose();
@@ -71,6 +74,15 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
           </Select>
           <FormErrorMessage>{data?.event_id}</FormErrorMessage>
         </FormControl>
+        <FormControl id="is_press" isInvalid={!!errors?.is_press}>
+          <FormLabel>Is Press?</FormLabel>
+          <Checkbox
+            defaultChecked={data.is_press}
+            onChange={(e) => setData('is_press', e.target.checked)}
+          >
+            {data.is_press ? 'Yes' : 'No'}
+          </Checkbox>
+        </FormControl>
       </HStack>
       <HStack spacing={3} w="full">
         <FormControl id="date_taken" isInvalid={!!errors?.date_taken}>
@@ -92,6 +104,7 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
             onChange={(e) => setData('url_alias', e.target.value)}
           />
           <FormErrorMessage>{errors?.url_alias}</FormErrorMessage>
+          <FormHelperText>Leave blank to generate one</FormHelperText>
         </FormControl>
       </HStack>
       <FormControl id="notes" isInvalid={!!errors?.notes} mb={4}>

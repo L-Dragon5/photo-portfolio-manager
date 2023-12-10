@@ -2,60 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
-class Photo extends Model
+class Photo extends BaseMedia
 {
-    use HasFactory;
     protected $fillable = [
         'album_id',
         'location',
         'is_landscape',
+        'is_selected',
+        'is_preview',
+        'is_featured',
     ];
-
-    public function album()
-    {
-        return $this->belongsTo(Album::class);
-    }
 
     protected static function booted()
     {
         static::retrieved(function ($photo) {
-            // Set thumbnail paths.
-            $photo->thumbnail = str_replace('jpg', 'webp', Storage::url('thumbnails/' . $photo->location));
-            $photo->lazy_thumbnail = str_replace('jpg', 'webp', Storage::url('thumbnails/lazy/' . $photo->location));
+            $dom = new \DOMDocument;
+            $dom->loadHTML($photo->toHtml());
+            $attr = [];
+            foreach ($dom->getElementsByTagName('img') as $tag) {
+                foreach ($tag->attributes as $attribName => $attribNodeVal)
+                {
+                    $attr[$attribName] = $tag->getAttribute($attribName);
+                }
+            }
 
-            // Set URL path of image.
-            $photo->location = Storage::url($photo->location);
-        });
-
-        static::created(function ($photo) {
-            // Create low-quality thumbnail placeholders.
-            $img = \Image::make(Storage::get($photo->location));
-
-            // Thumbnail Creation
-            $path = 'thumbnails/' . str_replace('jpg', 'webp', $photo->location);
-            $thumbnail = $img->resize(1000, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->encode('webp');
-            Storage::put($path, $thumbnail->__toString());
-
-            // Lazy Thumbnail Creation
-            $path = 'thumbnails/lazy/' . str_replace('jpg', 'webp', $photo->location);
-            $lazy_thumbnail = $img->resize(20, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->encode('webp', 10);
-            Storage::put($path, $lazy_thumbnail->__toString());
-        });
-
-        static::deleting(function ($photo) {
-            Storage::delete($photo->location);
-            Storage::delete('thumbnails/' . $photo->location);
-            Storage::delete('thumbnails/lazy/' . $photo->location);
+            $attr['srcSet'] = $attr['srcset'];
+            $attr['width'] .= 'px';
+            $attr['height'] .= 'px';
+            unset($attr['onload']);
+            unset($attr['srcset']);
+            unset($attr['sizes']);
+            
+            $photo->html = $attr;
+            return $photo;
         });
     }
 }

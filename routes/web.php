@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
-use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\CosplayerController;
@@ -23,9 +22,8 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     
     Route::resource('albums', AlbumController::class)->except([
-        'index', 'create', 'edit',
+        'index', 'create', 'edit', 'show',
     ]);
-    Route::resource('photos', PhotoController::class)->only(['destroy']);
     Route::resource('events', EventController::class)->except([
         'create', 'edit',
     ]);

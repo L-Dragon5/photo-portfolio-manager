@@ -6,6 +6,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
+  Box,
   Button,
   Heading,
   HStack,
@@ -31,6 +32,8 @@ import EditAlbum from './forms/EditAlbum';
 
 const Index = ({ albums, events }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
+
+  console.log(albums);
 
   const {
     isOpen: isAlertOpen,
@@ -68,18 +71,12 @@ const Index = ({ albums, events }) => {
   };
 
   const handleDelete = () => {
-    router.post(
-      `/admin/album/destroy`,
-      {
-        id: modifyAlbum?.id,
+    router.delete(`/admin/albums/${modifyAlbum.id}`, {
+      onSuccess: () => {
+        reloadPage();
+        onAlertClose();
       },
-      {
-        onSuccess: () => {
-          reloadPage();
-          onAlertClose();
-        },
-      },
-    );
+    });
   };
 
   return (
@@ -95,37 +92,56 @@ const Index = ({ albums, events }) => {
           Add Album
         </Button>
       </HStack>
-      <SimpleGrid minChildWidth="350px" spacing="12px" w="full">
+      <SimpleGrid minChildWidth="350px" spacing="12px" w="full" mt={4}>
         {albums?.map((album) => (
-          <LinkBox key={album.id} rounded="md" position="relative">
-            <Image src={album.cover_image} alt={album.name} rounded="md" />
-            <LinkOverlay as={Link} href={`/${album.url_alias}/`}>
-              <Heading
-                size="sm"
+          <Box
+            key={album.id}
+            rounded="md"
+            position="relative"
+            bgColor="gray.200"
+            minH="100px"
+          >
+            {/*
+            <Image
+              alt={album.name}
+              rounded="md"
+              {...album?.cover_image?.html}
+              maxH="400px"
+            />
+            */}
+            <Heading size="sm" textAlign="left">
+              {album.name}
+            </Heading>
+            <Box
+              opacity={0}
+              _hover={{ opacity: 1 }}
+              transition="all 0.3s"
+              height="full"
+              width="full"
+            >
+              <HStack
                 position="absolute"
-                bottom="0"
-                textAlign="center"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
               >
-                {album.name}
-              </Heading>
-            </LinkOverlay>
-            <HStack>
-              <IconButton
-                aria-label="Edit album"
-                icon={<EditIcon />}
-                onClick={(e) =>
-                  onEditClick(e, { id: album.id, name: album.name })
-                }
-              />
-              <IconButton
-                aria-label="Delete album"
-                icon={<DeleteIcon />}
-                onClick={(e) =>
-                  onDeleteClick(e, { id: album.id, name: album.name })
-                }
-              />
-            </HStack>
-          </LinkBox>
+                <IconButton
+                  aria-label="Edit album"
+                  icon={<EditIcon />}
+                  onClick={(e) =>
+                    onEditClick(e, { id: album.id, name: album.name })
+                  }
+                />
+                <IconButton
+                  aria-label="Delete album"
+                  icon={<DeleteIcon />}
+                  onClick={(e) =>
+                    onDeleteClick(e, { id: album.id, name: album.name })
+                  }
+                />
+              </HStack>
+            </Box>
+          </Box>
         ))}
       </SimpleGrid>
 
