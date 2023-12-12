@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class FeaturedPhoto extends Model
 {
     protected $fillable = [
-        'media_id'
+        'media_id',
     ];
 }

@@ -18,8 +18,7 @@ class PreviewsSelected extends Mailable
      */
     public function __construct(
         public Album $album,
-    )
-    {
+    ) {
         //
     }
 
