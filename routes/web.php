@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 // Admin Routes
 Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
+    Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
+    Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
+    Route::delete('/photos/{photo}', [AlbumController::class, 'destroyImage']);
     
     Route::resource('albums', AlbumController::class)->except([
         'index', 'create', 'edit', 'show',

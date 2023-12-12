@@ -15,6 +15,7 @@ const BaseLayout = ({ title, children }) => {
           w="full"
           p={4}
           overflowY="auto"
+          h="full"
         >
           {children}
         </Box>

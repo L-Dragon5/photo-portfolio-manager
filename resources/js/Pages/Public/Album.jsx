@@ -1,35 +1,34 @@
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/counter.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
-import { ChevronRightIcon } from '@chakra-ui/icons';
+import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
 import {
-  Box,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
-  Grid,
   Heading,
-  LinkBox,
-  LinkOverlay,
+  HStack,
+  Spacer,
 } from '@chakra-ui/react';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+import axios from 'axios';
+import { saveAs } from 'file-saver';
 import { useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
+import Counter from 'yet-another-react-lightbox/plugins/counter';
+import Download from 'yet-another-react-lightbox/plugins/download';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 
 import BaseLayout from './components/BaseLayout';
 
 const Breadcrumbs = ({ albumName, breadcrumbs }) => (
   <Breadcrumb separator={<ChevronRightIcon color="gray.500" />}>
-    <BreadcrumbItem>
-      <BreadcrumbLink as={Link} href="/">
-        Home
-      </BreadcrumbLink>
-    </BreadcrumbItem>
-
     {breadcrumbs?.map((breadcrumb) => (
-      <BreadcrumbItem>
+      <BreadcrumbItem key={breadcrumb.name}>
         <BreadcrumbLink as={Link} href={`/${breadcrumb.url_alias}/`}>
           {breadcrumb.name}
         </BreadcrumbLink>
@@ -46,137 +45,64 @@ const Album = ({ album, breadcrumbs }) => {
   const [photoIndex, setPhotoIndex] = useState(-1);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { pathname } = window.location;
-
   const albumDownload = () => {
     setIsDownloading(true);
-    router
-      .get({
-        url: `/album-download/${album.id}`,
-      })
-      .then((response) => {
-        const href = response.data;
-        const link = document.createElement('a');
-        link.href = href;
-        link.setAttribute('download', `${album.id}.zip`); // or any other extension
-        document.body.appendChild(link);
-        link.click();
-        setIsDownloading(false);
-      });
+    axios({
+      url: `/album-download/${album.id}`,
+      method: 'GET',
+      responseType: 'blob',
+    }).then((response) => {
+      saveAs(response.data, `${album.url_alias}.zip`);
+      setIsDownloading(false);
+    });
   };
 
   return (
     <BaseLayout title={album.name}>
       <Breadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
 
-      {album.albums.length > 0 ||
-        (album.photos.length > 0 && (
-          <>
-            <Heading>Albums</Heading>
-            <Grid
-              gap={12}
-              gridTemplateColumns="repeat(auto-fill, minmax(350px, 1fr))"
-              gridAutoFlow="dense"
-            >
-              {album.albums?.map((childAlbum) => (
-                <LinkBox
-                  key={childAlbum.id}
-                  rounded="md"
-                  position="relative"
-                  p={4}
-                  gridColumn={childAlbum.is_landscape ? 'span 2' : 'span 1'}
-                  cursor="pointer"
-                  overflow="hidden"
-                >
-                  <LinkOverlay as={Link} href={`${pathname}/${childAlbum.id}/`}>
-                    <LazyLoadImage
-                      alt={childAlbum.name}
-                      effect="blur"
-                      src={childAlbum.cover_image}
-                      wrapperProps={{
-                        style: {
-                          height: '100%',
-                        },
-                      }}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                      position="relative"
-                    />
-                    <Box
-                      position="absolute"
-                      bottom={1}
-                      width="full"
-                      color="white"
-                    >
-                      <Heading size="md" textAlign="center">
-                        {childAlbum.name}
-                      </Heading>
-                      <Heading size="xs" textAlign="center">
-                        {childAlbum.date_taken &&
-                          new Date(childAlbum.date_taken).toLocaleDateString()}
-                      </Heading>
-                    </Box>
-                  </LinkOverlay>
-                </LinkBox>
-              ))}
-            </Grid>
-          </>
-        ))}
-
-      {album.photos.length > 0 && (
+      {album?.photos.length > 0 && (
         <>
-          <Heading>
-            Photos
-            <Button
-              variant="outlined"
-              color="primary"
-              size="large"
-              onClick={albumDownload}
-              disabled={isDownloading}
-            >
-              {isDownloading ? 'Downloading...' : 'Download'}
-            </Button>
-          </Heading>
+          <HStack mb={4}>
+            <Heading>Photos</Heading>
+            {album?.is_public ? (
+              <>
+                <Spacer />
+                <Button
+                  colorScheme="teal"
+                  variant="outline"
+                  size="lg"
+                  leftIcon={<DownloadIcon />}
+                  onClick={albumDownload}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? 'Downloading...' : 'Download'}
+                </Button>
+              </>
+            ) : null}
+          </HStack>
 
-          <Grid
-            gap={12}
-            gridTemplateColumns="repeat(auto-fill, minmax(350px, 1fr))"
-            gridAutoFlow="dense"
-          >
-            {album?.photos?.map((photo, index) => (
-              <Box
-                key={photo.id}
-                gridColumn={album.is_landscape ? 'span 2' : 'span 1'}
-                cursor="pointer"
-                overflow="hidden"
-                onClick={() => setPhotoIndex(index)}
-              >
-                <LazyLoadImage
-                  alt="cosplayer"
-                  effect="blur"
-                  src={photo.thumbnail}
-                  placeholderSrc={photo.lazy_thumbnail}
-                  wrapperProps={{
-                    style: {
-                      height: '100%',
-                    },
-                  }}
-                  w="100%"
-                  h="100%"
-                  objectFit="cover"
-                  position="relative"
-                  cursor="pointer"
-                />
-              </Box>
-            ))}
-          </Grid>
+          <PhotoAlbum
+            layout="masonry"
+            photos={album?.photos?.map((photo) => photo?.html)}
+            columns={(containerWidth) => {
+              if (containerWidth <= 500) return 1;
+              if (containerWidth < 600) return 2;
+              if (containerWidth < 1200) return 2;
+              if (containerWidth < 1450) return 3;
+              if (containerWidth < 2800) return 4;
+              return 5;
+            }}
+            onClick={({ index: current }) => setPhotoIndex(current)}
+          />
 
           <Lightbox
             open={photoIndex >= 0}
             close={() => setPhotoIndex(-1)}
             index={photoIndex}
-            slides={album.photos}
+            slides={album?.photos?.map((photo) => photo?.html)}
+            plugins={[Counter, Download, Thumbnails, Zoom]}
+            counter={{ container: { style: { top: 'unset', bottom: 0 } } }}
           />
         </>
       )}

@@ -1,4 +1,4 @@
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, SpinnerIcon } from '@chakra-ui/icons';
 import {
   Button,
   Checkbox,
@@ -7,27 +7,24 @@ import {
   FormHelperText,
   FormLabel,
   HStack,
+  IconButton,
   Input,
   Select,
   Textarea,
   VStack,
 } from '@chakra-ui/react';
 import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
-
-import Dropzone from '../components/Dropzone';
 
 const AddAlbum = ({ events, reloadPage, onClose }) => {
-  const [photos, setPhotos] = useState([]);
-  const { data, setData, post, processing, transform, errors } = useForm(
+  const { data, setData, post, processing, reset, errors } = useForm(
     'AddAlbum',
     {
       name: '',
       event_id: '',
-      photos: [],
       notes: '',
       url_alias: '',
       date_taken: '',
+      password: '',
       is_press: false,
       is_public: false,
     },
@@ -36,17 +33,18 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    transform((d) => ({
-      ...d,
-      photos,
-    }));
-
     post(`/admin/albums`, {
       onSuccess: () => {
         reloadPage();
         onClose();
+        reset();
       },
     });
+  };
+
+  const generatePassword = () => {
+    const newPass = (Math.random() + 1).toString(36).substring(5);
+    setData('password', newPass);
   };
 
   return (
@@ -67,9 +65,11 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
             value={data.event_id}
             onChange={(e) => setData('event_id', e.target.value)}
           >
-            <option value="0">No Event</option>
+            <option value="">No Event</option>
             {events?.map((event) => (
-              <option value={event.id}>{event.name}</option>
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
             ))}
           </Select>
           <FormErrorMessage>{data?.event_id}</FormErrorMessage>
@@ -81,6 +81,15 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
             onChange={(e) => setData('is_press', e.target.checked)}
           >
             {data.is_press ? 'Yes' : 'No'}
+          </Checkbox>
+        </FormControl>
+        <FormControl id="is_public" isInvalid={!!errors?.is_public}>
+          <FormLabel>Is Public?</FormLabel>
+          <Checkbox
+            defaultChecked={data.is_public}
+            onChange={(e) => setData('is_public', e.target.checked)}
+          >
+            {data.is_public ? 'Yes' : 'No'}
           </Checkbox>
         </FormControl>
       </HStack>
@@ -107,6 +116,17 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
           <FormHelperText>Leave blank to generate one</FormHelperText>
         </FormControl>
       </HStack>
+      <FormControl id="password" isInvalid={!!errors?.password}>
+        <FormLabel>Password</FormLabel>
+        <HStack>
+          <Input
+            value={data.password}
+            onChange={(e) => setData('password', e.target.value)}
+            autoComplete="new-password"
+          />
+          <IconButton icon={<SpinnerIcon />} onClick={generatePassword} />
+        </HStack>
+      </FormControl>
       <FormControl id="notes" isInvalid={!!errors?.notes} mb={4}>
         <FormLabel>Notes</FormLabel>
         <Textarea
@@ -115,8 +135,6 @@ const AddAlbum = ({ events, reloadPage, onClose }) => {
         />
         <FormErrorMessage>{data?.notes}</FormErrorMessage>
       </FormControl>
-
-      <Dropzone setPhotos={setPhotos} />
 
       <HStack justifyContent="flex-end" my={4} w="full">
         <Button onClick={onClose}>Cancel</Button>

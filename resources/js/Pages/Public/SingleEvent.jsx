@@ -3,6 +3,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Flex,
   Heading,
   LinkBox,
   LinkOverlay,
@@ -12,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
 
@@ -41,6 +43,43 @@ const SingleEvent = ({ event, albums }) => {
     }
   }, [sortingOption]);
 
+  const customRenderPhoto = ({ layout, renderDefaultPhoto }) => {
+    const shoot = activeAlbums[layout.index];
+
+    return (
+      <LinkBox
+        key={shoot.id}
+        rounded="md"
+        border="1px solid"
+        borderColor="gray.300"
+        transition="0.3s transform"
+        _hover={{ transform: 'scale(1.025)' }}
+      >
+        <LinkOverlay
+          as={Link}
+          href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
+            shoot?.url_alias ? shoot.url_alias : shoot.id
+          }/`}
+        >
+          {renderDefaultPhoto()}
+
+          <Flex
+            flexDirection="column"
+            alignItems="center"
+            p={4}
+            bgColor={useColorModeValue('blue.200', 'blue.800')}
+          >
+            <Heading size="md">{shoot.name}</Heading>
+            <Heading size="xs">
+              {shoot.date_taken &&
+                new Date(shoot.date_taken).toLocaleDateString()}
+            </Heading>
+          </Flex>
+        </LinkOverlay>
+      </LinkBox>
+    );
+  };
+
   return (
     <BaseLayout title={event.name}>
       <Breadcrumb separator={<ChevronRightIcon color="gray.500" />}>
@@ -64,38 +103,20 @@ const SingleEvent = ({ event, albums }) => {
         <option value="date-asc">Date - Oldest to Recent</option>
         <option value="date-desc">Date - Recent to Oldest</option>
       </Select>
-      <SimpleGrid
-        minChildWidth="250px"
-        spacingX="12px"
-        spacingY="24px"
-        w="full"
-      >
-        {activeAlbums?.map((album) => (
-          <LinkBox
-            key={album.id}
-            rounded="md"
-            position="relative"
-            p={4}
-            _hover={{ bg: useColorModeValue('blue.200', 'blue.800') }}
-          >
-            <LinkOverlay as={Link} href={`/albums/${album.id}/`}>
-              <Heading size="md" textAlign="center">
-                {album.name}
-              </Heading>
-              <Heading size="xs" textAlign="center">
-                {[
-                  album.start_date &&
-                    new Date(album.start_date).toLocaleDateString(),
-                  album.end_date &&
-                    new Date(album.end_date).toLocaleDateString(),
-                ]
-                  .filter((n) => n)
-                  .join(' - ')}
-              </Heading>
-            </LinkOverlay>
-          </LinkBox>
-        ))}
-      </SimpleGrid>
+
+      <PhotoAlbum
+        layout="masonry"
+        photos={activeAlbums?.map((album) => album?.cover_image?.html)}
+        columns={(containerWidth) => {
+          if (containerWidth <= 500) return 1;
+          if (containerWidth < 600) return 2;
+          if (containerWidth < 1200) return 2;
+          if (containerWidth < 1450) return 3;
+          if (containerWidth < 2800) return 4;
+          return 5;
+        }}
+        renderPhoto={customRenderPhoto}
+      />
     </BaseLayout>
   );
 };

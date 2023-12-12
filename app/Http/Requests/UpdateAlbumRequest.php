@@ -24,15 +24,13 @@ class UpdateAlbumRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'event_id' => 'sometimes|nullable|numeric',
-            'album_id' => 'sometimes|nullable|numeric',
             'notes' => 'sometimes|nullable|string',
             'cover_image_id' => 'sometimes|nullable|numeric',
-            'url_alias' => 'sometimes|nullable|string',
+            'url_alias' => 'sometimes|string',
             'password' => 'sometimes|nullable|string',
             'date_taken' => 'sometimes|nullable|date',
             'is_press' => 'sometimes|nullable|boolean',
             'is_public' => 'sometimes|nullable|boolean',
-            'photos' => 'sometimes|nullable|array',
         ];
     }
 }

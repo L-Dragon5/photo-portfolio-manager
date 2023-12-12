@@ -6,9 +6,8 @@ use App\Models\Album;
 use App\Models\Event;
 use App\Models\Photo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Zip;
+use Spatie\MediaLibrary\Support\MediaStream;
 
 class PublicController extends Controller
 {
@@ -41,16 +40,15 @@ class PublicController extends Controller
     }
 
     /**
-     * Display listing of location shoots..
+     * Display listing of location shoots.
      *
      * @return \Inertia\Response
      */
     public function indexLocation()
     {
-        $albums = Album::where([
-            ['is_public', '=', true],
-            ['event_id', '=', 0],
-        ])->orderBy('name', 'ASC')->get();
+        $albums = Album::where('is_public', true)->where(function ($q) {
+            $q->where('event_id', null)->orWhere('event_id', '');
+        })->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Public/OnLocation', [
             'albums' => $albums,
@@ -102,7 +100,7 @@ class PublicController extends Controller
     public function showAlbum(Request $request)
     {
         $queries = explode('/', $request->getRequestUri());
-        array_shift($queries);
+        $queries = array_filter($queries);
 
         $type = array_shift($queries);
         $eventId = null;
@@ -113,67 +111,43 @@ class PublicController extends Controller
         $albumToPresentId = array_pop($queries);
 
         try {
-            if (count($queries) > 0) {
-                $parentAlbumId = end($queries);
-                if (is_numeric($parentAlbumId)) {
-                    $parentAlbum = Album::findOrFail($parentAlbumId);
-                } else {
-                    $parentAlbum = Album::where('url_alias', $parentAlbumId)->firstOrFail();
-                }
-                
-                $album = Album::where('url_alias', $albumToPresentId)
-                    ->where('album_id', $parentAlbumId)
-                    ->with(['albums', 'photos'])
-                    ->firstOrFail();
+            if (is_numeric($albumToPresentId)) {
+                $album = Album::findOrFail($albumToPresentId);
             } else {
-                if (is_numeric($albumToPresentId)) {
-                    $album = Album::findOrFail($albumToPresentId)
-                    ->with(['albums', 'photos']);
-                } else {
-                    $album = Album::where('url_alias', $albumToPresentId)
-                    ->with(['albums', 'photos'])
-                    ->firstOrFail();
-                }
-               
+                $album = Album::where('url_alias', $albumToPresentId)
+                ->firstOrFail();
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return Inertia::render('Public/AlbumNotFound');
         }
 
-        // Set landscape flag for child album cover images.
-        foreach ($album->albums as &$child) {
-            // Set cover image path.
-            $img = \Image::make(Storage::get($child->cover_image));
-            $width = $img->width();
-            $height = $img->height();
-            if ($width > $height) {
-                $child->is_landscape = true;
-            } else {
-                $child->is_landscape = false;
-            }
-
-            $child->cover_image = Storage::url($child->cover_image);
-        }
-
         // Create breadcrumbs.
         $breadcrumbs = [];
-        if (count($queries) > 1) {
-            for ($i = 0; $i < count($queries); $i++) {
-                $parentAlbum = Album::where('url_alias', $queries[$i])->first();
-
-                if ($i > 0) {
-                    $breadcrumbs[] = ['url_alias' => $breadcrumbs[$i - 1]['url_alias'] . '/' . $parentAlbum->url_alias, 'name' => $parentAlbum->name];
-                } else {
-                    $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
-                }
+        if (!empty($type)) {
+            $name = null;
+            switch ($type) {
+                case 'on-location':
+                    $name = 'On-Location';
+                    break;
+                case 'events':
+                    $name = 'Events';
+                    break;
+                case 'press':
+                    $name = 'Press';
+                    break;
             }
-        } elseif (count($queries) === 1) {
-            $parentAlbum = Album::where('url_alias', reset($queries))->first();
-            $breadcrumbs[] = ['url_alias' => $parentAlbum->url_alias, 'name' => $parentAlbum->name];
+            $breadcrumbs[] = ['url_alias' => $type, 'name' => $name];
         }
 
-        // Retrieve URL for display.
-        $album->cover_image = Storage::url($album->cover_image);
+        if (!empty($eventId)) {
+            if (is_numeric($eventId)) {
+                $event = Event::findOrFail($eventId);
+            } else {
+                $event = Event::where('url_alias', $eventId)->firstOrFail();
+            }
+
+            $breadcrumbs[] = ['url_alias' => "events/{$event->url_alias}", 'name' => $event->name];
+        }
 
         return Inertia::render('Public/Album', [
             'album' => $album,
@@ -184,36 +158,12 @@ class PublicController extends Controller
     /**
      * Zip archive all photos in album and send download.
      *
-     * @param  string  $album
-     * @return  \Illuminate\Http\Response
+     * @param  \App\Models\Album    $album
      */
-    public function download($album)
+    public function download(Album $album)
     {
-        $album_id = is_numeric($album) ? intval($album) : $album;
-        $filename = "zips/{$album_id}.zip";
-        $zip = Storage::has($filename);
-        if ($zip) {
-            return Storage::url($filename);
-        } else {
-            try {
-                $album_db = Album::where('id', $album_id)
-                    ->with(['photos'])
-                    ->firstOrFail();
-
-                $zip = Zip::create("{$album_id}.zip");
-
-                foreach ($album_db->photos as $photo) {
-                    if (!empty($photo->location)) {
-                        $zip->add($photo->location);
-                    }
-                }
-
-                $zip->saveTo('s3://photo-portfolio-production-photoportfolioimages-zo958yhaaa6q/zips');
-
-                return Storage::url($filename);
-            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-                return back()->withErrors('Could not find album');
-            }
+        if ($album->is_public) {
+            return MediaStream::create($album->id . '.zip')->addMedia($album->getMedia('photos'));
         }
     }
 }

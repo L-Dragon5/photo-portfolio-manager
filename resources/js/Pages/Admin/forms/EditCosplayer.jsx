@@ -11,11 +11,14 @@ import {
 import { useForm } from '@inertiajs/react';
 
 const EditCosplayer = ({ reloadPage, onClose, cosplayer }) => {
-  const { data, setData, put, processing, errors } = useForm('EditCosplayer', {
-    name: cosplayer?.name ?? '',
-    instagram: cosplayer?.instagram ?? '',
-    twitter: cosplayer?.twitter ?? '',
-  });
+  const { data, setData, put, processing, errors } = useForm(
+    `EditCosplayer-${cosplayer.id}`,
+    {
+      name: cosplayer?.name ?? '',
+      instagram: cosplayer?.instagram ?? '',
+      twitter: cosplayer?.twitter ?? '',
+    },
+  );
 
   const onSubmit = (e) => {
     e.preventDefault();

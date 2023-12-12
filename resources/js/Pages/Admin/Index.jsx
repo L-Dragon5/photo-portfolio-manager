@@ -1,4 +1,10 @@
-import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  StarIcon,
+  ViewIcon,
+} from '@chakra-ui/icons';
 import {
   AlertDialog,
   AlertDialogBody,
@@ -8,12 +14,15 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
   Heading,
   HStack,
   IconButton,
-  Image,
-  LinkBox,
-  LinkOverlay,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -21,19 +30,20 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddAlbum from './forms/AddAlbum';
 import EditAlbum from './forms/EditAlbum';
+import UploadAlbum from './forms/UploadAlbum';
 
 const Index = ({ albums, events }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
-
-  console.log(albums);
+  const [drawerUploadType, setDrawerUploadType] = useState(null);
 
   const {
     isOpen: isAlertOpen,
@@ -45,6 +55,11 @@ const Index = ({ albums, events }) => {
     onOpen: onModalOpen,
     onClose: onModalClose,
   } = useDisclosure();
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose,
+  } = useDisclosure();
   const cancelRef = useRef();
 
   const reloadPage = () => {
@@ -55,6 +70,11 @@ const Index = ({ albums, events }) => {
 
   const handleModalClose = () => {
     onModalClose();
+    setModifyAlbum(null);
+  };
+
+  const handleDrawerClose = () => {
+    onDrawerClose();
     setModifyAlbum(null);
   };
 
@@ -79,6 +99,19 @@ const Index = ({ albums, events }) => {
     });
   };
 
+  const onUploadPreviewsClick = (e, albumObj) => {
+    e.stopPropagation();
+    setDrawerUploadType('previews');
+    setModifyAlbum(albumObj);
+    onDrawerOpen();
+  };
+  const onUploadPhotosClick = (e, albumObj) => {
+    e.stopPropagation();
+    setDrawerUploadType('photos');
+    setModifyAlbum(albumObj);
+    onDrawerOpen();
+  };
+
   return (
     <>
       <HStack justifyContent="space-between" w="full">
@@ -98,7 +131,7 @@ const Index = ({ albums, events }) => {
             key={album.id}
             rounded="md"
             position="relative"
-            bgColor="gray.200"
+            bgColor={useColorModeValue('gray.200', 'gray.700')}
             minH="100px"
           >
             {/*
@@ -126,18 +159,24 @@ const Index = ({ albums, events }) => {
                 transform="translate(-50%, -50%)"
               >
                 <IconButton
+                  aria-label="Upload previews"
+                  icon={<ViewIcon />}
+                  onClick={(e) => onUploadPreviewsClick(e, album)}
+                />
+                <IconButton
+                  aria-label="Upload final photos"
+                  icon={<StarIcon />}
+                  onClick={(e) => onUploadPhotosClick(e, album)}
+                />
+                <IconButton
                   aria-label="Edit album"
                   icon={<EditIcon />}
-                  onClick={(e) =>
-                    onEditClick(e, { id: album.id, name: album.name })
-                  }
+                  onClick={(e) => onEditClick(e, album)}
                 />
                 <IconButton
                   aria-label="Delete album"
                   icon={<DeleteIcon />}
-                  onClick={(e) =>
-                    onDeleteClick(e, { id: album.id, name: album.name })
-                  }
+                  onClick={(e) => onDeleteClick(e, album)}
                 />
               </HStack>
             </Box>
@@ -163,13 +202,14 @@ const Index = ({ albums, events }) => {
             {modifyAlbum !== null ? (
               <EditAlbum
                 reloadPage={reloadPage}
-                onClose={onModalClose}
+                onClose={handleModalClose}
                 events={events}
+                album={modifyAlbum}
               />
             ) : (
               <AddAlbum
                 reloadPage={reloadPage}
-                onClose={onModalClose}
+                onClose={handleModalClose}
                 events={events}
               />
             )}
@@ -177,6 +217,38 @@ const Index = ({ albums, events }) => {
           <ModalCloseButton />
         </ModalContent>
       </Modal>
+
+      <Drawer
+        isOpen={isDrawerOpen}
+        placement="bottom"
+        onClose={handleDrawerClose}
+        size="full"
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>
+            Upload {drawerUploadType} - {modifyAlbum?.name}
+          </DrawerHeader>
+          <DrawerBody>
+            {drawerUploadType === 'previews' ? (
+              <UploadAlbum
+                reloadPage={reloadPage}
+                onClose={handleDrawerClose}
+                type="previews"
+                album={modifyAlbum}
+              />
+            ) : (
+              <UploadAlbum
+                reloadPage={reloadPage}
+                onClose={handleDrawerClose}
+                type="photos"
+                album={modifyAlbum}
+              />
+            )}
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
 
       <AlertDialog
         isOpen={isAlertOpen}

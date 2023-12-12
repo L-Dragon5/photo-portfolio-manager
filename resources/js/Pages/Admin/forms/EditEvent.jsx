@@ -11,12 +11,15 @@ import {
 import { useForm } from '@inertiajs/react';
 
 const EditEvent = ({ reloadPage, onClose, event }) => {
-  const { data, setData, put, processing, errors } = useForm('EditEvent', {
-    name: event?.name ?? '',
-    url_alias: event?.url_alias ?? '',
-    start_date: event?.start_date ?? '',
-    end_date: event?.end_date ?? '',
-  });
+  const { data, setData, put, processing, errors } = useForm(
+    `EditEvent-${event.id}`,
+    {
+      name: event?.name ?? '',
+      url_alias: event?.url_alias ?? '',
+      start_date: event?.start_date ?? '',
+      end_date: event?.end_date ?? '',
+    },
+  );
 
   const onSubmit = (e) => {
     e.preventDefault();

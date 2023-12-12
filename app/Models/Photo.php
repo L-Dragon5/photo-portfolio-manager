@@ -3,40 +3,45 @@
 namespace App\Models;
 
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Photo extends BaseMedia
 {
     protected $fillable = [
         'album_id',
-        'location',
-        'is_landscape',
-        'is_selected',
-        'is_preview',
         'is_featured',
     ];
+    protected $appends = ['html'];
 
-    protected static function booted()
+    protected function html(): Attribute
     {
-        static::retrieved(function ($photo) {
-            $dom = new \DOMDocument;
-            $dom->loadHTML($photo->toHtml());
-            $attr = [];
-            foreach ($dom->getElementsByTagName('img') as $tag) {
-                foreach ($tag->attributes as $attribName => $attribNodeVal)
-                {
-                    $attr[$attribName] = $tag->getAttribute($attribName);
-                }
-            }
+        return Attribute::make(
+            get: function () {
+                $imageInfo = [
+                    'src' => $this->getUrl(),
+                    'height' => $this->getCustomProperty('height'),
+                    'width' => $this->getCustomProperty('width'),
+                    'srcSet' => [],
+                    'download' => $this->getUrl(),
+                ];
 
-            $attr['srcSet'] = $attr['srcset'];
-            $attr['width'] .= 'px';
-            $attr['height'] .= 'px';
-            unset($attr['onload']);
-            unset($attr['srcset']);
-            unset($attr['sizes']);
-            
-            $photo->html = $attr;
-            return $photo;
-        });
+                $responsiveImages = $this->responsiveImages();
+                $responsiveSrcSet = $responsiveImages->files->map(function ($ri) {
+                    return [
+                        'src' => $ri->url(),
+                        'width' => $ri->width(),
+                        'height' => $ri->height(),
+                    ];
+                });
+                $responsiveSrcSet[] = [
+                    'src' => $responsiveImages->getPlaceholderSvg(),
+                    'width' => 32,
+                    'height' => 32,
+                ];
+                $imageInfo['srcSet'] = $responsiveSrcSet;
+
+                return $imageInfo;
+            },
+        );
     }
 }
