@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 class Photo extends BaseMedia
 {

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Models\Event;
 use Inertia\Inertia;
 
 class EventController extends Controller
@@ -15,7 +15,7 @@ class EventController extends Controller
     public function index()
     {
         $events = Event::orderBy('name', 'ASC')->get();
-        
+
         return Inertia::render('Admin/Events', [
             'events' => $events,
         ]);
@@ -30,6 +30,7 @@ class EventController extends Controller
             ...$request->validated(),
             'url_alias' => $this->nameToUrlAlias($request->name),
         ]);
+
         return to_route('events.index');
     }
 
@@ -39,6 +40,7 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $event->update($request->validated());
+
         return to_route('events.index');
     }
 
@@ -48,6 +50,7 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         $event->delete();
+
         return to_route('events.index');
     }
 

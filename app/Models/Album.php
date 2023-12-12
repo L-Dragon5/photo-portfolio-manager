@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Album extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
+
     protected $fillable = [
         'name',
         'event_id',
@@ -22,6 +23,7 @@ class Album extends Model implements HasMedia
         'is_press',
         'is_public',
     ];
+
     protected $appends = ['cover_image', 'photos', 'previews'];
 
     public function event()
@@ -50,13 +52,13 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $coverPhoto = null;
-                if (!is_null($this->cover_image_id)) {
+                if (! is_null($this->cover_image_id)) {
                     $coverPhoto = $this->getMedia('photos')->where('id', $this->cover_image_id)->first();
                 }
 
                 if (is_null($coverPhoto)) {
                     $media = $this->getFirstMedia('photos');
-                    if (!is_null($media)) {
+                    if (! is_null($media)) {
                         $coverPhoto = $media;
                     } else {
                         $coverPhoto = [
@@ -64,7 +66,7 @@ class Album extends Model implements HasMedia
                                 'src' => 'https://placehold.co/600x400',
                                 'width' => 600,
                                 'height' => 400,
-                            ]
+                            ],
                         ];
                     }
                 }
@@ -80,11 +82,11 @@ class Album extends Model implements HasMedia
             get: function () {
                 $photos = $this->getMedia('photos');
                 $photos->sort(function (Photo $a, Photo $b) {
-                    if (!$a->hasCustomProperty('date_taken')) {
-                        return !$b->hasCustomProperty('date_taken') ? 0 : 1;
+                    if (! $a->hasCustomProperty('date_taken')) {
+                        return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
                     }
 
-                    if (!$b->hasCustomProperty('date_taken')) {
+                    if (! $b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
 
@@ -94,6 +96,7 @@ class Album extends Model implements HasMedia
 
                     return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
                 });
+
                 return $photos;
             },
         );
@@ -105,11 +108,11 @@ class Album extends Model implements HasMedia
             get: function () {
                 $photos = $this->getMedia('previews');
                 $photos->sort(function (Photo $a, Photo $b) {
-                    if (!$a->hasCustomProperty('date_taken')) {
-                        return !$b->hasCustomProperty('date_taken') ? 0 : 1;
+                    if (! $a->hasCustomProperty('date_taken')) {
+                        return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
                     }
 
-                    if (!$b->hasCustomProperty('date_taken')) {
+                    if (! $b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
 
@@ -119,6 +122,7 @@ class Album extends Model implements HasMedia
 
                     return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
                 });
+
                 return $photos;
             },
         );

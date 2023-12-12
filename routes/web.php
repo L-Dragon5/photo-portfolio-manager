@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\CosplayerController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PublicController;
-use App\Http\Controllers\CosplayerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,7 +24,7 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
     Route::delete('/albums/{album}/previews/purge', [AlbumController::class, 'destroyPreviews']);
     Route::delete('/photos/{photo}', [AlbumController::class, 'destroyImage']);
-    
+
     Route::resource('albums', AlbumController::class)->except([
         'index', 'create', 'edit', 'show',
     ]);

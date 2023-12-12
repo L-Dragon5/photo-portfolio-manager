@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Cosplayer extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'instagram',

@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Event;
 use App\Models\Photo;
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Spatie\Image\Image;
@@ -27,7 +26,7 @@ class AlbumController extends Controller
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
-            'events' => $events
+            'events' => $events,
         ]);
     }
 
@@ -106,7 +105,6 @@ class AlbumController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Album  $album
      * @return \Illuminate\Http\Response
      */
     public function destroy(Album $album)

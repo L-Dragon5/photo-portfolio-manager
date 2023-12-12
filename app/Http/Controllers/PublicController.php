@@ -57,7 +57,7 @@ class PublicController extends Controller
 
     /**
      * Display listing of press shoots.
-     * 
+     *
      * @return \Inertia\Response
      */
     public function indexPress()
@@ -81,7 +81,7 @@ class PublicController extends Controller
         }
 
         return Inertia::render('Public/Culling', [
-            'album' => $album
+            'album' => $album,
         ]);
     }
 
@@ -100,13 +100,13 @@ class PublicController extends Controller
             $album->relatedPhotos()->sync($validated['ids']);
         }
         $album->save();
-        
+
         return back();
     }
 
     /**
      * Display albums of specified event.
-     * 
+     *
      * @return \Inertia\Response
      */
     public function showEvent($id)
@@ -126,7 +126,6 @@ class PublicController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function showAlbum(Request $request)
@@ -147,7 +146,7 @@ class PublicController extends Controller
                 $album = Album::findOrFail($albumToPresentId);
             } else {
                 $album = Album::where('url_alias', $albumToPresentId)
-                ->firstOrFail();
+                    ->firstOrFail();
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return Inertia::render('Public/AlbumNotFound');
@@ -155,7 +154,7 @@ class PublicController extends Controller
 
         // Create breadcrumbs.
         $breadcrumbs = [];
-        if (!empty($type)) {
+        if (! empty($type)) {
             $name = null;
             switch ($type) {
                 case 'on-location':
@@ -171,7 +170,7 @@ class PublicController extends Controller
             $breadcrumbs[] = ['url_alias' => $type, 'name' => $name];
         }
 
-        if (!empty($eventId)) {
+        if (! empty($eventId)) {
             if (is_numeric($eventId)) {
                 $event = Event::findOrFail($eventId);
             } else {
@@ -189,13 +188,11 @@ class PublicController extends Controller
 
     /**
      * Zip archive all photos in album and send download.
-     *
-     * @param  \App\Models\Album    $album
      */
     public function download(Album $album)
     {
         if ($album->is_public) {
-            return MediaStream::create($album->id . '.zip')->addMedia($album->getMedia('photos'));
+            return MediaStream::create($album->id.'.zip')->addMedia($album->getMedia('photos'));
         }
     }
 }

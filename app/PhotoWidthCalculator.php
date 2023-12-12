@@ -3,8 +3,8 @@
 namespace App;
 
 use Illuminate\Support\Collection;
-use Spatie\MediaLibrary\Support\ImageFactory;
 use Spatie\MediaLibrary\ResponsiveImages\WidthCalculator\WidthCalculator;
+use Spatie\MediaLibrary\Support\ImageFactory;
 
 class PhotoWidthCalculator implements WidthCalculator
 {

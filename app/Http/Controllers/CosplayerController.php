@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cosplayer;
 use App\Http\Requests\StoreCosplayerRequest;
 use App\Http\Requests\UpdateCosplayerRequest;
+use App\Models\Cosplayer;
 use Inertia\Inertia;
 
 class CosplayerController extends Controller
@@ -15,7 +15,7 @@ class CosplayerController extends Controller
     public function index()
     {
         $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
-        
+
         return Inertia::render('Admin/Cosplayers', [
             'cosplayers' => $cosplayers,
         ]);
@@ -27,6 +27,7 @@ class CosplayerController extends Controller
     public function store(StoreCosplayerRequest $request)
     {
         Cosplayer::create($request->validated());
+
         return to_route('cosplayers.index');
     }
 
@@ -36,6 +37,7 @@ class CosplayerController extends Controller
     public function update(UpdateCosplayerRequest $request, Cosplayer $cosplayer)
     {
         $cosplayer->update($request->validated());
+
         return to_route('cosplayers.index');
     }
 
@@ -45,6 +47,7 @@ class CosplayerController extends Controller
     public function destroy(Cosplayer $cosplayer)
     {
         $cosplayer->delete();
+
         return to_route('cosplayers.index');
     }
 }
