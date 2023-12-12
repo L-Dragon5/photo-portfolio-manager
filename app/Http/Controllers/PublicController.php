@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PreviewsSelected;
 use App\Models\Album;
 use App\Models\Event;
 use App\Models\Photo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\Support\MediaStream;
 
@@ -100,6 +102,10 @@ class PublicController extends Controller
             $album->relatedPhotos()->sync($validated['ids']);
         }
         $album->save();
+
+        if (app()->isProduction()) {
+            Mail::to('me@joseph-oh.com')->send(new PreviewsSelected(($album)));
+        }
 
         return back();
     }
