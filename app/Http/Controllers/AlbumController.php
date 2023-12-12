@@ -6,8 +6,11 @@ use App\Http\Requests\StoreAlbumImagesRequest;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
+use App\Models\Cosplayer;
 use App\Models\Event;
+use App\Models\FeaturedPhoto;
 use App\Models\Photo;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Spatie\Image\Image;
@@ -21,12 +24,14 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::with(['relatedPhotos', 'event'])->orderBy('date_taken', 'DESC')->get();
+        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->get();
         $events = Event::orderBy('name', 'ASC')->get();
+        $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
             'events' => $events,
+            'cosplayers' => $cosplayers,
         ]);
     }
 
@@ -100,6 +105,38 @@ class AlbumController extends Controller
         $album->update([...$request->validated()]);
 
         return to_route('admin-base');
+    }
+
+    public function updateAlbumCosplayerAdd(Request $request, Album $album)
+    {
+        $validated = $request->validate([
+            'cosplayer_id' => 'required|numeric',
+            'character' => 'required|nullable|string',
+        ]);
+
+        $album->cosplayers()->attach($validated['cosplayer_id'], ['character' => $validated['character']]);
+
+        return to_route('admin-base');
+    }
+
+    public function updateAlbumCosplayerRemove(Request $request, Album $album, Cosplayer $cosplayer)
+    {
+        $album->cosplayers()->detach($cosplayer->id);
+
+        return to_route('admin-base');
+    }
+
+    public function updateFeaturedPhoto(Request $request, Photo $photo)
+    {
+        $fp = FeaturedPhoto::where('media_id', $photo->id)->first();
+
+        if (empty($fp)) {
+            FeaturedPhoto::create([
+                'media_id' => $photo->id,
+            ]);
+        } else {
+            $fp->delete();
+        }
     }
 
     /**

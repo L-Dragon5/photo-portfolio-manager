@@ -33,7 +33,7 @@ class Album extends Model implements HasMedia
 
     public function cosplayers()
     {
-        return $this->belongsToMany(Cosplayer::class);
+        return $this->belongsToMany(Cosplayer::class, 'albums_cosplayers', 'album_id', 'cosplayer_id')->withPivot(['character'])->withTimestamps();
     }
 
     public function relatedPhotos()

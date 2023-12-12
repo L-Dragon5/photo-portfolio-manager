@@ -4,15 +4,18 @@ import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
 import {
+  Box,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
+  Flex,
   Heading,
   HStack,
+  Link,
   Spacer,
+  Tag,
 } from '@chakra-ui/react';
-import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { useState } from 'react';
@@ -81,6 +84,21 @@ const Album = ({ album, breadcrumbs }) => {
               </>
             ) : null}
           </HStack>
+
+          <Flex spacing={4} mb={6} zIndex={2}>
+            {album?.cosplayers?.map((cos) => (
+              <Tag
+                key={cos.id}
+                as={Link}
+                p={2}
+                colorScheme="pink"
+                href={`https://instagram.com/${cos.instagram}`}
+                isExternal
+              >
+                {cos?.pivot?.character} - {cos.name}
+              </Tag>
+            ))}
+          </Flex>
 
           <PhotoAlbum
             layout="masonry"

@@ -17,6 +17,6 @@ class Cosplayer extends Model
 
     public function albums()
     {
-        return $this->belongsToMany(Album::class)->orderBy('name');
+        return $this->belongsToMany(Album::class, 'albums_cosplayers', 'cosplayer_id', 'album_id')->withTimestamps()->orderBy('name');
     }
 }

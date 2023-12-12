@@ -31,6 +31,8 @@ class UpdateAlbumRequest extends FormRequest
             'date_taken' => 'sometimes|nullable|date',
             'is_press' => 'sometimes|nullable|boolean',
             'is_public' => 'sometimes|nullable|boolean',
+            'cosplayer_id' => 'sometimes|nullable|numeric',
+            'character' => 'sometimes|nullable|string',
         ];
     }
 }

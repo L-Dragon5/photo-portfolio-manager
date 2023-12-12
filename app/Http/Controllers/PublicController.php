@@ -6,6 +6,7 @@ use App\Mail\PreviewsSelected;
 use App\Models\Album;
 use App\Models\Event;
 use App\Models\Photo;
+use App\Models\FeaturedPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -20,7 +21,10 @@ class PublicController extends Controller
      */
     public function index()
     {
-        $photos = Photo::where('is_featured', 1)->inRandomOrder()->limit(20)->get();
+        $fps = FeaturedPhoto::inRandomOrder()->get()->toArray();
+        $photos = array_map(function ($fp) {
+            return Photo::find($fp['media_id']);
+        }, $fps);
 
         return Inertia::render('Public/Index', [
             'featuredPhotos' => $photos,
@@ -149,9 +153,9 @@ class PublicController extends Controller
 
         try {
             if (is_numeric($albumToPresentId)) {
-                $album = Album::findOrFail($albumToPresentId);
+                $album = Album::with('cosplayers')->findOrFail($albumToPresentId);
             } else {
-                $album = Album::where('url_alias', $albumToPresentId)
+                $album = Album::with('cosplayers')->where('url_alias', $albumToPresentId)
                     ->firstOrFail();
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

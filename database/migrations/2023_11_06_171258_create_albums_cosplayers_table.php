@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('album_id');
             $table->foreignId('cosplayer_id');
+            $table->string('character', 255)->nullable();
             $table->timestamps();
 
             $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');

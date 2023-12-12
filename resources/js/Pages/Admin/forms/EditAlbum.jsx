@@ -15,7 +15,9 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from '@inertiajs/react';
 
-const EditAlbum = ({ events, reloadPage, onClose, album }) => {
+import ModifyCosplayerToAlbum from './ModifyCosplayerToAlbum';
+
+const EditAlbum = ({ events, reloadPage, onClose, album, cosplayers }) => {
   const { data, setData, put, processing, errors } = useForm(
     `EditAlbum-${album.id}`,
     {
@@ -134,6 +136,12 @@ const EditAlbum = ({ events, reloadPage, onClose, album }) => {
         />
         <FormErrorMessage>{data?.notes}</FormErrorMessage>
       </FormControl>
+
+      <ModifyCosplayerToAlbum
+        reloadPage={reloadPage}
+        album={album}
+        cosplayers={cosplayers}
+      />
 
       <HStack justifyContent="flex-end" my={4} w="full">
         <Button onClick={onClose}>Cancel</Button>

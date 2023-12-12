@@ -1,10 +1,11 @@
-import { AddIcon, DeleteIcon, StarIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon, LinkIcon, StarIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
   Heading,
   HStack,
   IconButton,
+  Tooltip,
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
@@ -65,6 +66,18 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     );
   };
 
+  const handleToggleFeaturedPhoto = (id) => {
+    router.put(
+      `/admin/photos/${id}/featured`,
+      {},
+      {
+        onSuccess: () => {
+          reloadPage();
+        },
+      },
+    );
+  };
+
   const handlePurgePreviews = () => {
     router.delete(`/admin/albums/${album?.id}/previews/purge`, {
       onSuccess: () => {
@@ -80,29 +93,49 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     return (
       <Box position="relative">
         {renderDefaultPhoto({ wrapped: true })}
-        <IconButton
-          icon={<DeleteIcon />}
-          onClick={() => handleImageDelete(id, index)}
-          position="absolute"
-          top={0}
-          right={0}
-          bgColor={useColorModeValue('gray.200', 'gray.700')}
-          opacity={0.5}
-          _hover={{ opacity: 1 }}
-        />
-        {type === 'photos' ? (
+        <Tooltip label="Permanently delete photo">
           <IconButton
-            icon={
-              <StarIcon color={id === activeCoverImage ? 'yellow' : 'black'} />
-            }
-            onClick={() => handleSetCoverImage(id)}
+            icon={<DeleteIcon />}
+            onClick={() => handleImageDelete(id, index)}
             position="absolute"
             top={0}
-            left={0}
+            right={0}
             bgColor={useColorModeValue('gray.200', 'gray.700')}
             opacity={0.5}
             _hover={{ opacity: 1 }}
           />
+        </Tooltip>
+        {type === 'photos' ? (
+          <>
+            <Tooltip label="Set as album cover image">
+              <IconButton
+                icon={
+                  <StarIcon
+                    color={id === activeCoverImage ? 'yellow' : 'black'}
+                  />
+                }
+                onClick={() => handleSetCoverImage(id)}
+                position="absolute"
+                top={0}
+                left={0}
+                bgColor={useColorModeValue('gray.200', 'gray.700')}
+                opacity={0.5}
+                _hover={{ opacity: 1 }}
+              />
+            </Tooltip>
+            <Tooltip label="Set as featured photo">
+              <IconButton
+                icon={<LinkIcon />}
+                onClick={() => handleToggleFeaturedPhoto(id)}
+                position="absolute"
+                top={0}
+                left="50%"
+                bgColor={useColorModeValue('gray.200', 'gray.700')}
+                opacity={0.5}
+                _hover={{ opacity: 1 }}
+              />
+            </Tooltip>
+          </>
         ) : null}
       </Box>
     );

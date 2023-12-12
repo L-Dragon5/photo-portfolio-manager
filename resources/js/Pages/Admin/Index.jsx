@@ -58,7 +58,7 @@ import AddAlbum from './forms/AddAlbum';
 import EditAlbum from './forms/EditAlbum';
 import UploadAlbum from './forms/UploadAlbum';
 
-const Index = ({ albums, events }) => {
+const Index = ({ albums, events, cosplayers }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
   const [drawerUploadType, setDrawerUploadType] = useState(null);
 
@@ -262,6 +262,7 @@ const Index = ({ albums, events }) => {
                 onClose={handleModalClose}
                 events={events}
                 album={modifyAlbum}
+                cosplayers={cosplayers}
               />
             ) : (
               <AddAlbum

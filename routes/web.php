@@ -22,7 +22,10 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
+    Route::put('/albums/{album}/cosplayer/add', [AlbumController::class, 'updateAlbumCosplayerAdd']);
+    Route::delete('/albums/{album}/cosplayer/{cosplayer}', [AlbumController::class, 'updateAlbumCosplayerRemove']);
     Route::delete('/albums/{album}/previews/purge', [AlbumController::class, 'destroyPreviews']);
+    Route::put('/photos/{photo}/featured', [AlbumController::class, 'updateFeaturedPhoto']);
     Route::delete('/photos/{photo}', [AlbumController::class, 'destroyImage']);
 
     Route::resource('albums', AlbumController::class)->except([
