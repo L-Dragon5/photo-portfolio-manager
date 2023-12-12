@@ -72,6 +72,19 @@ class PublicController extends Controller
         ]);
     }
 
+    public function indexCulling($password)
+    {
+        try {
+            $album = Album::where('password', $password)->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return Inertia::render('Public/AlbumNotFound');
+        }
+
+        return Inertia::render('Public/Culling', [
+            'album' => $album
+        ]);
+    }
+
     /**
      * Display albums of specified event.
      * 

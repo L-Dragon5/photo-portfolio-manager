@@ -18,6 +18,8 @@ class Photo extends BaseMedia
         return Attribute::make(
             get: function () {
                 $imageInfo = [
+                    'id' => $this->id,
+                    'title' => $this->name,
                     'src' => $this->getUrl(),
                     'height' => $this->getCustomProperty('height'),
                     'width' => $this->getCustomProperty('width'),

@@ -47,6 +47,8 @@ Route::get('/press/{alias}', [PublicController::class, 'showAlbum'])->where('ali
 
 Route::get('/album-download/{album}', [PublicController::class, 'download']);
 
+Route::get('/culling/{password}', [PublicController::class, 'indexCulling']);
+
 // Fallback
 Route::fallback(function () {
     return redirect()->route('home');
