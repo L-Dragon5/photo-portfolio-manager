@@ -2,15 +2,15 @@ import { AddIcon, DeleteIcon, StarIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
-  Flex,
   Heading,
   HStack,
   IconButton,
-  Image,
+  useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
 import { router, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import PhotoAlbum from 'react-photo-album';
 
 import Dropzone from '../components/Dropzone';
 
@@ -20,6 +20,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     album?.cover_image_id,
   );
   const [images, setImages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { setData, post, processing, reset } = useForm('UploadAlbum', {
     images: [],
   });
@@ -64,42 +65,69 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     );
   };
 
+  const handlePurgePreviews = () => {
+    router.delete(`/admin/albums/${album?.id}/previews/purge`, {
+      onSuccess: () => {
+        reloadPage();
+        onClose();
+      },
+    });
+  };
+
+  const customRenderPhoto = ({ renderDefaultPhoto, photo }) => {
+    const { id, index } = photo;
+
+    return (
+      <Box position="relative">
+        {renderDefaultPhoto({ wrapped: true })}
+        <IconButton
+          icon={<DeleteIcon />}
+          onClick={() => handleImageDelete(id, index)}
+          position="absolute"
+          top={0}
+          right={0}
+          bgColor={useColorModeValue('gray.200', 'gray.700')}
+          opacity={0.5}
+          _hover={{ opacity: 1 }}
+        />
+        {type === 'photos' ? (
+          <IconButton
+            icon={
+              <StarIcon color={id === activeCoverImage ? 'yellow' : 'black'} />
+            }
+            onClick={() => handleSetCoverImage(id)}
+            position="absolute"
+            top={0}
+            left={0}
+            bgColor={useColorModeValue('gray.200', 'gray.700')}
+            opacity={0.5}
+            _hover={{ opacity: 1 }}
+          />
+        ) : null}
+      </Box>
+    );
+  };
+
   return (
     <>
+      {type === 'previews' && album.is_public && album?.photos?.length > 0 ? (
+        <Button
+          colorScheme="red"
+          onClick={handlePurgePreviews}
+          isLoading={isSubmitting}
+        >
+          Purge Previews
+        </Button>
+      ) : null}
       <Heading mb={3}>Uploaded Images</Heading>
-      <Flex flexDirection="row" gap={2}>
-        {activeAlbum?.[type]?.map((image, index) => (
-          <HStack key={image.id}>
-            <Box position="relative">
-              <Image {...image?.html} maxH="150px" width="auto" />
-              <IconButton
-                icon={<DeleteIcon />}
-                onClick={() => handleImageDelete(image.id, index)}
-                position="absolute"
-                top={0}
-                right={0}
-                opacity={0.5}
-                _hover={{ opacity: 1 }}
-              />
-              {type === 'photos' ? (
-                <IconButton
-                  icon={
-                    <StarIcon
-                      color={image.id === activeCoverImage ? 'yellow' : 'black'}
-                    />
-                  }
-                  onClick={() => handleSetCoverImage(image.id)}
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  opacity={0.5}
-                  _hover={{ opacity: 1 }}
-                />
-              ) : null}
-            </Box>
-          </HStack>
-        ))}
-      </Flex>
+      <PhotoAlbum
+        layout="rows"
+        photos={album?.[type]?.map((image, index) => ({
+          ...image?.html,
+          index,
+        }))}
+        renderPhoto={customRenderPhoto}
+      />
 
       <VStack as="form" onSubmit={onSubmit} spacing={3} mt={8}>
         <Dropzone setPhotos={setImages} />

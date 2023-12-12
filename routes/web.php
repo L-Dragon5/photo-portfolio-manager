@@ -22,6 +22,7 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
+    Route::delete('/albums/{album}/previews/purge', [AlbumController::class, 'destroyPreviews']);
     Route::delete('/photos/{photo}', [AlbumController::class, 'destroyImage']);
     
     Route::resource('albums', AlbumController::class)->except([
@@ -48,6 +49,7 @@ Route::get('/press/{alias}', [PublicController::class, 'showAlbum'])->where('ali
 Route::get('/album-download/{album}', [PublicController::class, 'download']);
 
 Route::get('/culling/{password}', [PublicController::class, 'indexCulling']);
+Route::put('/culling', [PublicController::class, 'updateCulling']);
 
 // Fallback
 Route::fallback(function () {

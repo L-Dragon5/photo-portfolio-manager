@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Event;
 use App\Models\Photo;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Spatie\Image\Image;
@@ -21,7 +22,7 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::orderBy('date_taken', 'DESC')->get();
+        $albums = Album::with(['relatedPhotos', 'event'])->orderBy('date_taken', 'DESC')->get();
         $events = Event::orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
@@ -53,11 +54,16 @@ class AlbumController extends Controller
     {
         foreach ($request->validated()['images'] as $preview) {
             [$width, $height] = $this->getDimensions($preview);
+            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
 
             $album
                 ->addMedia($preview)
                 ->preservingOriginal()
-                ->withCustomProperties($width || $height ? compact('width', 'height') : [])
+                ->withCustomProperties([
+                    'width' => $width,
+                    'height' => $height,
+                    'date_taken' => $dateTaken,
+                ])
                 ->toMediaCollection('previews');
         }
 
@@ -68,11 +74,17 @@ class AlbumController extends Controller
     {
         foreach ($request->validated()['images'] as $photo) {
             [$width, $height] = $this->getDimensions($photo);
+            $exifData = exif_read_data($photo);
+            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
 
             $album
                 ->addMedia($photo)
                 ->preservingOriginal()
-                ->withCustomProperties($width || $height ? compact('width', 'height') : [])
+                ->withCustomProperties([
+                    'width' => $width,
+                    'height' => $height,
+                    'date_taken' => $dateTaken,
+                ])
                 ->toMediaCollection('photos');
         }
 
@@ -107,6 +119,15 @@ class AlbumController extends Controller
     public function destroyImage(Photo $photo)
     {
         $photo->delete();
+
+        return to_route('admin-base');
+    }
+
+    public function destroyPreviews(Album $album)
+    {
+        $album->clearMediaCollection('previews');
+        $album->password = null;
+        $album->save();
 
         return to_route('admin-base');
     }

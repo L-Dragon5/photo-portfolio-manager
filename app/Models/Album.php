@@ -24,9 +24,19 @@ class Album extends Model implements HasMedia
     ];
     protected $appends = ['cover_image', 'photos', 'previews'];
 
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
     public function cosplayers()
     {
         return $this->belongsToMany(Cosplayer::class);
+    }
+
+    public function relatedPhotos()
+    {
+        return $this->belongsToMany(Photo::class, 'albums_media', 'album_id', 'media_id');
     }
 
     public function registerMediaCollections(): void
@@ -67,14 +77,50 @@ class Album extends Model implements HasMedia
     protected function photos(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getMedia('photos'),
+            get: function () {
+                $photos = $this->getMedia('photos');
+                $photos->sort(function (Photo $a, Photo $b) {
+                    if (!$a->hasCustomProperty('date_taken')) {
+                        return !$b->hasCustomProperty('date_taken') ? 0 : 1;
+                    }
+
+                    if (!$b->hasCustomProperty('date_taken')) {
+                        return -1;
+                    }
+
+                    if ($a->getCustomProperty('date_taken') === $b->getCustomProperty('date_taken')) {
+                        return 0;
+                    }
+
+                    return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
+                });
+                return $photos;
+            },
         );
     }
 
     protected function previews(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getMedia('previews'),
+            get: function () {
+                $photos = $this->getMedia('previews');
+                $photos->sort(function (Photo $a, Photo $b) {
+                    if (!$a->hasCustomProperty('date_taken')) {
+                        return !$b->hasCustomProperty('date_taken') ? 0 : 1;
+                    }
+
+                    if (!$b->hasCustomProperty('date_taken')) {
+                        return -1;
+                    }
+
+                    if ($a->getCustomProperty('date_taken') === $b->getCustomProperty('date_taken')) {
+                        return 0;
+                    }
+
+                    return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
+                });
+                return $photos;
+            },
         );
     }
 }

@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Photo extends BaseMedia
 {
-    protected $fillable = [
-        'album_id',
-        'is_featured',
-    ];
     protected $appends = ['html'];
+
+    public function albums()
+    {
+        return $this->belongsToMany(Album::class, 'albums_media', 'media_id', 'album_id');
+    }
 
     protected function html(): Attribute
     {

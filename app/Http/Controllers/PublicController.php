@@ -75,7 +75,7 @@ class PublicController extends Controller
     public function indexCulling($password)
     {
         try {
-            $album = Album::where('password', $password)->firstOrFail();
+            $album = Album::where('password', $password)->with('relatedPhotos')->firstOrFail();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return Inertia::render('Public/AlbumNotFound');
         }
@@ -83,6 +83,25 @@ class PublicController extends Controller
         return Inertia::render('Public/Culling', [
             'album' => $album
         ]);
+    }
+
+    public function updateCulling(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|nullable|array',
+            'ids.*' => 'numeric',
+            'album_id' => 'required|numeric',
+        ]);
+
+        $album = Album::find($validated['album_id']);
+        if (empty($validated['ids'])) {
+            $album->relatedPhotos()->detach();
+        } else {
+            $album->relatedPhotos()->sync($validated['ids']);
+        }
+        $album->save();
+        
+        return back();
     }
 
     /**

@@ -5,6 +5,12 @@ import 'yet-another-react-lightbox/plugins/captions.css';
 
 import { AddIcon } from '@chakra-ui/icons';
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Checkbox,
@@ -13,9 +19,12 @@ import {
   Spacer,
   Text,
   useColorModeValue,
+  useDisclosure,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { router } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
 import Captions from 'yet-another-react-lightbox/plugins/captions';
@@ -26,8 +35,19 @@ import BaseLayout from './components/BaseLayout';
 
 const Culling = ({ album }) => {
   const [photoIndex, setPhotoIndex] = useState(-1);
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(
+    album?.related_photos?.map((r) => r.id),
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    isOpen: isAlertOpen,
+    onOpen: onAlertOpen,
+    onClose: onAlertClose,
+  } = useDisclosure();
+  const cancelRef = useRef();
+
+  const toast = useToast();
 
   const customRenderPhoto = ({ renderDefaultPhoto, photo }) => {
     const { id } = photo;
@@ -88,7 +108,32 @@ const Culling = ({ album }) => {
     );
   };
 
-  const onSave = () => {};
+  const onSave = () => {
+    setIsSubmitting(true);
+
+    router.put(
+      '/culling',
+      {
+        album_id: album.id,
+        ids: selectedIds,
+      },
+      {
+        onSuccess: () => {
+          setIsSubmitting(false);
+          onAlertClose();
+          toast({
+            title: 'Selected Photos Updated',
+            description:
+              'Thank you for selecting the files. I will beging editing and return back to you shortly.',
+            status: 'success',
+            position: 'top-right',
+            duration: 3000,
+            isClosable: true,
+          });
+        },
+      },
+    );
+  };
 
   return (
     <BaseLayout title={album.name}>
@@ -105,8 +150,7 @@ const Culling = ({ album }) => {
             <Button
               leftIcon={<AddIcon />}
               colorScheme="teal"
-              onClick={onSave}
-              isLoading={isSubmitting}
+              onClick={onAlertOpen}
             >
               Submit
             </Button>
@@ -137,6 +181,48 @@ const Culling = ({ album }) => {
           />
         </>
       )}
+
+      <AlertDialog
+        isOpen={isAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onAlertClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Submit Files to Edit
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              <Text mb={3}>
+                By selecting these photos for editing, you agree to allow me to
+                edit your photos as I see fit.
+              </Text>
+              <Text>
+                Unless otherwise stated to me, you agree for me to post the
+                final edited photos on this website for public view and to my
+                various social media.
+              </Text>
+              <Text mt={6}>
+                If you have any concerns with anything stated above, just
+                contact me.
+              </Text>
+              <Text fontSize="2xs">This isn't legally binding</Text>
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onAlertClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="green"
+                onClick={onSave}
+                isLoading={isSubmitting}
+              >
+                I agree
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </BaseLayout>
   );
 };

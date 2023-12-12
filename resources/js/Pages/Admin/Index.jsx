@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
-  Box,
+  Badge,
   Button,
   Drawer,
   DrawerBody,
@@ -23,14 +23,31 @@ import {
   Heading,
   HStack,
   IconButton,
+  ListItem,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  SimpleGrid,
-  useColorModeValue,
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverFooter,
+  PopoverHeader,
+  PopoverTrigger,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tooltip,
+  Tr,
+  UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react';
 import { router } from '@inertiajs/react';
@@ -125,64 +142,104 @@ const Index = ({ albums, events }) => {
           Add Album
         </Button>
       </HStack>
-      <SimpleGrid minChildWidth="350px" spacing="12px" w="full" mt={4}>
-        {albums?.map((album) => (
-          <Box
-            key={album.id}
-            rounded="md"
-            position="relative"
-            bgColor={useColorModeValue('gray.200', 'gray.700')}
-            minH="100px"
-          >
-            {/*
-            <Image
-              alt={album.name}
-              rounded="md"
-              {...album?.cover_image?.html}
-              maxH="400px"
-            />
-            */}
-            <Heading size="sm" textAlign="left">
-              {album.name}
-            </Heading>
-            <Box
-              opacity={0}
-              _hover={{ opacity: 1 }}
-              transition="all 0.3s"
-              height="full"
-              width="full"
-            >
-              <HStack
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-              >
-                <IconButton
-                  aria-label="Upload previews"
-                  icon={<ViewIcon />}
-                  onClick={(e) => onUploadPreviewsClick(e, album)}
-                />
-                <IconButton
-                  aria-label="Upload final photos"
-                  icon={<StarIcon />}
-                  onClick={(e) => onUploadPhotosClick(e, album)}
-                />
-                <IconButton
-                  aria-label="Edit album"
-                  icon={<EditIcon />}
-                  onClick={(e) => onEditClick(e, album)}
-                />
-                <IconButton
-                  aria-label="Delete album"
-                  icon={<DeleteIcon />}
-                  onClick={(e) => onDeleteClick(e, album)}
-                />
-              </HStack>
-            </Box>
-          </Box>
-        ))}
-      </SimpleGrid>
+      <TableContainer overflowY="auto" maxH="95%">
+        <Table variant="striped" colorScheme="teal">
+          <Thead>
+            <Tr>
+              <Th>Name</Th>
+              <Th>Event</Th>
+              <Th>URL Alias</Th>
+              <Th>Password</Th>
+              <Th>Flags</Th>
+              <Th>Options</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {albums?.map((album) => (
+              <Tr key={album.id}>
+                <Td>{album.name}</Td>
+                <Td>{album?.event?.name}</Td>
+                <Td>{album.url_alias}</Td>
+                <Td>{album.password}</Td>
+                <Td>
+                  {album.is_press ? (
+                    <Badge colorScheme="purple" variant="subtle">
+                      Press
+                    </Badge>
+                  ) : null}{' '}
+                  {album.is_public ? (
+                    <Badge colorScheme="green" variant="solid">
+                      Public
+                    </Badge>
+                  ) : null}
+                  {album?.related_photos?.length > 0 ? (
+                    <Popover>
+                      <PopoverTrigger>
+                        <Badge
+                          colorScheme="pink"
+                          variant="solid"
+                          cursor="pointer"
+                        >
+                          Previews Selected
+                        </Badge>
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <PopoverHeader>Selected filenames</PopoverHeader>
+                        <PopoverBody>
+                          <UnorderedList h="200px" overflow="auto">
+                            {album.related_photos.map((photo) => (
+                              <ListItem key={photo.id}>{photo.name}</ListItem>
+                            ))}
+                          </UnorderedList>
+                        </PopoverBody>
+                      </PopoverContent>
+                    </Popover>
+                  ) : null}
+                </Td>
+
+                <Td>
+                  <HStack>
+                    {!album.is_public ||
+                    album?.photos?.length < 1 ||
+                    album?.previews?.length > 0 ? (
+                      <Tooltip label="Upload previews">
+                        <IconButton
+                          label="Upload Previews"
+                          aria-label="Upload previews"
+                          icon={<ViewIcon />}
+                          onClick={(e) => onUploadPreviewsClick(e, album)}
+                        />
+                      </Tooltip>
+                    ) : null}
+
+                    <Tooltip label="Upload displayed photos">
+                      <IconButton
+                        aria-label="Upload displayed photos"
+                        icon={<StarIcon />}
+                        onClick={(e) => onUploadPhotosClick(e, album)}
+                      />
+                    </Tooltip>
+                    <Tooltip label="Edit album details">
+                      <IconButton
+                        aria-label="Edit album details"
+                        icon={<EditIcon />}
+                        onClick={(e) => onEditClick(e, album)}
+                      />
+                    </Tooltip>
+                    <Tooltip label="Delete album">
+                      <IconButton
+                        aria-label="Delete album"
+                        icon={<DeleteIcon />}
+                        onClick={(e) => onDeleteClick(e, album)}
+                      />
+                    </Tooltip>
+                  </HStack>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
 
       <Modal
         isOpen={isModalOpen}
