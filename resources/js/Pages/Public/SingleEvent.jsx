@@ -30,14 +30,14 @@ const SingleEvent = ({ event, albums }) => {
       setActiveAlbums(
         albums.toSorted(
           (a, b) =>
-            new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+            new Date(a.date_taken).getTime() - new Date(b.date_taken).getTime(),
         ),
       );
     } else if (sortingOption === 'date-desc') {
       setActiveAlbums(
         albums.toSorted(
           (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
+            new Date(b.date_taken).getTime() - new Date(a.date_taken).getTime(),
         ),
       );
     }
