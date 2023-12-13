@@ -66,7 +66,11 @@ const SidebarContent = ({ onClose, ...rest }) => {
     >
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
         <Image
-          src="https://photo-portfolio-production-photoportfolioimages-zo958yhaaa6q.s3.amazonaws.com/logo-white.webp"
+          src={
+            colorMode === 'light'
+              ? 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-black.png'
+              : 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-white.png'
+          }
           alt="logo"
           width="full"
         />

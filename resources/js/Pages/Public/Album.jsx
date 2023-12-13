@@ -60,6 +60,18 @@ const Album = ({ album, breadcrumbs }) => {
     });
   };
 
+  const customRenderPhoto = ({ renderDefaultPhoto }) => {
+    return (
+      <Box
+        position="relative"
+        transition="0.3s transform"
+        _hover={{ transform: 'scale(1.025)' }}
+      >
+        {renderDefaultPhoto()}
+      </Box>
+    );
+  };
+
   return (
     <BaseLayout title={album.name}>
       <Breadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
@@ -111,6 +123,7 @@ const Album = ({ album, breadcrumbs }) => {
               if (containerWidth < 2800) return 4;
               return 5;
             }}
+            renderPhoto={customRenderPhoto}
             onClick={({ index: current }) => setPhotoIndex(current)}
           />
 
