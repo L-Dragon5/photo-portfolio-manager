@@ -61,7 +61,7 @@ const SingleEvent = ({ event, albums }) => {
             shoot?.url_alias ? shoot.url_alias : shoot.id
           }/`}
         >
-          {renderDefaultPhoto()}
+          {renderDefaultPhoto({ wrapped: true })}
 
           <Flex
             flexDirection="column"
