@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import BaseLayout from './components/BaseLayout';
 
 const Events = ({ events }) => {
-  const [sortingOption, setSortingOption] = useState('name-asc');
+  const [sortingOption, setSortingOption] = useState('date-desc');
   const [activeEvents, setActiveEvents] = useState(events);
 
   useEffect(() => {

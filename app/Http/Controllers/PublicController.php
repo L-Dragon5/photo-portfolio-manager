@@ -38,7 +38,7 @@ class PublicController extends Controller
      */
     public function indexEvents()
     {
-        $events = Event::orderBy('name', 'ASC')->get();
+        $events = Event::orderBy('start_date', 'DESC')->get();
 
         return Inertia::render('Public/Events', [
             'events' => $events,
@@ -54,7 +54,7 @@ class PublicController extends Controller
     {
         $albums = Album::where('is_public', true)->where(function ($q) {
             $q->where('event_id', null)->orWhere('event_id', '');
-        })->orderBy('name', 'ASC')->get();
+        })->orderBy('start_date', 'DESC')->get();
 
         return Inertia::render('Public/OnLocation', [
             'albums' => $albums,
@@ -71,7 +71,7 @@ class PublicController extends Controller
         $albums = Album::where([
             ['is_public', '=',  true],
             ['is_press', '=', true],
-        ])->orderBy('name', 'ASC')->get();
+        ])->orderBy('start_date', 'DESC')->get();
 
         return Inertia::render('Public/Press', [
             'albums' => $albums,

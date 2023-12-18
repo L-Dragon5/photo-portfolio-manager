@@ -87,11 +87,11 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     });
   };
 
-  const customRenderPhoto = ({ renderDefaultPhoto, photo }) => {
+  const customRenderPhoto = ({ renderDefaultPhoto, wrapperStyle, photo }) => {
     const { id, index } = photo;
 
     return (
-      <Box position="relative">
+      <Box position="relative" {...wrapperStyle}>
         {renderDefaultPhoto({ wrapped: true })}
         <Tooltip label="Permanently delete photo">
           <IconButton

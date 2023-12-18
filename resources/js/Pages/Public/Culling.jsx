@@ -49,7 +49,7 @@ const Culling = ({ album }) => {
 
   const toast = useToast();
 
-  const customRenderPhoto = ({ renderDefaultPhoto, photo }) => {
+  const customRenderPhoto = ({ renderDefaultPhoto, wrapperStyle, photo }) => {
     const { id } = photo;
 
     const onSelection = (e) => {
@@ -77,6 +77,7 @@ const Culling = ({ album }) => {
         <Box
           filter={!selectedIds.includes(id) ? 'grayscale(1)' : null}
           cursor="pointer"
+          {...wrapperStyle}
         >
           {renderDefaultPhoto({ wrapped: true })}
         </Box>

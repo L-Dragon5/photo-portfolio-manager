@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import {
+  Box,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -43,7 +44,7 @@ const SingleEvent = ({ event, albums }) => {
     }
   }, [sortingOption]);
 
-  const customRenderPhoto = ({ layout, renderDefaultPhoto }) => {
+  const customRenderPhoto = ({ layout, wrapperStyle, renderDefaultPhoto }) => {
     const shoot = activeAlbums[layout.index];
 
     return (
@@ -54,28 +55,36 @@ const SingleEvent = ({ event, albums }) => {
         borderColor="gray.300"
         transition="0.3s transform"
         _hover={{ transform: 'scale(1.025)' }}
+        {...wrapperStyle}
       >
         <LinkOverlay
           as={Link}
-          href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
+          href={`/on-location/${
             shoot?.url_alias ? shoot.url_alias : shoot.id
           }/`}
         >
-          {renderDefaultPhoto({ wrapped: true })}
-
-          <Flex
-            flexDirection="column"
-            alignItems="center"
-            p={4}
-            bgColor={useColorModeValue('blue.200', 'blue.800')}
+          <Box
+            position="absolute"
+            bottom={0}
+            left={0}
+            p={2}
+            bgColor="blackAlpha.600"
+            width="full"
           >
-            <Heading size="md">{shoot.name}</Heading>
-            <Heading size="xs">
-              {shoot.date_taken &&
-                new Date(shoot.date_taken).toLocaleDateString()}
+            <Heading size="md" color="gray.100">
+              {shoot.name}
             </Heading>
-          </Flex>
+            <Heading size="xs" color="gray.100">
+              {shoot.date_taken &&
+                new Date(shoot.date_taken).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+            </Heading>
+          </Box>
         </LinkOverlay>
+        {renderDefaultPhoto({ wrapped: true })}
       </LinkBox>
     );
   };
