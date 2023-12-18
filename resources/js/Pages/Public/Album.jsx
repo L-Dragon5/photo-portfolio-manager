@@ -1,6 +1,5 @@
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
-import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
 import {
@@ -23,7 +22,6 @@ import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import Download from 'yet-another-react-lightbox/plugins/download';
-import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 
 import BaseLayout from './components/BaseLayout';
@@ -132,7 +130,7 @@ const Album = ({ album, breadcrumbs }) => {
             close={() => setPhotoIndex(-1)}
             index={photoIndex}
             slides={album?.photos?.map((photo) => photo?.html)}
-            plugins={[Counter, Download, Thumbnails, Zoom]}
+            plugins={[Counter, Download, Zoom]}
             counter={{ container: { style: { top: 'unset', bottom: 0 } } }}
           />
         </>
