@@ -59,7 +59,7 @@ const SingleEvent = ({ event, albums }) => {
       >
         <LinkOverlay
           as={Link}
-          href={`/on-location/${
+          href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
             shoot?.url_alias ? shoot.url_alias : shoot.id
           }/`}
         >

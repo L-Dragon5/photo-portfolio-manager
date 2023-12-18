@@ -46,9 +46,7 @@ const Press = ({ albums }) => {
       >
         <LinkOverlay
           as={Link}
-          href={`/on-location/${
-            shoot?.url_alias ? shoot.url_alias : shoot.id
-          }/`}
+          href={`/press/${shoot?.url_alias ? shoot.url_alias : shoot.id}/`}
         >
           <Box
             position="absolute"
