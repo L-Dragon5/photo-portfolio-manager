@@ -38,7 +38,7 @@ class PublicController extends Controller
      */
     public function indexEvents()
     {
-        $events = Event::orderBy('start_date', 'DESC')->get();
+        $events = Event::withCount('albums')->orderBy('start_date', 'DESC')->get();
 
         return Inertia::render('Public/Events', [
             'events' => $events,

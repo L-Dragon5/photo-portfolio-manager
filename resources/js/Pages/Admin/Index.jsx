@@ -148,6 +148,7 @@ const Index = ({ albums, events, cosplayers }) => {
             <Tr>
               <Th>Name</Th>
               <Th>Event</Th>
+              <Th>Date Taken</Th>
               <Th>URL Alias</Th>
               <Th>Password</Th>
               <Th>Flags</Th>
@@ -159,6 +160,7 @@ const Index = ({ albums, events, cosplayers }) => {
               <Tr key={album.id}>
                 <Td>{album.name}</Td>
                 <Td>{album?.event?.name}</Td>
+                <Td>{album?.date_taken}</Td>
                 <Td>{album.url_alias}</Td>
                 <Td>{album.password}</Td>
                 <Td>

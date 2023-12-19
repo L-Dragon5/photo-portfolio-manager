@@ -4,7 +4,9 @@ import {
   LinkOverlay,
   Select,
   SimpleGrid,
+  Spacer,
   useColorModeValue,
+  VStack,
 } from '@chakra-ui/react';
 import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -52,7 +54,7 @@ const Events = ({ events }) => {
       <SimpleGrid
         minChildWidth="250px"
         spacingX="12px"
-        spacingY="24px"
+        spacingY="18px"
         w="full"
       >
         {activeEvents?.map((event) => (
@@ -62,24 +64,32 @@ const Events = ({ events }) => {
             position="relative"
             p={4}
             _hover={{ bg: useColorModeValue('blue.200', 'blue.800') }}
+            border="1px solid"
+            borderColor={useColorModeValue('gray.300', 'gray.600')}
           >
             <LinkOverlay
               as={Link}
               href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
             >
-              <Heading size="md" textAlign="center">
-                {event.name}
-              </Heading>
-              <Heading size="xs" textAlign="center">
-                {[
-                  event.start_date &&
-                    new Date(event.start_date).toLocaleDateString(),
-                  event.end_date &&
-                    new Date(event.end_date).toLocaleDateString(),
-                ]
-                  .filter((n) => n)
-                  .join(' - ')}
-              </Heading>
+              <VStack h="full">
+                <Heading size="md" textAlign="center" fontWeight="600">
+                  {event.name}
+                </Heading>
+                <Heading size="xs" textAlign="center" fontWeight="400">
+                  {[
+                    event.start_date &&
+                      new Date(event.start_date).toLocaleDateString(),
+                    event.end_date &&
+                      new Date(event.end_date).toLocaleDateString(),
+                  ]
+                    .filter((n) => n)
+                    .join(' - ')}
+                </Heading>
+                <Spacer />
+                <Heading size="sm" textAlign="center" mt={4} fontWeight="500">
+                  {event.albums_count} albums
+                </Heading>
+              </VStack>
             </LinkOverlay>
           </LinkBox>
         ))}
