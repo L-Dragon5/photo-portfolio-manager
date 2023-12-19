@@ -144,19 +144,32 @@ class PublicController extends Controller
         $queries = array_filter($queries);
 
         $type = array_shift($queries);
-        $eventId = null;
+        $event = null;
         if ($type === 'events') {
-            $eventId = array_shift($queries);
+            $eventQuery = array_shift($queries);
+
+            if (is_numeric($eventQuery)) {
+                $event = Event::findOrFail($eventQuery);
+            } else {
+                $event = Event::where('url_alias', $eventQuery)->firstOrFail();
+            }
         }
 
         $albumToPresentId = array_pop($queries);
 
         try {
             if (is_numeric($albumToPresentId)) {
-                $album = Album::with('cosplayers')->findOrFail($albumToPresentId);
+                $album = Album::with('cosplayers');
+                if (!is_null($event)) {
+                    $album = $album->where('event_id', $event->id);
+                }
+                $album = $album->findOrFail($albumToPresentId);
             } else {
-                $album = Album::with('cosplayers')->where('url_alias', $albumToPresentId)
-                    ->firstOrFail();
+                $album = Album::with('cosplayers')->where('url_alias', $albumToPresentId);
+                if (!is_null($event)) {
+                    $album = $album->where('event_id', $event->id);
+                }
+                $album = $album->firstOrFail();
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return Inertia::render('Public/AlbumNotFound');
@@ -180,13 +193,7 @@ class PublicController extends Controller
             $breadcrumbs[] = ['url_alias' => $type, 'name' => $name];
         }
 
-        if (! empty($eventId)) {
-            if (is_numeric($eventId)) {
-                $event = Event::findOrFail($eventId);
-            } else {
-                $event = Event::where('url_alias', $eventId)->firstOrFail();
-            }
-
+        if (! is_null($event)) {
             $breadcrumbs[] = ['url_alias' => "events/{$event->url_alias}", 'name' => $event->name];
         }
 
