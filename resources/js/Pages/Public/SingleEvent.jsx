@@ -62,6 +62,7 @@ const SingleEvent = ({ event, albums }) => {
           href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
             shoot?.url_alias ? shoot.url_alias : shoot.id
           }/`}
+          preserveScroll
         >
           <Box
             position="absolute"

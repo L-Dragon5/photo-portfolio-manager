@@ -16,6 +16,7 @@ const BaseLayout = ({ title, children }) => {
           p={4}
           overflowY="auto"
           h="full"
+          scroll-region
         >
           {children}
         </Box>

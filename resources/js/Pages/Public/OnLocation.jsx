@@ -49,6 +49,7 @@ const OnLocation = ({ albums }) => {
           href={`/on-location/${
             shoot?.url_alias ? shoot.url_alias : shoot.id
           }/`}
+          preserveScroll
         >
           <Box
             position="absolute"

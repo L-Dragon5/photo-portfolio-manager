@@ -70,6 +70,7 @@ const Events = ({ events }) => {
             <LinkOverlay
               as={Link}
               href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
+              preserveScroll
             >
               <VStack h="full">
                 <Heading size="md" textAlign="center" fontWeight="600">

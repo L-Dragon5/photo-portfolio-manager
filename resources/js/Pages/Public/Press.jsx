@@ -47,6 +47,7 @@ const Press = ({ albums }) => {
         <LinkOverlay
           as={Link}
           href={`/press/${shoot?.url_alias ? shoot.url_alias : shoot.id}/`}
+          preserveScroll
         >
           <Box
             position="absolute"
