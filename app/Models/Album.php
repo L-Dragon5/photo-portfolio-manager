@@ -81,7 +81,7 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $photos = $this->getMedia('photos');
-                $photos->sort(function (Photo $a, Photo $b) {
+                $sorted = $photos->sort(function (Photo $a, Photo $b) {
                     if (! $a->hasCustomProperty('date_taken')) {
                         return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
                     }
@@ -97,7 +97,7 @@ class Album extends Model implements HasMedia
                     return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
                 });
 
-                return $photos;
+                return $sorted->values()->all();
             },
         );
     }
@@ -107,7 +107,7 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $photos = $this->getMedia('previews');
-                $photos->sort(function (Photo $a, Photo $b) {
+                $sorted = $photos->sort(function (Photo $a, Photo $b) {
                     if (! $a->hasCustomProperty('date_taken')) {
                         return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
                     }
@@ -123,7 +123,7 @@ class Album extends Model implements HasMedia
                     return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
                 });
 
-                return $photos;
+                return $sorted->values()->all();
             },
         );
     }
