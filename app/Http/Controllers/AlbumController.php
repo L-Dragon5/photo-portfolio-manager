@@ -24,14 +24,12 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->get();
+        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
         $events = Event::orderBy('name', 'ASC')->get();
-        $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
             'events' => $events,
-            'cosplayers' => $cosplayers,
         ]);
     }
 

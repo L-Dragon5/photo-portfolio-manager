@@ -1,4 +1,4 @@
-import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import {
   IconButton,
   Input,
@@ -11,9 +11,11 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import { router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
-const ModifyCosplayerToAlbum = ({ reloadPage, album, cosplayers }) => {
+const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
+  const [cosplayers, setCosplayers] = useState([]);
   const [activeCosplayers, setActiveCosplayers] = useState(album?.cosplayers);
   const { data, setData, put, reset, processing } = useForm(
     `ModifyCosplayerToAlbum-${album.id}`,
@@ -22,6 +24,16 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album, cosplayers }) => {
       character: '',
     },
   );
+
+  useEffect(() => {
+    axios({
+      url: '/api/admin/cosplayers',
+      method: 'GET',
+      responseType: 'json',
+    }).then((response) => {
+      setCosplayers(response.data);
+    });
+  }, []);
 
   const handleAddCosplayer = () => {
     put(`/admin/albums/${album.id}/cosplayer/add`, {

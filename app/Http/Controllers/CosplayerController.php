@@ -21,6 +21,12 @@ class CosplayerController extends Controller
         ]);
     }
 
+    public function getAll()
+    {
+        $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
+        return json_encode($cosplayers);
+    }
+
     /**
      * Store a newly created resource in storage.
      */

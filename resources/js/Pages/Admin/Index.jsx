@@ -1,5 +1,9 @@
 import {
   AddIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   DeleteIcon,
   EditIcon,
   StarIcon,
@@ -20,6 +24,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  Flex,
   Heading,
   HStack,
   IconButton,
@@ -31,12 +36,8 @@ import {
   ModalHeader,
   ModalOverlay,
   Popover,
-  PopoverAnchor,
-  PopoverArrow,
   PopoverBody,
-  PopoverCloseButton,
   PopoverContent,
-  PopoverFooter,
   PopoverHeader,
   PopoverTrigger,
   Table,
@@ -50,7 +51,7 @@ import {
   UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
@@ -58,9 +59,11 @@ import AddAlbum from './forms/AddAlbum';
 import EditAlbum from './forms/EditAlbum';
 import UploadAlbum from './forms/UploadAlbum';
 
-const Index = ({ albums, events, cosplayers }) => {
+const Index = ({ albums, events }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
   const [drawerUploadType, setDrawerUploadType] = useState(null);
+
+  console.log(albums);
 
   const {
     isOpen: isAlertOpen,
@@ -142,7 +145,46 @@ const Index = ({ albums, events, cosplayers }) => {
           Add Album
         </Button>
       </HStack>
-      <TableContainer overflowY="auto" maxH="95%">
+      <Flex>
+        <IconButton
+          as={Link}
+          icon={<ArrowLeftIcon />}
+          href={albums?.first_page_url}
+          only={['albums']}
+        />
+        <IconButton
+          as={Link}
+          icon={<ChevronLeftIcon boxSize={7} />}
+          href={albums?.prev_page_url}
+          only={['albums']}
+        />
+        {albums?.links?.map((link, index) => {
+          if (index === 0 || index === albums.links.length - 1) return;
+          return (
+            <Button
+              as={Link}
+              href={link.url}
+              only={['albums']}
+              colorScheme={link.active ? 'blue' : 'gray'}
+            >
+              {link.label}
+            </Button>
+          );
+        })}
+        <IconButton
+          as={Link}
+          icon={<ChevronRightIcon boxSize={7} />}
+          href={albums?.next_page_url}
+          only={['albums']}
+        />
+        <IconButton
+          as={Link}
+          icon={<ArrowRightIcon />}
+          href={albums?.last_page_url}
+          only={['albums']}
+        />
+      </Flex>
+      <TableContainer overflowY="auto" maxH="93%">
         <Table variant="striped" colorScheme="teal">
           <Thead>
             <Tr>
@@ -156,7 +198,7 @@ const Index = ({ albums, events, cosplayers }) => {
             </Tr>
           </Thead>
           <Tbody>
-            {albums?.map((album) => (
+            {albums?.data?.map((album) => (
               <Tr key={album.id}>
                 <Td>{album.name}</Td>
                 <Td>{album?.event?.name}</Td>
@@ -264,7 +306,6 @@ const Index = ({ albums, events, cosplayers }) => {
                 onClose={handleModalClose}
                 events={events}
                 album={modifyAlbum}
-                cosplayers={cosplayers}
               />
             ) : (
               <AddAlbum

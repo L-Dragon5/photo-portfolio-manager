@@ -17,7 +17,7 @@ import { useForm } from '@inertiajs/react';
 
 import ModifyCosplayerToAlbum from './ModifyCosplayerToAlbum';
 
-const EditAlbum = ({ events, reloadPage, onClose, album, cosplayers }) => {
+const EditAlbum = ({ events, reloadPage, onClose, album }) => {
   const { data, setData, put, processing, errors } = useForm(
     `EditAlbum-${album.id}`,
     {
@@ -137,11 +137,7 @@ const EditAlbum = ({ events, reloadPage, onClose, album, cosplayers }) => {
         <FormErrorMessage>{data?.notes}</FormErrorMessage>
       </FormControl>
 
-      <ModifyCosplayerToAlbum
-        reloadPage={reloadPage}
-        album={album}
-        cosplayers={cosplayers}
-      />
+      <ModifyCosplayerToAlbum reloadPage={reloadPage} album={album} />
 
       <HStack justifyContent="flex-end" my={4} w="full">
         <Button onClick={onClose}>Cancel</Button>

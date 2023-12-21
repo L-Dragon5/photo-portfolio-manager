@@ -37,6 +37,7 @@ console_command = "php /var/www/html/artisan tinker"
   AWS_BUCKET = "ldragonphotographymedia"
   AWS_URL = "https://ldragonphotographymedia.s3.amazonaws.com/"
   AWS_USE_PATH_STYLE_ENDPOINT = "false"
+  PHP_MEMORY_LIMIT = "512M"
 
 [http_service]
   internal_port = 8080
