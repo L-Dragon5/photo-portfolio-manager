@@ -38,6 +38,9 @@ console_command = "php /var/www/html/artisan tinker"
   AWS_URL = "https://ldragonphotographymedia.s3.amazonaws.com/"
   AWS_USE_PATH_STYLE_ENDPOINT = "false"
   PHP_MEMORY_LIMIT = "512M"
+  PHP_POST_MAX_SIZE = "20M"
+  PHP_UPLOAD_MAX_FILE_SIZE = "4M"
+  PHP_MAX_FILE_UPLOADS = "20"
 
 [http_service]
   internal_port = 8080

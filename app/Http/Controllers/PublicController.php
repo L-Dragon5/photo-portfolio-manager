@@ -108,7 +108,7 @@ class PublicController extends Controller
         $album->save();
 
         if (app()->isProduction()) {
-            Mail::to('me@joseph-oh.com')->send(new PreviewsSelected(($album)));
+            // Mail::to('me@joseph-oh.com')->send(new PreviewsSelected(($album)));
         }
 
         return back();

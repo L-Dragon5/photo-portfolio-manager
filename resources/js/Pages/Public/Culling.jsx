@@ -64,45 +64,53 @@ const Culling = ({ album }) => {
     };
 
     return (
-      <Box position="relative" mb={4}>
-        <Text
+      <Box position="relative" {...wrapperStyle}>
+        <Box
           position="absolute"
-          bgColor="blackAlpha.700"
+          bottom="56px"
+          left={0}
+          p={2}
+          bgColor="blackAlpha.600"
+          width="full"
           zIndex={1}
-          w="full"
-          noOfLines={1}
         >
-          {photo.title}
-        </Text>
+          <Text w="full" noOfLines={1} color="gray.100">
+            {photo.title}
+          </Text>
+        </Box>
+
         <Box
           filter={!selectedIds.includes(id) ? 'grayscale(1)' : null}
           cursor="pointer"
-          {...wrapperStyle}
         >
           {renderDefaultPhoto({ wrapped: true })}
         </Box>
 
         {selectedIds.includes(id) ? (
           <HStack bgColor={useColorModeValue('green.200', 'green.700')} p={4}>
-            <Text>Selected</Text>
-            <Spacer />
             <Checkbox
               defaultChecked={selectedIds.includes(id)}
               checked={selectedIds.includes(id)}
               size="lg"
+              w="full"
+              h="full"
               onChange={onSelection}
-            />
+            >
+              Selected
+            </Checkbox>
           </HStack>
         ) : (
           <HStack bgColor={useColorModeValue('red.200', 'red.700')} p={4}>
-            <Text>Not Selected</Text>
-            <Spacer />
             <Checkbox
               defaultChecked={selectedIds.includes(id)}
               checked={selectedIds.includes(id)}
               size="lg"
+              w="full"
+              h="full"
               onChange={onSelection}
-            />
+            >
+              Not Selected
+            </Checkbox>
           </HStack>
         )}
       </Box>
