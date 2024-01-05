@@ -231,9 +231,13 @@ const Index = ({ albums, events }) => {
                         <PopoverHeader>Selected filenames</PopoverHeader>
                         <PopoverBody>
                           <UnorderedList h="200px" overflow="auto">
-                            {album.related_photos.map((photo) => (
-                              <ListItem key={photo.id}>{photo.name}</ListItem>
-                            ))}
+                            {album.related_photos
+                              .toSorted((a, b) =>
+                                a.name.localeCompare(b.name, 'en'),
+                              )
+                              .map((photo) => (
+                                <ListItem key={photo.id}>{photo.name}</ListItem>
+                              ))}
                           </UnorderedList>
                         </PopoverBody>
                       </PopoverContent>
