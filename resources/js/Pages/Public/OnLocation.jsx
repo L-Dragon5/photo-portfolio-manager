@@ -10,22 +10,20 @@ const OnLocation = ({ albums }) => {
   const [activeAlbums, setActiveAlbums] = useState(albums);
 
   useEffect(() => {
-    if (sortingOption === 'name-asc') {
+    if (sortingOption === 'date-desc') {
       setActiveAlbums(albums);
-    } else if (sortingOption === 'name-desc') {
-      setActiveAlbums(albums.toReversed());
     } else if (sortingOption === 'date-asc') {
+      setActiveAlbums(albums.toReversed());
+    } else if (sortingOption === 'name-asc') {
       setActiveAlbums(
-        albums.toSorted(
-          (a, b) =>
-            new Date(a.date_taken).getTime() - new Date(b.date_taken).getTime(),
+        albums.toSorted((a, b) =>
+          a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }),
         ),
       );
-    } else if (sortingOption === 'date-desc') {
+    } else if (sortingOption === 'name-desc') {
       setActiveAlbums(
-        albums.toSorted(
-          (a, b) =>
-            new Date(b.date_taken).getTime() - new Date(a.date_taken).getTime(),
+        albums.toSorted((a, b) =>
+          b.name.localeCompare(a.name, 'en', { sensitivity: 'base' }),
         ),
       );
     }

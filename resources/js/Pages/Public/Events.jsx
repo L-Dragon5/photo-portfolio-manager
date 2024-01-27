@@ -18,22 +18,20 @@ const Events = ({ events }) => {
   const [activeEvents, setActiveEvents] = useState(events);
 
   useEffect(() => {
-    if (sortingOption === 'name-asc') {
+    if (sortingOption === 'date-desc') {
       setActiveEvents(events);
-    } else if (sortingOption === 'name-desc') {
-      setActiveEvents(events.toReversed());
     } else if (sortingOption === 'date-asc') {
+      setActiveEvents(events.toReversed());
+    } else if (sortingOption === 'name-asc') {
       setActiveEvents(
-        events.toSorted(
-          (a, b) =>
-            new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+        events.toSorted((a, b) =>
+          a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }),
         ),
       );
-    } else if (sortingOption === 'date-desc') {
+    } else if (sortingOption === 'name-desc') {
       setActiveEvents(
-        events.toSorted(
-          (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
+        events.toSorted((a, b) =>
+          b.name.localeCompare(a.name, 'en', { sensitivity: 'base' }),
         ),
       );
     }

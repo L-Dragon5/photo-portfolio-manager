@@ -54,7 +54,7 @@ class PublicController extends Controller
     {
         $albums = Album::where('is_public', true)->where(function ($q) {
             $q->where('event_id', null)->orWhere('event_id', '');
-        })->orderBy('start_date', 'DESC')->get();
+        })->orderBy('date_taken', 'DESC')->get();
 
         return Inertia::render('Public/OnLocation', [
             'albums' => $albums,
@@ -162,12 +162,20 @@ class PublicController extends Controller
                 $album = Album::with('cosplayers');
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
+                } else {
+                    $album = $album->where(function ($q) {
+                        $q->where('event_id', null)->orWhere('event_id', '');
+                    });
                 }
                 $album = $album->findOrFail($albumToPresentId);
             } else {
                 $album = Album::with('cosplayers')->where('url_alias', $albumToPresentId);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
+                } else {
+                    $album = $album->where(function ($q) {
+                        $q->where('event_id', null)->orWhere('event_id', '');
+                    });
                 }
                 $album = $album->firstOrFail();
             }
