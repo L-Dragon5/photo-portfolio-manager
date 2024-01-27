@@ -122,9 +122,13 @@ class PublicController extends Controller
     public function showEvent($id)
     {
         if (is_numeric($id)) {
-            $event = Event::with(['albums'])->find($id);
+            $event = Event::with(['albums' => function ($q) {
+                $q->where('albums.is_public', '=', 1);
+            }])->find($id);
         } else {
-            $event = Event::where('url_alias', $id)->with(['albums'])->first();
+            $event = Event::where('url_alias', $id)->with(['albums' => function ($q) {
+                $q->where('albums.is_public', '=', 1);
+            }])->first();
         }
 
         return Inertia::render('Public/SingleEvent', [
