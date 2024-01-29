@@ -95,7 +95,7 @@ const Album = ({ album, breadcrumbs }) => {
             ) : null}
           </HStack>
 
-          <Flex spacing={4} mb={6} zIndex={2}>
+          <Flex spacing={4} mb={6} zIndex={2} gap={1}>
             {album?.cosplayers?.map((cos) => (
               <Tag
                 key={cos.id}

@@ -22,9 +22,14 @@ class PublicController extends Controller
     public function index()
     {
         $fps = FeaturedPhoto::inRandomOrder()->get()->toArray();
-        $photos = array_map(function ($fp) {
-            return Photo::find($fp['media_id']);
-        }, $fps);
+        $photos = array_reduce($fps, function ($carry, $fp) {
+            $photo = Photo::find($fp['media_id']);
+            if (!empty($photo)) {
+                $carry[] = $photo;
+            }
+
+            return $carry;
+        }, []);
 
         return Inertia::render('Public/Index', [
             'featuredPhotos' => $photos,

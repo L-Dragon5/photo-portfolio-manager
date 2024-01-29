@@ -151,6 +151,10 @@ class AlbumController extends Controller
 
     public function destroyImage(Photo $photo)
     {
+        $fp = FeaturedPhoto::where('media_id', $photo->id)->first();
+        if (!empty($fp)) {
+            $fp->delete();
+        }
         $photo->delete();
 
         return to_route('admin-base');
