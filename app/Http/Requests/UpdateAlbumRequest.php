@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,17 +24,17 @@ class UpdateAlbumRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'event_id' => 'sometimes|nullable|numeric',
-            'notes' => 'sometimes|nullable|string',
-            'cover_image_id' => 'sometimes|nullable|numeric',
-            'url_alias' => 'sometimes|string',
-            'password' => 'sometimes|nullable|string',
-            'date_taken' => 'sometimes|nullable|date',
-            'is_press' => 'sometimes|nullable|boolean',
-            'is_public' => 'sometimes|nullable|boolean',
-            'cosplayer_id' => 'sometimes|nullable|numeric',
-            'character' => 'sometimes|nullable|string',
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'event_id' => ['sometimes', 'nullable', 'numeric'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+            'cover_image_id' => ['sometimes', 'nullable', 'numeric'],
+            'url_alias' => ['sometimes', 'string'],
+            'password' => ['sometimes', 'nullable', 'string'],
+            'date_taken' => ['sometimes', 'nullable', 'date'],
+            'is_press' => ['sometimes', 'nullable', 'boolean'],
+            'is_public' => ['sometimes', 'nullable', 'boolean'],
+            'cosplayer_id' => ['sometimes', 'nullable', 'numeric'],
+            'character' => ['sometimes', 'nullable', 'string'],
         ];
     }
 }

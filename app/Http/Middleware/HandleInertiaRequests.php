@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
@@ -23,6 +25,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return string|null
      */
+    #[\Override]
     public function version(Request $request)
     {
         return parent::version($request);
@@ -35,6 +38,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array
      */
+    #[\Override]
     public function share(Request $request)
     {
         return array_merge(parent::share($request), [

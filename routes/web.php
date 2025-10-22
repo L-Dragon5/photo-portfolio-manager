@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\CosplayerController;
 use App\Http\Controllers\EventController;
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Admin Routes
-Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
+Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): void {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
@@ -50,11 +52,10 @@ Route::get('/press', [PublicController::class, 'indexPress'])->name('press');
 Route::get('/press/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
 
 Route::get('/album-download/{album}', [PublicController::class, 'download']);
+Route::post('/photo-download', [PublicController::class, 'downloadPhoto']);
 
 Route::get('/culling/{password}', [PublicController::class, 'indexCulling']);
 Route::put('/culling', [PublicController::class, 'updateCulling']);
 
 // Fallback
-Route::fallback(function () {
-    return redirect()->route('home');
-});
+Route::fallback(fn() => to_route('home'));

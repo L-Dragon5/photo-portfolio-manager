@@ -148,7 +148,13 @@ const Culling = ({ album }) => {
     <BaseLayout title={album.name}>
       {album?.previews.length > 0 && (
         <>
-          <HStack mb={4}>
+          <HStack
+            mb={4}
+            position="sticky"
+            top="-1rem"
+            zIndex={2}
+            bg={useColorModeValue('gray.50', 'gray.800')}
+          >
             <VStack alignItems="left">
               <Heading>Culling - {album.name}</Heading>
               <Heading size="lg" variant="h3">

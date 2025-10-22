@@ -15,7 +15,7 @@ console_command = "php /var/www/html/artisan tinker"
 [env]
   APP_NAME = "L-Dragon Photography"
   APP_ENV = "production"
-  APP_URL = "https://photo-portfolio-manager.fly.dev"
+  APP_URL = "https://l-dragon.photography/"
   APP_DEBUG = "true"
   LOG_CHANNEL = "stderr"
   LOG_LEVEL = "info"
@@ -40,7 +40,7 @@ console_command = "php /var/www/html/artisan tinker"
   PHP_MEMORY_LIMIT = "512M"
   PHP_POST_MAX_SIZE = "20M"
   PHP_UPLOAD_MAX_FILE_SIZE = "10M"
-  PHP_MAX_FILE_UPLOADS = "20"
+  PHP_MAX_FILE_UPLOADS = "50"
 
 [http_service]
   internal_port = 8080

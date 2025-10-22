@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use Illuminate\Support\Collection;
@@ -21,7 +23,7 @@ class PhotoWidthCalculator implements WidthCalculator
 
     public function calculateWidths(int $fileSize, int $width, int $height): Collection
     {
-        return collect([
+        return new \Illuminate\Support\Collection([
             300,
             600,
             1280,

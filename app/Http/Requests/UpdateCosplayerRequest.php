@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,9 +24,9 @@ class UpdateCosplayerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'instagram' => 'sometimes|nullable|string|max:255',
-            'twitter' => 'sometimes|nullable|string|max:255',
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'instagram' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'twitter' => ['sometimes', 'nullable', 'string', 'max:255'],
         ];
     }
 }

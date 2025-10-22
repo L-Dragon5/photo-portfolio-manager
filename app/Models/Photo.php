@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -17,7 +19,7 @@ class Photo extends BaseMedia
     protected function html(): Attribute
     {
         return Attribute::make(
-            get: function () {
+            get: function (): array {
                 $imageInfo = [
                     'id' => $this->id,
                     'title' => $this->name,
@@ -29,13 +31,11 @@ class Photo extends BaseMedia
                 ];
 
                 $responsiveImages = $this->responsiveImages();
-                $responsiveSrcSet = $responsiveImages->files->map(function ($ri) {
-                    return [
-                        'src' => $ri->url(),
-                        'width' => $ri->width(),
-                        'height' => $ri->height(),
-                    ];
-                });
+                $responsiveSrcSet = $responsiveImages->files->map(fn($ri): array => [
+                    'src' => $ri->url(),
+                    'width' => $ri->width(),
+                    'height' => $ri->height(),
+                ]);
                 $responsiveSrcSet[] = [
                     'src' => $responsiveImages->getPlaceholderSvg(),
                     'width' => 32,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -10,8 +12,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Album extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
-
+    use HasFactory;
+    use InteractsWithMedia;
     protected $fillable = [
         'name',
         'event_id',
@@ -81,20 +83,15 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $photos = $this->getMedia('photos');
-                $sorted = $photos->sort(function (Photo $a, Photo $b) {
+                $sorted = $photos->sort(function (Photo $a, Photo $b): int {
                     if (! $a->hasCustomProperty('date_taken')) {
-                        return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
+                        return $b->hasCustomProperty('date_taken') ? 1 : 0;
                     }
 
                     if (! $b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
-
-                    if ($a->getCustomProperty('date_taken') === $b->getCustomProperty('date_taken')) {
-                        return 0;
-                    }
-
-                    return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
+                    return $a->getCustomProperty('date_taken') <=> $b->getCustomProperty('date_taken');
                 });
 
                 return $sorted->values()->all();
@@ -107,20 +104,15 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $photos = $this->getMedia('previews');
-                $sorted = $photos->sort(function (Photo $a, Photo $b) {
+                $sorted = $photos->sort(function (Photo $a, Photo $b): int {
                     if (! $a->hasCustomProperty('date_taken')) {
-                        return ! $b->hasCustomProperty('date_taken') ? 0 : 1;
+                        return $b->hasCustomProperty('date_taken') ? 1 : 0;
                     }
 
                     if (! $b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
-
-                    if ($a->getCustomProperty('date_taken') === $b->getCustomProperty('date_taken')) {
-                        return 0;
-                    }
-
-                    return $a->getCustomProperty('date_taken') < $b->getCustomProperty('date_taken') ? -1 : 1;
+                    return $a->getCustomProperty('date_taken') <=> $b->getCustomProperty('date_taken');
                 });
 
                 return $sorted->values()->all();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,14 +24,14 @@ class StoreAlbumRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'event_id' => 'nullable|numeric',
-            'notes' => 'nullable|string',
-            'url_alias' => 'nullable|string',
-            'password' => 'nullable|string',
-            'date_taken' => 'nullable|date',
-            'is_press' => 'nullable|boolean',
-            'is_public' => 'nullable|boolean',
+            'name' => ['required', 'string', 'max:255'],
+            'event_id' => ['nullable', 'numeric'],
+            'notes' => ['nullable', 'string'],
+            'url_alias' => ['nullable', 'string'],
+            'password' => ['nullable', 'string'],
+            'date_taken' => ['nullable', 'date'],
+            'is_press' => ['nullable', 'boolean'],
+            'is_public' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -58,7 +58,9 @@ const Album = ({ album, breadcrumbs }) => {
     });
   };
 
-  const customRenderPhoto = ({ renderDefaultPhoto }) => {
+  const customRenderPhoto = (props) => {
+    const { renderDefaultPhoto } = props;
+
     return (
       <Box
         position="relative"
@@ -68,6 +70,16 @@ const Album = ({ album, breadcrumbs }) => {
         {renderDefaultPhoto()}
       </Box>
     );
+  };
+
+  const photoDownload = (url, filename) => {
+    axios
+      .post('/photo-download', {
+        url,
+      })
+      .then((response) => {
+        saveAs(`data:image/jpg;base64,${response.data}`, filename);
+      });
   };
 
   return (
@@ -132,6 +144,11 @@ const Album = ({ album, breadcrumbs }) => {
             slides={album?.photos?.map((photo) => photo?.html)}
             plugins={[Counter, Download, Zoom]}
             counter={{ container: { style: { top: 'unset', bottom: 0 } } }}
+            download={{
+              download: ({ slide }) => {
+                photoDownload(slide.download, `${slide.title}.jpg`);
+              },
+            }}
           />
         </>
       )}

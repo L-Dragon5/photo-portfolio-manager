@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAlbumImagesRequest;
@@ -24,11 +26,11 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
-        $events = Event::orderBy('name', 'ASC')->get();
+        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
+        $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
-            'albums' => $albums,
+            'albums' => $lengthAwarePaginator,
             'events' => $events,
         ]);
     }
@@ -38,25 +40,25 @@ class AlbumController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreAlbumRequest $request)
+    public function store(StoreAlbumRequest $storeAlbumRequest)
     {
-        $validated = $request->validated();
+        $validated = $storeAlbumRequest->validated();
 
         // Check if custom url alias is set. If not, make one.
         if (empty($validated['url_alias'])) {
             $validated['url_alias'] = $this->nameToUrlAlias($validated['name']);
         }
 
-        Album::create([...$validated]);
+        \App\Models\Album::query()->create([...$validated]);
 
         return to_route('admin-base');
     }
 
-    public function storePreviews(StoreAlbumImagesRequest $request, Album $album)
+    public function storePreviews(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
     {
-        foreach ($request->validated()['images'] as $preview) {
+        foreach ($storeAlbumImagesRequest->validated()['images'] as $preview) {
             [$width, $height] = $this->getDimensions($preview);
-            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
+            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime((string) $exifData['DateTimeOriginal']) : null;
 
             $album
                 ->addMedia($preview)
@@ -72,9 +74,9 @@ class AlbumController extends Controller
         return to_route('admin-base');
     }
 
-    public function storePhotos(StoreAlbumImagesRequest $request, Album $album)
+    public function storePhotos(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
     {
-        foreach ($request->validated()['images'] as $photo) {
+        foreach ($storeAlbumImagesRequest->validated()['images'] as $photo) {
             [$width, $height] = $this->getDimensions($photo);
             $exifData = exif_read_data($photo);
             $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
@@ -98,9 +100,9 @@ class AlbumController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateAlbumRequest $request, Album $album)
+    public function update(UpdateAlbumRequest $updateAlbumRequest, Album $album)
     {
-        $album->update([...$request->validated()]);
+        $album->update([...$updateAlbumRequest->validated()]);
 
         return to_route('admin-base');
     }
@@ -108,8 +110,8 @@ class AlbumController extends Controller
     public function updateAlbumCosplayerAdd(Request $request, Album $album)
     {
         $validated = $request->validate([
-            'cosplayer_id' => 'required|numeric',
-            'character' => 'required|nullable|string',
+            'cosplayer_id' => ['required', 'numeric'],
+            'character' => ['required', 'nullable', 'string'],
         ]);
 
         $album->cosplayers()->attach($validated['cosplayer_id'], ['character' => $validated['character']]);
@@ -124,12 +126,12 @@ class AlbumController extends Controller
         return to_route('admin-base');
     }
 
-    public function updateFeaturedPhoto(Request $request, Photo $photo)
+    public function updateFeaturedPhoto(Request $request, Photo $photo): void
     {
-        $fp = FeaturedPhoto::where('media_id', $photo->id)->first();
+        $fp = \App\Models\FeaturedPhoto::query()->where('media_id', $photo->id)->first();
 
         if (empty($fp)) {
-            FeaturedPhoto::create([
+            \App\Models\FeaturedPhoto::query()->create([
                 'media_id' => $photo->id,
             ]);
         } else {
@@ -151,10 +153,11 @@ class AlbumController extends Controller
 
     public function destroyImage(Photo $photo)
     {
-        $fp = FeaturedPhoto::where('media_id', $photo->id)->first();
+        $fp = \App\Models\FeaturedPhoto::query()->where('media_id', $photo->id)->first();
         if (!empty($fp)) {
             $fp->delete();
         }
+
         $photo->delete();
 
         return to_route('admin-base');
@@ -169,18 +172,18 @@ class AlbumController extends Controller
         return to_route('admin-base');
     }
 
-    private function nameToUrlAlias($inputString)
+    private function nameToUrlAlias($inputString): string
     {
-        return str_replace(' ', '-', str_replace('-', '', strtolower($inputString)));
+        return str_replace(' ', '-', str_replace('-', '', strtolower((string) $inputString)));
     }
 
-    private function getDimensions(UploadedFile $file): array
+    private function getDimensions(UploadedFile $uploadedFile): array
     {
         try {
-            $image = Image::load($file->getPathname());
+            $image = Image::load($uploadedFile->getPathname());
 
             return [$image->getWidth(), $image->getHeight()];
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return [null, null];
         }
     }

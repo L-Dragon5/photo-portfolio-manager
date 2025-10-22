@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -16,8 +18,8 @@ class InputSanitizer
     {
         $input = $request->all();
 
-        array_walk_recursive($input, function (&$input) {
-            $input = strip_tags($input);
+        array_walk_recursive($input, function (&$input): void {
+            $input = strip_tags((string) $input);
             $input = trim($input);
         });
 

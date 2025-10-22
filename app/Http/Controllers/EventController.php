@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEventRequest;
@@ -14,7 +16,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::orderBy('name', 'ASC')->get();
+        $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Events', [
             'events' => $events,
@@ -24,11 +26,11 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreEventRequest $request)
+    public function store(StoreEventRequest $storeEventRequest)
     {
-        Event::create([
-            ...$request->validated(),
-            'url_alias' => $this->nameToUrlAlias($request->name),
+        \App\Models\Event::query()->create([
+            ...$storeEventRequest->validated(),
+            'url_alias' => $this->nameToUrlAlias($storeEventRequest->name),
         ]);
 
         return to_route('events.index');
@@ -37,9 +39,9 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEventRequest $request, Event $event)
+    public function update(UpdateEventRequest $updateEventRequest, Event $event)
     {
-        $event->update($request->validated());
+        $event->update($updateEventRequest->validated());
 
         return to_route('events.index');
     }
@@ -54,8 +56,8 @@ class EventController extends Controller
         return to_route('events.index');
     }
 
-    private function nameToUrlAlias($inputString)
+    private function nameToUrlAlias($inputString): string
     {
-        return str_replace(' ', '-', str_replace('-', '', strtolower($inputString)));
+        return str_replace(' ', '-', str_replace('-', '', strtolower((string) $inputString)));
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\Album;
@@ -11,8 +13,8 @@ use Illuminate\Queue\SerializesModels;
 
 class PreviewsSelected extends Mailable
 {
-    use Queueable, SerializesModels;
-
+    use Queueable;
+    use SerializesModels;
     /**
      * Create a new message instance.
      */

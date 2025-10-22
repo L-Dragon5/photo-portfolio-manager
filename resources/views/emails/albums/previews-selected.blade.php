@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -8,4 +13,4 @@
 <h2>Album: {{ $album->name}}</h2>
 <p>The previews have been selected and are ready for editing.</p>
 </body>
-</html>
+</html><?php 

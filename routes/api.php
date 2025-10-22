@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\CosplayerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,10 +17,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:api')->get('/user', fn(Request $request) => $request->user());
 
-Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function () {
+Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): void {
     Route::get('/cosplayers', [CosplayerController::class, 'getAll']);
 });

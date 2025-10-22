@@ -12,11 +12,10 @@ const BaseLayout = ({ title, children }) => {
         <Box
           bg={useColorModeValue('gray.50', 'gray.800')}
           ml={{ base: 0, md: 60 }}
-          w="full"
           p={4}
           overflowY="auto"
-          h="full"
           scroll-region="true"
+          flexGrow="1"
         >
           {children}
         </Box>

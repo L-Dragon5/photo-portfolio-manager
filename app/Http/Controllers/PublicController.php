@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Mail\PreviewsSelected;
@@ -14,6 +16,9 @@ use Spatie\MediaLibrary\Support\MediaStream;
 
 class PublicController extends Controller
 {
+    public function __construct(private readonly \Illuminate\Routing\Redirector $redirector)
+    {
+    }
     /**
      * Display featured photos that I like.
      *
@@ -21,9 +26,9 @@ class PublicController extends Controller
      */
     public function index()
     {
-        $fps = FeaturedPhoto::inRandomOrder()->get()->toArray();
-        $photos = array_reduce($fps, function ($carry, $fp) {
-            $photo = Photo::find($fp['media_id']);
+        $fps = \App\Models\FeaturedPhoto::query()->inRandomOrder()->get()->toArray();
+        $photos = array_reduce($fps, function ($carry, array $fp) {
+            $photo = \App\Models\Photo::query()->find($fp['media_id']);
             if (!empty($photo)) {
                 $carry[] = $photo;
             }
@@ -43,7 +48,7 @@ class PublicController extends Controller
      */
     public function indexEvents()
     {
-        $events = Event::withCount('albums')->orderBy('start_date', 'DESC')->get();
+        $events = \App\Models\Event::query()->withCount('albums')->latest('start_date')->get();
 
         return Inertia::render('Public/Events', [
             'events' => $events,
@@ -57,7 +62,7 @@ class PublicController extends Controller
      */
     public function indexLocation()
     {
-        $albums = Album::where('is_public', true)->where(function ($q) {
+        $albums = \App\Models\Album::query()->where('is_public', true)->where(function ($q): void {
             $q->where('event_id', null)->orWhere('event_id', '');
         })->orderBy('date_taken', 'DESC')->get();
 
@@ -73,10 +78,10 @@ class PublicController extends Controller
      */
     public function indexPress()
     {
-        $albums = Album::where([
+        $albums = \App\Models\Album::query()->where([
             ['is_public', '=',  true],
             ['is_press', '=', true],
-        ])->orderBy('start_date', 'DESC')->get();
+        ])->latest('start_date')->get();
 
         return Inertia::render('Public/Press', [
             'albums' => $albums,
@@ -86,8 +91,8 @@ class PublicController extends Controller
     public function indexCulling($password)
     {
         try {
-            $album = Album::where('password', $password)->with('relatedPhotos')->firstOrFail();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $album = \App\Models\Album::query()->where('password', $password)->with('relatedPhotos')->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
 
@@ -99,24 +104,25 @@ class PublicController extends Controller
     public function updateCulling(Request $request)
     {
         $validated = $request->validate([
-            'ids' => 'required|nullable|array',
-            'ids.*' => 'numeric',
-            'album_id' => 'required|numeric',
+            'ids' => ['required', 'nullable', 'array'],
+            'ids.*' => ['numeric'],
+            'album_id' => ['required', 'numeric'],
         ]);
 
-        $album = Album::find($validated['album_id']);
+        $album = \App\Models\Album::query()->find($validated['album_id']);
         if (empty($validated['ids'])) {
             $album->relatedPhotos()->detach();
         } else {
             $album->relatedPhotos()->sync($validated['ids']);
         }
+
         $album->save();
 
         if (app()->isProduction()) {
             // Mail::to('me@joseph-oh.com')->send(new PreviewsSelected(($album)));
         }
 
-        return back();
+        return $this->redirector->back();
     }
 
     /**
@@ -127,11 +133,11 @@ class PublicController extends Controller
     public function showEvent($id)
     {
         if (is_numeric($id)) {
-            $event = Event::with(['albums' => function ($q) {
+            $event = Event::with(['albums' => function ($q): void {
                 $q->where('albums.is_public', '=', 1);
             }])->find($id);
         } else {
-            $event = Event::where('url_alias', $id)->with(['albums' => function ($q) {
+            $event = \App\Models\Event::query()->where('url_alias', $id)->with(['albums' => function ($q): void {
                 $q->where('albums.is_public', '=', 1);
             }])->first();
         }
@@ -158,9 +164,9 @@ class PublicController extends Controller
             $eventQuery = array_shift($queries);
 
             if (is_numeric($eventQuery)) {
-                $event = Event::findOrFail($eventQuery);
+                $event = \App\Models\Event::query()->findOrFail($eventQuery);
             } else {
-                $event = Event::where('url_alias', $eventQuery)->firstOrFail();
+                $event = \App\Models\Event::query()->where('url_alias', $eventQuery)->firstOrFail();
             }
         }
 
@@ -172,23 +178,25 @@ class PublicController extends Controller
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {
-                    $album = $album->where(function ($q) {
+                    $album = $album->where(function ($q): void {
                         $q->where('event_id', null)->orWhere('event_id', '');
                     });
                 }
+
                 $album = $album->findOrFail($albumToPresentId);
             } else {
                 $album = Album::with('cosplayers')->where('url_alias', $albumToPresentId);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {
-                    $album = $album->where(function ($q) {
+                    $album = $album->where(function ($q): void {
                         $q->where('event_id', null)->orWhere('event_id', '');
                     });
                 }
+
                 $album = $album->firstOrFail();
             }
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
 
@@ -207,26 +215,41 @@ class PublicController extends Controller
                     $name = 'Press';
                     break;
             }
+
             $breadcrumbs[] = ['url_alias' => $type, 'name' => $name];
         }
 
         if (! is_null($event)) {
-            $breadcrumbs[] = ['url_alias' => "events/{$event->url_alias}", 'name' => $event->name];
+            $breadcrumbs[] = ['url_alias' => 'events/' . $event->url_alias, 'name' => $event->name];
         }
 
         return Inertia::render('Public/Album', [
             'album' => $album,
-            'breadcrumbs' => isset($breadcrumbs) ? $breadcrumbs : [],
+            'breadcrumbs' => $breadcrumbs ?? [],
         ]);
     }
 
     /**
      * Zip archive all photos in album and send download.
      */
-    public function download(Album $album)
+    public function download(Album $album): ?\Spatie\MediaLibrary\Support\MediaStream
     {
         if ($album->is_public) {
             return MediaStream::create($album->id.'.zip')->addMedia($album->getMedia('photos'));
         }
+        return null;
+    }
+
+    public function downloadPhoto(Request $request) {
+        $validated = $request->validate([
+            'url' => ['required', 'url'],
+        ]);
+
+        $photo = file_get_contents($validated['url']);
+        if (!empty($photo)) {
+            return response(base64_encode($photo), 200, ['Content-Type' => 'image/jpg']);
+        }
+
+        return null;
     }
 }

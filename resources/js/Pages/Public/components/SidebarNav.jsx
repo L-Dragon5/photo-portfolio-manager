@@ -64,7 +64,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
       h="full"
       {...rest}
     >
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+      <Flex h="150px" alignItems="center" mx="8" justifyContent="space-between">
         <Image
           src={
             colorMode === 'light'

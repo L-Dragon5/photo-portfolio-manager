@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCosplayerRequest;
@@ -14,7 +16,7 @@ class CosplayerController extends Controller
      */
     public function index()
     {
-        $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
+        $cosplayers = \App\Models\Cosplayer::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Cosplayers', [
             'cosplayers' => $cosplayers,
@@ -23,16 +25,16 @@ class CosplayerController extends Controller
 
     public function getAll()
     {
-        $cosplayers = Cosplayer::orderBy('name', 'ASC')->get();
+        $cosplayers = \App\Models\Cosplayer::query()->orderBy('name', 'ASC')->get();
         return json_encode($cosplayers);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCosplayerRequest $request)
+    public function store(StoreCosplayerRequest $storeCosplayerRequest)
     {
-        Cosplayer::create($request->validated());
+        \App\Models\Cosplayer::query()->create($storeCosplayerRequest->validated());
 
         return to_route('cosplayers.index');
     }
@@ -40,9 +42,9 @@ class CosplayerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCosplayerRequest $request, Cosplayer $cosplayer)
+    public function update(UpdateCosplayerRequest $updateCosplayerRequest, Cosplayer $cosplayer)
     {
-        $cosplayer->update($request->validated());
+        $cosplayer->update($updateCosplayerRequest->validated());
 
         return to_route('cosplayers.index');
     }

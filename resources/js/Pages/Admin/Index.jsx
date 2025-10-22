@@ -63,8 +63,6 @@ const Index = ({ albums, events }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
   const [drawerUploadType, setDrawerUploadType] = useState(null);
 
-  console.log(albums);
-
   const {
     isOpen: isAlertOpen,
     onOpen: onAlertOpen,
@@ -162,6 +160,7 @@ const Index = ({ albums, events }) => {
           if (index === 0 || index === albums.links.length - 1) return;
           return (
             <Button
+              key={link.url}
               as={Link}
               href={link.url}
               only={['albums']}
