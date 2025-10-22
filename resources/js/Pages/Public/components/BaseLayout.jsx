@@ -7,7 +7,7 @@ const BaseLayout = ({ title, children }) => {
   return (
     <>
       <Head title={`${title} | L-Dragon Photography`} />
-      <Flex h="100vh" w="100vw" direction={{ base: 'column', md: 'row' }}>
+      <Flex h="100dvh" w="100dvw" direction={{ base: 'column', md: 'row' }}>
         <SidebarNav />
         <Box
           bg={useColorModeValue('gray.50', 'gray.800')}
