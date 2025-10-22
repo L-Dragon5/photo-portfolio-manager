@@ -27,7 +27,12 @@ function SidebarNav() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Box bg={useColorModeValue('gray.100', 'gray.900')}>
+    <Box
+      bg={useColorModeValue('gray.100', 'gray.900')}
+      position="sticky"
+      top={0}
+      zIndex={3}
+    >
       <SidebarContent
         onClose={() => onClose}
         display={{ base: 'none', md: 'flex' }}
