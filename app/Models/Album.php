@@ -55,19 +55,24 @@ class Album extends Model implements HasMedia
                 $coverPhoto = null;
 
                 if (!is_null($this->cover_image_id)) {
-                    $coverPhoto = $this->relationLoaded('media')
+                    $coverPhoto = $this->relationLoaded('photos')
                         ? $this->getMedia('photos')->where('id', $this->cover_image_id)->first()
                         : Photo::query()->find($this->cover_image_id);
                 }
 
                 if (is_null($coverPhoto)) {
-                    $coverPhoto = $this->getFirstMedia('photos') ?? [
-                        'html' => [
-                            'src' => 'https://placehold.co/600x400',
-                            'width' => 600,
-                            'height' => 400,
-                        ],
-                    ];
+                    $firstMedia = $this->getFirstMedia('photos');
+                    if (!is_null($firstMedia)) {
+                        $coverPhoto = $firstMedia;
+                    } else {
+                        $coverPhoto = $this->getFirstMedia('photos') ?? [
+                            'html' => [
+                                'src' => 'https://placehold.co/600x400',
+                                'width' => 600,
+                                'height' => 400,
+                            ],
+                        ];
+                    }
                 }
 
                 return $coverPhoto;

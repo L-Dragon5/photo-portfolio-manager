@@ -59,7 +59,7 @@ class PublicController extends Controller
         $sort = $request->input('sort', 'date-desc');
 
         $query = \App\Models\Album::query()
-            ->with('media')
+            ->with('photos')
             ->where('is_public', true)
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
@@ -85,7 +85,7 @@ class PublicController extends Controller
      */
     public function indexPress()
     {
-        $albums = \App\Models\Album::query()->with('media')->where([
+        $albums = \App\Models\Album::query()->with('photos')->where([
             ['is_public', '=', true],
             ['is_press', '=', true],
         ])->latest('start_date')->get();
@@ -98,7 +98,7 @@ class PublicController extends Controller
     public function indexCulling($password)
     {
         try {
-            $album = \App\Models\Album::query()->where('password', $password)->with(['relatedPhotos', 'media'])->firstOrFail();
+            $album = \App\Models\Album::query()->where('password', $password)->with(['relatedPhotos', 'photos'])->firstOrFail();
             $album->append(['previews']);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
@@ -147,7 +147,7 @@ class PublicController extends Controller
         }
 
         $albumQuery = \App\Models\Album::query()
-            ->with('media')
+            ->with('photos')
             ->where('event_id', $event->id)
             ->where('is_public', 1);
 
@@ -191,7 +191,7 @@ class PublicController extends Controller
 
         try {
             if (is_numeric($albumToPresentId)) {
-                $album = Album::with(['cosplayers', 'media']);
+                $album = Album::with(['cosplayers', 'photos']);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {
@@ -202,7 +202,7 @@ class PublicController extends Controller
 
                 $album = $album->findOrFail($albumToPresentId);
             } else {
-                $album = Album::with(['cosplayers', 'media'])->where('url_alias', $albumToPresentId);
+                $album = Album::with(['cosplayers', 'photos'])->where('url_alias', $albumToPresentId);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {
