@@ -55,9 +55,7 @@ class Album extends Model implements HasMedia
                 $coverPhoto = null;
 
                 if (!is_null($this->cover_image_id)) {
-                    $coverPhoto = $this->relationLoaded('photos')
-                        ? $this->getMedia('photos')->where('id', $this->cover_image_id)->first()
-                        : Photo::query()->find($this->cover_image_id);
+                    $coverPhoto = $this->getMedia('photos')->where('id', $this->cover_image_id)->first();
                 }
 
                 if (is_null($coverPhoto)) {
