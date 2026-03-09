@@ -31,14 +31,14 @@ const Events = ({ events }) => {
       setActiveEvents(
         events.toSorted(
           (a, b) =>
-            new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+            new Date(a.start_date + 'T00:00:00').getTime() - new Date(b.start_date + 'T00:00:00').getTime(),
         ),
       );
     } else if (sortingOption === 'date-desc') {
       setActiveEvents(
         events.toSorted(
           (a, b) =>
-            new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
+            new Date(b.start_date + 'T00:00:00').getTime() - new Date(a.start_date + 'T00:00:00').getTime(),
         ),
       );
     }
@@ -124,11 +124,11 @@ const Events = ({ events }) => {
                 <Table.Td>{event?.url_alias ?? 'N/A'}</Table.Td>
                 <Table.Td>
                   {event.start_date &&
-                    new Date(event.start_date).toLocaleDateString()}
+                    new Date(event.start_date + 'T00:00:00').toLocaleDateString()}
                 </Table.Td>
                 <Table.Td>
                   {event.end_date &&
-                    new Date(event.end_date).toLocaleDateString()}
+                    new Date(event.end_date + 'T00:00:00').toLocaleDateString()}
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs">

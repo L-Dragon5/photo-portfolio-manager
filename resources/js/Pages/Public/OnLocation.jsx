@@ -53,7 +53,7 @@ const OnLocation = ({ albums, sort: initialSort }) => {
           </Title>
           <Title order={6} c="gray.1">
             {shoot.date_taken &&
-              new Date(shoot.date_taken).toLocaleDateString('en-US', {
+              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString('en-US', {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',

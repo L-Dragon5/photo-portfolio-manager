@@ -108,18 +108,20 @@ const Index = ({ albums, events }) => {
       </Group>
       <Flex gap="xs" mb="sm">
         <ActionIcon
-          component={Link}
+          component={albums?.current_page > 1 ? Link : 'button'}
           href={albums?.first_page_url}
           only={['albums']}
           variant="default"
+          disabled={!(albums?.current_page > 1)}
         >
           <IconArrowLeft size={14} />
         </ActionIcon>
         <ActionIcon
-          component={Link}
+          component={albums?.prev_page_url ? Link : 'button'}
           href={albums?.prev_page_url}
           only={['albums']}
           variant="default"
+          disabled={!albums?.prev_page_url}
         >
           <IconChevronLeft size={18} />
         </ActionIcon>
@@ -127,12 +129,13 @@ const Index = ({ albums, events }) => {
           if (index === 0 || index === albums.links.length - 1) return;
           return (
             <Button
-              key={link.url}
-              component={Link}
-              href={link.url}
+              key={`${link.label}-${index}`}
+              component={link.url ? Link : 'button'}
+              href={link.url ?? undefined}
               only={['albums']}
               color={link.active ? 'blue' : 'gray'}
               variant={link.active ? 'filled' : 'default'}
+              disabled={!link.url}
               size="sm"
             >
               {link.label}
@@ -140,18 +143,20 @@ const Index = ({ albums, events }) => {
           );
         })}
         <ActionIcon
-          component={Link}
+          component={albums?.next_page_url ? Link : 'button'}
           href={albums?.next_page_url}
           only={['albums']}
           variant="default"
+          disabled={!albums?.next_page_url}
         >
           <IconChevronRight size={18} />
         </ActionIcon>
         <ActionIcon
-          component={Link}
+          component={albums?.current_page < albums?.last_page ? Link : 'button'}
           href={albums?.last_page_url}
           only={['albums']}
           variant="default"
+          disabled={!(albums?.current_page < albums?.last_page)}
         >
           <IconArrowRight size={14} />
         </ActionIcon>

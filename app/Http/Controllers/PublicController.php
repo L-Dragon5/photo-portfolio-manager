@@ -72,11 +72,12 @@ class PublicController extends Controller
         };
 
         return Inertia::render('Public/OnLocation', [
-            'albums' => Inertia::scroll(Inertia::scroll(function () use ($query) {
+            'albums' => Inertia::scroll(function () use ($query) {
                 $albums = $query->paginate(20);
                 $albums->getCollection()->each->append('photos');
+
                 return $albums;
-            })),
+            }),
             'sort' => $sort,
         ]);
     }
@@ -165,6 +166,7 @@ class PublicController extends Controller
             'albums' => Inertia::scroll(function () use ($albumQuery) {
                 $albums = $albumQuery->paginate(20);
                 $albums->getCollection()->each->append('photos');
+
                 return $albums;
             }),
             'sort' => $sort,

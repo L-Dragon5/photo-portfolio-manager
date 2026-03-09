@@ -49,7 +49,14 @@ const Album = ({ album, breadcrumbs }) => {
       method: 'GET',
       responseType: 'blob',
     }).then((response) => {
-      saveAs(response.data, `${album.url_alias}.zip`);
+      const blobUrl = URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${album.url_alias}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
       setIsDownloading(false);
     });
   };

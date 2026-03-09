@@ -72,12 +72,16 @@ const Events = ({ events }) => {
                 <Title order={4} ta="center" fw={600}>
                   {event.name}
                 </Title>
-                <Text size="xs" ta="center" fw={400}>
+                <Text size="md" ta="center" fw={400}>
                   {[
                     event.start_date &&
-                      new Date(event.start_date).toLocaleDateString(),
+                      new Date(
+                        event.start_date + 'T00:00:00',
+                      ).toLocaleDateString(),
                     event.end_date &&
-                      new Date(event.end_date).toLocaleDateString(),
+                      new Date(
+                        event.end_date + 'T00:00:00',
+                      ).toLocaleDateString(),
                   ]
                     .filter((n) => n)
                     .join(' - ')}
