@@ -25,7 +25,7 @@ class Album extends Model implements HasMedia
         'is_press',
         'is_public',
     ];
-    protected $appends = ['cover_image', 'photos', 'previews'];
+    protected $appends = ['cover_image'];
 
     public function event()
     {
@@ -59,18 +59,13 @@ class Album extends Model implements HasMedia
                 }
 
                 if (is_null($coverPhoto)) {
-                    $firstMedia = $this->getFirstMedia('photos');
-                    if (!is_null($firstMedia)) {
-                        $coverPhoto = $firstMedia;
-                    } else {
-                        $coverPhoto = $this->getFirstMedia('photos') ?? [
-                            'html' => [
-                                'src' => 'https://placehold.co/600x400',
-                                'width' => 600,
-                                'height' => 400,
-                            ],
-                        ];
-                    }
+                    $coverPhoto = $this->getFirstMedia('photos') ?? [
+                        'html' => [
+                            'src' => 'https://placehold.co/600x400',
+                            'width' => 600,
+                            'height' => 400,
+                        ],
+                    ];
                 }
 
                 return $coverPhoto;

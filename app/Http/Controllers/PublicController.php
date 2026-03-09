@@ -74,7 +74,7 @@ class PublicController extends Controller
         return Inertia::render('Public/OnLocation', [
             'albums' => Inertia::scroll(Inertia::scroll(function () use ($query) {
                 $albums = $query->paginate(20);
-                $albums->getCollection()->each->append(['photos']);
+                $albums->getCollection()->each->append('photos');
                 return $albums;
             })),
             'sort' => $sort,
@@ -164,7 +164,7 @@ class PublicController extends Controller
             'event' => $event,
             'albums' => Inertia::scroll(function () use ($albumQuery) {
                 $albums = $albumQuery->paginate(20);
-                $albums->getCollection()->each->append(['photos']);
+                $albums->getCollection()->each->append('photos');
                 return $albums;
             }),
             'sort' => $sort,
@@ -220,7 +220,7 @@ class PublicController extends Controller
                 $album = $album->firstOrFail();
             }
 
-            $album->append(['photos']);
+            $album->append('photos');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
