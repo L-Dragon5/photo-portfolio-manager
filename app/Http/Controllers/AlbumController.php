@@ -24,7 +24,7 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers', 'photos'])->orderBy('date_taken', 'DESC')->paginate(25);
+        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
         $lengthAwarePaginator->getCollection()->each->append(['photos', 'previews']);
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
