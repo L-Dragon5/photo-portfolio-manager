@@ -14,7 +14,6 @@ import {
 } from '@mantine/core';
 import { IconChevronRight, IconDownload } from '@tabler/icons-react';
 import axios from 'axios';
-import { saveAs } from 'file-saver';
 import { useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
@@ -73,11 +72,16 @@ const Album = ({ album, breadcrumbs }) => {
 
   const photoDownload = (url, filename) => {
     axios
-      .post('/photo-download', {
-        url,
-      })
+      .post('/photo-download', { url }, { responseType: 'blob' })
       .then((response) => {
-        saveAs(`data:image/jpg;base64,${response.data}`, filename);
+        const blobUrl = URL.createObjectURL(response.data);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
       });
   };
 

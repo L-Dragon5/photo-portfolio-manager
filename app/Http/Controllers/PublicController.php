@@ -268,7 +268,10 @@ class PublicController extends Controller
 
         $photo = file_get_contents($validated['url']);
         if (!empty($photo)) {
-            return response(base64_encode($photo), 200, ['Content-Type' => 'image/jpg']);
+            return response($photo, 200, [
+                'Content-Type' => 'image/jpeg',
+                'Content-Disposition' => 'attachment; filename="photo.jpg"',
+            ]);
         }
 
         return null;

@@ -24,15 +24,20 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
   const [activeCoverImage, setActiveCoverImage] = useState(
     album?.cover_image_id,
   );
-  const [images, setImages] = useState([]);
+  const [files, setFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setData, post, processing, reset } = useForm('UploadAlbum', {
     images: [],
   });
 
   useEffect(() => {
-    setData('images', images);
-  }, [images]);
+    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
+  }, []);
+
+  const handleFilesChange = (updated) => {
+    setFiles(updated);
+    setData('images', updated);
+  };
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -42,6 +47,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
         reloadPage();
         onClose();
         reset();
+        setFiles([]);
       },
     });
   };
@@ -166,7 +172,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
       />
 
       <Stack component="form" onSubmit={onSubmit} gap="sm" mt="xl">
-        <Dropzone setPhotos={setImages} />
+        <Dropzone files={files} onFilesChange={handleFilesChange} />
 
         <Group justify="flex-end" my="md">
           <Button variant="default" onClick={onClose}>
