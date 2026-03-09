@@ -1,11 +1,11 @@
-import { Heading } from '@chakra-ui/react';
+import { Title } from '@mantine/core';
 
 import BaseLayout from './components/BaseLayout';
 
 const AlbumNotFound = () => {
   return (
     <BaseLayout title="404 Album Not Found">
-      <Heading>Album Not Found</Heading>
+      <Title>Album Not Found</Title>
     </BaseLayout>
   );
 };

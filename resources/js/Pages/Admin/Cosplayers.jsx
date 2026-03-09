@@ -1,33 +1,18 @@
-import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { router } from '@inertiajs/react';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
+  ActionIcon,
+  Anchor,
   Button,
-  HStack,
-  IconButton,
-  Link,
+  Group,
   Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  ScrollArea,
   Select,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
+import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddCosplayer from './forms/AddCosplayer';
@@ -50,17 +35,8 @@ const Cosplayers = ({ cosplayers }) => {
     setActiveCosplayers(cosplayers);
   }, [cosplayers]);
 
-  const {
-    isOpen: isAlertOpen,
-    onOpen: onAlertOpen,
-    onClose: onAlertClose,
-  } = useDisclosure();
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose,
-  } = useDisclosure();
-  const cancelRef = useRef();
+  const [isModalOpen, { open: onModalOpen, close: onModalClose }] =
+    useDisclosure(false);
 
   const reloadPage = () => {
     router.reload({
@@ -80,149 +56,126 @@ const Cosplayers = ({ cosplayers }) => {
 
   const onDeleteClick = (e, cosplayerObj) => {
     setModifyCosplayer(cosplayerObj);
-    onAlertOpen();
-  };
-
-  const handleDelete = () => {
-    router.delete(`/admin/cosplayers/${modifyCosplayer.id}`, {
-      onSuccess: () => {
-        reloadPage();
-        onAlertClose();
+    modals.openConfirmModal({
+      title: `Delete Cosplayer - ${cosplayerObj.name}`,
+      children: "Are you sure? You can't undo this action afterwards.",
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => {
+        router.delete(`/admin/cosplayers/${cosplayerObj.id}`, {
+          onSuccess: () => reloadPage(),
+        });
       },
     });
   };
 
   return (
     <>
-      <HStack mb={4}>
+      <Group mb="md">
         <Select
-          defaultValue={sortingOption}
-          onChange={(e) => setSortingOption(e.target.value)}
-        >
-          <option value="name-asc">Name - A to Z</option>
-          <option value="name-desc">Name - Z to A</option>
-        </Select>
+          value={sortingOption}
+          onChange={(val) => setSortingOption(val ?? 'name-asc')}
+          data={[
+            { value: 'name-asc', label: 'Name - A to Z' },
+            { value: 'name-desc', label: 'Name - Z to A' },
+          ]}
+          style={{ flex: 1 }}
+        />
         <Button
-          colorScheme="teal"
-          leftIcon={<AddIcon />}
+          color="teal"
+          leftSection={<IconPlus size={14} />}
           w="50%"
           onClick={onModalOpen}
         >
           Add Cosplayer
         </Button>
-      </HStack>
+      </Group>
 
-      <TableContainer overflowY="auto" maxH="95%">
-        <Table variant="striped" colorScheme="teal">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Instagram</Th>
-              <Th>Twitter</Th>
-              <Th>Options</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollContainer minWidth={600} mah="95%">
+        <Table striped>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Instagram</Table.Th>
+              <Table.Th>Twitter</Table.Th>
+              <Table.Th>Options</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {activeCosplayers?.map((cosplayer) => (
-              <Tr key={cosplayer.id}>
-                <Td>{cosplayer.name}</Td>
-                <Td>
+              <Table.Tr key={cosplayer.id}>
+                <Table.Td>{cosplayer.name}</Table.Td>
+                <Table.Td>
                   {cosplayer?.instagram ? (
-                    <Link
+                    <Anchor
                       href={`https://instagram.com/${cosplayer.instagram}`}
-                      isExternal
+                      target="_blank"
                     >
                       {cosplayer.instagram}
-                    </Link>
+                    </Anchor>
                   ) : (
                     'N/A'
                   )}
-                </Td>
-                <Td>
+                </Table.Td>
+                <Table.Td>
                   {cosplayer?.twitter ? (
-                    <Link
+                    <Anchor
                       href={`https://x.com/${cosplayer.twitter}`}
-                      isExternal
+                      target="_blank"
                     >
                       {cosplayer.twitter}
-                    </Link>
+                    </Anchor>
                   ) : (
                     'N/A'
                   )}
-                </Td>
-                <Td>
-                  <HStack>
-                    <IconButton
+                </Table.Td>
+                <Table.Td>
+                  <Group gap="xs">
+                    <ActionIcon
                       aria-label="Edit cosplayer"
-                      icon={<EditIcon />}
                       onClick={(e) => onEditClick(e, cosplayer)}
-                    />
-                    <IconButton
+                      variant="default"
+                    >
+                      <IconPencil size={16} />
+                    </ActionIcon>
+                    <ActionIcon
                       aria-label="Delete cosplayer"
-                      icon={<DeleteIcon />}
                       onClick={(e) => onDeleteClick(e, cosplayer)}
-                    />
-                  </HStack>
-                </Td>
-              </Tr>
+                      color="red"
+                      variant="subtle"
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
             ))}
-          </Tbody>
+          </Table.Tbody>
         </Table>
-      </TableContainer>
+      </Table.ScrollContainer>
 
       <Modal
-        isOpen={isModalOpen}
+        opened={isModalOpen}
         onClose={handleModalClose}
-        closeOnOverlayClick={false}
-        scrollBehavior="inside"
+        closeOnClickOutside={false}
+        scrollAreaComponent={ScrollArea.Autosize}
         size="5xl"
+        title={
+          modifyCosplayer !== null
+            ? `Edit Cosplayer - ${modifyCosplayer.name}`
+            : 'Add Cosplayer'
+        }
       >
-        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-        <ModalContent>
-          <ModalHeader>
-            {modifyCosplayer !== null
-              ? `Edit Cosplayer - ${modifyCosplayer.name}`
-              : 'Add Cosplayer'}
-          </ModalHeader>
-          <ModalBody>
-            {modifyCosplayer !== null ? (
-              <EditCosplayer
-                reloadPage={reloadPage}
-                onClose={onModalClose}
-                cosplayer={modifyCosplayer}
-              />
-            ) : (
-              <AddCosplayer reloadPage={reloadPage} onClose={onModalClose} />
-            )}
-          </ModalBody>
-          <ModalCloseButton />
-        </ModalContent>
+        {modifyCosplayer !== null ? (
+          <EditCosplayer
+            reloadPage={reloadPage}
+            onClose={onModalClose}
+            cosplayer={modifyCosplayer}
+          />
+        ) : (
+          <AddCosplayer reloadPage={reloadPage} onClose={onModalClose} />
+        )}
       </Modal>
-
-      <AlertDialog
-        isOpen={isAlertOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onAlertClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Cosplayer - {modifyCosplayer?.name}
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure? You can't undo this action afterwards.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onAlertClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleDelete}>
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </>
   );
 };

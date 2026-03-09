@@ -1,20 +1,18 @@
-import { HamburgerIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
+import { Link, usePage } from '@inertiajs/react';
 import {
+  ActionIcon,
   Box,
   CloseButton,
   Drawer,
-  DrawerContent,
   Flex,
-  Icon,
-  IconButton,
   Image,
-  Spacer,
+  NavLink,
   Text,
-  useColorMode,
-  useColorModeValue,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { Link, usePage } from '@inertiajs/react';
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconMenu2, IconMoon, IconSun } from '@tabler/icons-react';
 
 const LinkItems = [
   { name: 'Featured', href: '/' },
@@ -24,143 +22,112 @@ const LinkItems = [
 ];
 
 function SidebarNav() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [opened, { open, close }] = useDisclosure(false);
 
   return (
-    <Box
-      bg={useColorModeValue('gray.100', 'gray.900')}
-      position="sticky"
-      top={0}
-      zIndex={3}
-    >
-      <SidebarContent
-        onClose={() => onClose}
-        display={{ base: 'none', md: 'flex' }}
-      />
-      <Drawer
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
-        size="full"
+    <>
+      <Box
+        visibleFrom="md"
+        bg="var(--mantine-color-body)"
+        style={{ position: 'sticky', top: 0, zIndex: 3 }}
       >
-        <DrawerContent>
-          <SidebarContent onClose={onClose} />
-        </DrawerContent>
+        <SidebarContent onClose={close} />
+      </Box>
+      <Drawer
+        opened={opened}
+        onClose={close}
+        placement="left"
+        size="full"
+        hiddenFrom="md"
+      >
+        <SidebarContent onClose={close} />
       </Drawer>
-      {/* mobilenav */}
-      <MobileNav display={{ base: 'flex', md: 'none' }} onOpen={onOpen} />
-    </Box>
+      <MobileNav hiddenFrom="md" onOpen={open} />
+    </>
   );
 }
 
-const SidebarContent = ({ onClose, ...rest }) => {
-  const { colorMode, toggleColorMode } = useColorMode();
+const SidebarContent = ({ onClose }) => {
+  const { toggleColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
+  const { url } = usePage();
 
   return (
     <Flex
       direction="column"
-      bg={useColorModeValue('white', 'gray.900')}
-      borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
-      w={{ base: 'full', md: 60 }}
-      pos="fixed"
-      h="full"
-      {...rest}
+      style={{
+        borderRight: '1px solid var(--mantine-color-default-border)',
+        width: '240px',
+        position: 'fixed',
+        height: '100%',
+      }}
+      bg="var(--mantine-color-body)"
     >
-      <Flex h="150px" alignItems="center" mx="8" justifyContent="space-between">
+      <Flex h={150} align="center" justify="space-between" px="lg">
         <Image
           src={
-            colorMode === 'light'
+            computedColorScheme === 'light'
               ? 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-black.png'
               : 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-white.png'
           }
           alt="logo"
-          width="full"
+          w="100%"
         />
-        <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+        <CloseButton hiddenFrom="md" onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
-        <NavItem key={link.name} href={link.href} icon={link.icon}>
-          {link.name}
-        </NavItem>
+        <NavLink
+          key={link.name}
+          component={Link}
+          href={link.href}
+          label={link.name}
+          active={
+            (link.href === '/' && url === link.href) ||
+            (link.href !== '/' && url.startsWith(link.href))
+          }
+          color="indigo"
+          py="md"
+          styles={{
+            label: {
+              fontSize: '1rem',
+              fontWeight: 500,
+            },
+          }}
+        />
       ))}
 
-      <Spacer />
-      <IconButton onClick={toggleColorMode}>
-        {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-      </IconButton>
+      <Box style={{ flex: 1 }} />
+      <Box p="sm">
+        <ActionIcon onClick={toggleColorScheme} variant="default" size="lg">
+          {computedColorScheme === 'light' ? (
+            <IconMoon size={16} />
+          ) : (
+            <IconSun size={16} />
+          )}
+        </ActionIcon>
+      </Box>
     </Flex>
-  );
-};
-
-const NavItem = ({ icon, href, children, ...rest }) => {
-  const { url } = usePage();
-
-  return (
-    <Box
-      as={Link}
-      href={href}
-      style={{ textDecoration: 'none' }}
-      _focus={{ boxShadow: 'none' }}
-    >
-      <Flex
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        bg={
-          (href === '/' && url === href) ||
-          (href !== '/' && url.startsWith(href))
-            ? useColorModeValue('cyan.300', 'cyan.900')
-            : null
-        }
-        _hover={{
-          bg: useColorModeValue('cyan.400', 'cyan.800'),
-          color: 'white',
-        }}
-        {...rest}
-      >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: 'white',
-            }}
-            as={icon}
-          />
-        )}
-        {children}
-      </Flex>
-    </Box>
   );
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
   return (
     <Flex
-      ml={{ base: 0, md: 60 }}
-      px={{ base: 4, md: 24 }}
-      height={16}
-      alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
-      boxShadow="md"
-      borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      px="md"
+      h={64}
+      align="center"
+      bg="var(--mantine-color-body)"
+      style={{
+        boxShadow: 'var(--mantine-shadow-md)',
+        borderBottom: '1px solid var(--mantine-color-default-border)',
+      }}
       {...rest}
     >
-      <IconButton
-        variant="outline"
-        onClick={onOpen}
-        aria-label="open menu"
-        icon={<HamburgerIcon />}
-      />
+      <ActionIcon variant="default" onClick={onOpen} aria-label="open menu">
+        <IconMenu2 size={16} />
+      </ActionIcon>
 
-      <Text fontSize="2xl" ml={4} fontFamily="monospace" fontWeight="bold">
+      <Text fz="xl" ml="md" ff="monospace" fw="bold">
         L-Dragon Photography
       </Text>
     </Flex>

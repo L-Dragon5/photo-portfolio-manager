@@ -1,19 +1,14 @@
-import { RepeatIcon, SpinnerIcon } from '@chakra-ui/icons';
+import { useForm } from '@inertiajs/react';
 import {
   Button,
   Checkbox,
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
-  HStack,
-  IconButton,
-  Input,
+  Group,
   Select,
+  Stack,
   Textarea,
-  VStack,
-} from '@chakra-ui/react';
-import { useForm } from '@inertiajs/react';
+  TextInput,
+} from '@mantine/core';
+import { IconRefresh } from '@tabler/icons-react';
 
 import ModifyCosplayerToAlbum from './ModifyCosplayerToAlbum';
 
@@ -22,7 +17,7 @@ const EditAlbum = ({ events, reloadPage, onClose, album }) => {
     `EditAlbum-${album.id}`,
     {
       name: album?.name ?? '',
-      event_id: album?.event_id ?? '',
+      event_id: album?.event_id ? String(album.event_id) : '',
       notes: album?.notes ?? '',
       url_alias: album?.url_alias ?? '',
       date_taken: album?.date_taken ?? '',
@@ -49,108 +44,97 @@ const EditAlbum = ({ events, reloadPage, onClose, album }) => {
   };
 
   return (
-    <VStack as="form" onSubmit={onSubmit} spacing={3}>
-      <HStack spacing={3} w="full">
-        <FormControl id="name" isInvalid={!!errors?.name} isRequired>
-          <FormLabel>Album Name</FormLabel>
-          <Input
-            type="text"
-            value={data.name}
-            onChange={(e) => setData('name', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.name}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="event_id" isInvalid={!!errors?.event_id}>
-          <FormLabel>Event</FormLabel>
-          <Select
-            value={data.event_id}
-            onChange={(e) => setData('event_id', e.target.value)}
-          >
-            <option value="">No Event</option>
-            {events?.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.name}
-              </option>
-            ))}
-          </Select>
-          <FormErrorMessage>{data?.event_id}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="is_press" isInvalid={!!errors?.is_press}>
-          <FormLabel>Is Press?</FormLabel>
-          <Checkbox
-            defaultChecked={data.is_press}
-            onChange={(e) => setData('is_press', e.target.checked)}
-          >
-            {data.is_press ? 'Yes' : 'No'}
-          </Checkbox>
-        </FormControl>
-        <FormControl id="is_public" isInvalid={!!errors?.is_public}>
-          <FormLabel>Is Public?</FormLabel>
-          <Checkbox
-            defaultChecked={data.is_public}
-            onChange={(e) => setData('is_public', e.target.checked)}
-          >
-            {data.is_public ? 'Yes' : 'No'}
-          </Checkbox>
-        </FormControl>
-      </HStack>
-      <HStack spacing={3} w="full">
-        <FormControl id="date_taken" isInvalid={!!errors?.date_taken}>
-          <FormLabel>Date Taken</FormLabel>
-          <Input
-            type="date"
-            value={data.date_taken}
-            onChange={(e) => setData('date_taken', e.target.value)}
-            min="2013-01-01"
-            max={new Date().toISOString().split('T')[0]}
-          />
-          <FormErrorMessage>{errors?.date_taken}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="url_alias" isInvalid={!!errors?.url_alias}>
-          <FormLabel>URL Alias</FormLabel>
-          <Input
-            type="text"
-            value={data.url_alias}
-            onChange={(e) => setData('url_alias', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.url_alias}</FormErrorMessage>
-          <FormHelperText>Leave blank to generate one</FormHelperText>
-        </FormControl>
-      </HStack>
-      <FormControl id="password" isInvalid={!!errors?.password}>
-        <FormLabel>Password</FormLabel>
-        <HStack>
-          <Input
-            value={data.password}
-            onChange={(e) => setData('password', e.target.value)}
-            autoComplete="new-password"
-          />
-          <IconButton icon={<SpinnerIcon />} onClick={generatePassword} />
-        </HStack>
-      </FormControl>
-      <FormControl id="notes" isInvalid={!!errors?.notes} mb={4}>
-        <FormLabel>Notes</FormLabel>
-        <Textarea
-          value={data.notes}
-          onChange={(e) => setData('notes', e.target.value)}
+    <Stack component="form" onSubmit={onSubmit} gap="sm">
+      <Group align="flex-start" grow>
+        <TextInput
+          label="Album Name"
+          required
+          value={data.name}
+          onChange={(e) => setData('name', e.target.value)}
+          error={errors?.name}
         />
-        <FormErrorMessage>{data?.notes}</FormErrorMessage>
-      </FormControl>
+        <Select
+          label="Event"
+          value={data.event_id}
+          onChange={(val) => setData('event_id', val ?? '')}
+          error={errors?.event_id}
+          data={[
+            { value: '', label: 'No Event' },
+            ...(events?.map((event) => ({
+              value: String(event.id),
+              label: event.name,
+            })) ?? []),
+          ]}
+        />
+        <Checkbox
+          label="Is Press?"
+          checked={data.is_press}
+          onChange={(e) => setData('is_press', e.target.checked)}
+        />
+        <Checkbox
+          label="Is Public?"
+          checked={data.is_public}
+          onChange={(e) => setData('is_public', e.target.checked)}
+        />
+      </Group>
+      <Group align="flex-start" grow>
+        <TextInput
+          label="Date Taken"
+          type="date"
+          value={data.date_taken}
+          onChange={(e) => setData('date_taken', e.target.value)}
+          min="2013-01-01"
+          max={new Date().toISOString().split('T')[0]}
+          error={errors?.date_taken}
+        />
+        <TextInput
+          label="URL Alias"
+          value={data.url_alias}
+          onChange={(e) => setData('url_alias', e.target.value)}
+          error={errors?.url_alias}
+          description="Leave blank to generate one"
+        />
+      </Group>
+      <Group align="flex-end">
+        <TextInput
+          label="Password"
+          value={data.password}
+          onChange={(e) => setData('password', e.target.value)}
+          autoComplete="new-password"
+          error={errors?.password}
+          style={{ flex: 1 }}
+        />
+        <Button
+          variant="default"
+          onClick={generatePassword}
+          leftSection={<IconRefresh size={14} />}
+        >
+          Generate
+        </Button>
+      </Group>
+      <Textarea
+        label="Notes"
+        value={data.notes}
+        onChange={(e) => setData('notes', e.target.value)}
+        error={errors?.notes}
+      />
 
       <ModifyCosplayerToAlbum reloadPage={reloadPage} album={album} />
 
-      <HStack justifyContent="flex-end" my={4} w="full">
-        <Button onClick={onClose}>Cancel</Button>
+      <Group justify="flex-end" my="md">
+        <Button variant="default" onClick={onClose}>
+          Cancel
+        </Button>
         <Button
           type="submit"
-          colorScheme="green"
-          leftIcon={<RepeatIcon />}
-          isLoading={processing}
+          color="green"
+          leftSection={<IconRefresh size={14} />}
+          loading={processing}
         >
           Update Album
         </Button>
-      </HStack>
-    </VStack>
+      </Group>
+    </Stack>
   );
 };
 

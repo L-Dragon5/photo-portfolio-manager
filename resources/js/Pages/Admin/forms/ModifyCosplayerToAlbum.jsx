@@ -1,16 +1,6 @@
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
-import {
-  IconButton,
-  Input,
-  Select,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react';
 import { router, useForm } from '@inertiajs/react';
+import { ActionIcon, Select, Table, TextInput } from '@mantine/core';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -65,63 +55,62 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
     });
   };
 
+  const availableCosplayers = cosplayers
+    ?.filter((x) => !activeCosplayers.find((c) => c.id === x.id))
+    ?.map((c) => ({ value: String(c.id), label: c.name }));
+
   return (
     <Table>
-      <Thead>
-        <Tr>
-          <Th>Cosplayer</Th>
-          <Th>Character</Th>
-          <Th>Options</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Cosplayer</Table.Th>
+          <Table.Th>Character</Table.Th>
+          <Table.Th>Options</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
         {activeCosplayers?.map((cos) => (
-          <Tr key={cos.id}>
-            <Td>{cos?.name}</Td>
-            <Td>{cos?.pivot?.character}</Td>
-            <Td>
-              <IconButton
-                icon={<DeleteIcon />}
-                isLoading={processing}
+          <Table.Tr key={cos.id}>
+            <Table.Td>{cos?.name}</Table.Td>
+            <Table.Td>{cos?.pivot?.character}</Table.Td>
+            <Table.Td>
+              <ActionIcon
+                loading={processing}
                 onClick={() => handleRemoveCosplayer(cos.id)}
-              />
-            </Td>
-          </Tr>
+                color="red"
+                variant="subtle"
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Table.Td>
+          </Table.Tr>
         ))}
         {cosplayers?.length > 0 ? (
-          <Tr>
-            <Td>
+          <Table.Tr>
+            <Table.Td>
               <Select
-                defaultValue={data.cosplayer_id}
-                onChange={(e) => setData('cosplayer_id', e.target.value)}
-              >
-                <option value="">Choose a Cosplayer</option>
-                {cosplayers
-                  ?.filter((x) => !activeCosplayers.find((c) => c.id === x.id))
-                  ?.map((c) => (
-                    <option key={`option-${c.id}`} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-              </Select>
-            </Td>
-            <Td>
-              <Input
-                type="text"
+                value={data.cosplayer_id}
+                onChange={(val) => setData('cosplayer_id', val ?? '')}
+                data={[
+                  { value: '', label: 'Choose a Cosplayer' },
+                  ...availableCosplayers,
+                ]}
+              />
+            </Table.Td>
+            <Table.Td>
+              <TextInput
                 value={data.character}
                 onChange={(e) => setData('character', e.target.value)}
               />
-            </Td>
-            <Td>
-              <IconButton
-                icon={<AddIcon />}
-                isLoading={processing}
-                onClick={handleAddCosplayer}
-              />
-            </Td>
-          </Tr>
+            </Table.Td>
+            <Table.Td>
+              <ActionIcon loading={processing} onClick={handleAddCosplayer}>
+                <IconPlus size={16} />
+              </ActionIcon>
+            </Table.Td>
+          </Table.Tr>
         ) : null}
-      </Tbody>
+      </Table.Tbody>
     </Table>
   );
 };

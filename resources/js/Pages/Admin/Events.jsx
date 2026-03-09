@@ -1,32 +1,17 @@
-import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { router } from '@inertiajs/react';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
+  ActionIcon,
   Button,
-  HStack,
-  IconButton,
+  Group,
   Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  ScrollArea,
   Select,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
+import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddEvent from './forms/AddEvent';
@@ -63,17 +48,8 @@ const Events = ({ events }) => {
     setActiveEvents(events);
   }, [events]);
 
-  const {
-    isOpen: isAlertOpen,
-    onOpen: onAlertOpen,
-    onClose: onAlertClose,
-  } = useDisclosure();
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose,
-  } = useDisclosure();
-  const cancelRef = useRef();
+  const [isModalOpen, { open: onModalOpen, close: onModalClose }] =
+    useDisclosure(false);
 
   const reloadPage = () => {
     router.reload({
@@ -93,137 +69,114 @@ const Events = ({ events }) => {
 
   const onDeleteClick = (e, eventObj) => {
     setModifyEvent(eventObj);
-    onAlertOpen();
-  };
-
-  const handleDelete = () => {
-    router.delete(`/admin/events/${modifyEvent.id}`, {
-      onSuccess: () => {
-        reloadPage();
-        onAlertClose();
+    modals.openConfirmModal({
+      title: `Delete Event - ${eventObj.name}`,
+      children: "Are you sure? You can't undo this action afterwards.",
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => {
+        router.delete(`/admin/events/${eventObj.id}`, {
+          onSuccess: () => reloadPage(),
+        });
       },
     });
   };
 
   return (
     <>
-      <HStack mb={4}>
+      <Group mb="md">
         <Select
-          defaultValue={sortingOption}
-          onChange={(e) => setSortingOption(e.target.value)}
-        >
-          <option value="name-asc">Name - A to Z</option>
-          <option value="name-desc">Name - Z to A</option>
-          <option value="date-asc">Date - Oldest to Recent</option>
-          <option value="date-desc">Date - Recent to Oldest</option>
-        </Select>
+          value={sortingOption}
+          onChange={(val) => setSortingOption(val ?? 'name-asc')}
+          data={[
+            { value: 'name-asc', label: 'Name - A to Z' },
+            { value: 'name-desc', label: 'Name - Z to A' },
+            { value: 'date-asc', label: 'Date - Oldest to Recent' },
+            { value: 'date-desc', label: 'Date - Recent to Oldest' },
+          ]}
+          style={{ flex: 1 }}
+        />
         <Button
-          colorScheme="teal"
-          leftIcon={<AddIcon />}
+          color="teal"
+          leftSection={<IconPlus size={14} />}
           w="50%"
           onClick={onModalOpen}
         >
           Add Event
         </Button>
-      </HStack>
+      </Group>
 
-      <TableContainer overflowY="auto" maxH="95%">
-        <Table variant="striped" colorScheme="teal">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>URL Alias</Th>
-              <Th>Start Date</Th>
-              <Th>End Date</Th>
-              <Th>Options</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollContainer minWidth={600} mah="95%">
+        <Table striped>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>URL Alias</Table.Th>
+              <Table.Th>Start Date</Table.Th>
+              <Table.Th>End Date</Table.Th>
+              <Table.Th>Options</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {activeEvents?.map((event) => (
-              <Tr key={event.id}>
-                <Td>{event.name}</Td>
-                <Td>{event?.url_alias ?? 'N/A'}</Td>
-                <Td>
+              <Table.Tr key={event.id}>
+                <Table.Td>{event.name}</Table.Td>
+                <Table.Td>{event?.url_alias ?? 'N/A'}</Table.Td>
+                <Table.Td>
                   {event.start_date &&
                     new Date(event.start_date).toLocaleDateString()}
-                </Td>
-                <Td>
+                </Table.Td>
+                <Table.Td>
                   {event.end_date &&
                     new Date(event.end_date).toLocaleDateString()}
-                </Td>
-                <Td>
-                  <HStack>
-                    <IconButton
+                </Table.Td>
+                <Table.Td>
+                  <Group gap="xs">
+                    <ActionIcon
                       aria-label="Edit event"
-                      icon={<EditIcon />}
                       onClick={(e) => onEditClick(e, event)}
-                    />
-                    <IconButton
+                      variant="default"
+                    >
+                      <IconPencil size={16} />
+                    </ActionIcon>
+                    <ActionIcon
                       aria-label="Delete event"
-                      icon={<DeleteIcon />}
                       onClick={(e) => onDeleteClick(e, event)}
-                    />
-                  </HStack>
-                </Td>
-              </Tr>
+                      color="red"
+                      variant="subtle"
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
             ))}
-          </Tbody>
+          </Table.Tbody>
         </Table>
-      </TableContainer>
+      </Table.ScrollContainer>
 
       <Modal
-        isOpen={isModalOpen}
+        opened={isModalOpen}
         onClose={handleModalClose}
-        closeOnOverlayClick={false}
-        scrollBehavior="inside"
+        closeOnClickOutside={false}
+        scrollAreaComponent={ScrollArea.Autosize}
         size="5xl"
+        title={
+          modifyEvent !== null
+            ? `Edit Event - ${modifyEvent.name}`
+            : 'Add Event'
+        }
       >
-        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-        <ModalContent>
-          <ModalHeader>
-            {modifyEvent !== null
-              ? `Edit Event - ${modifyEvent.name}`
-              : 'Add Event'}
-          </ModalHeader>
-          <ModalBody>
-            {modifyEvent !== null ? (
-              <EditEvent
-                reloadPage={reloadPage}
-                onClose={onModalClose}
-                event={modifyEvent}
-              />
-            ) : (
-              <AddEvent reloadPage={reloadPage} onClose={onModalClose} />
-            )}
-          </ModalBody>
-          <ModalCloseButton />
-        </ModalContent>
+        {modifyEvent !== null ? (
+          <EditEvent
+            reloadPage={reloadPage}
+            onClose={onModalClose}
+            event={modifyEvent}
+          />
+        ) : (
+          <AddEvent reloadPage={reloadPage} onClose={onModalClose} />
+        )}
       </Modal>
-
-      <AlertDialog
-        isOpen={isAlertOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onAlertClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Event - {modifyEvent?.name}
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure? You can't undo this action afterwards.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onAlertClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleDelete}>
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </>
   );
 };

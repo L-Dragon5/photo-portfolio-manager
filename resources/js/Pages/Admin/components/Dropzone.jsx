@@ -1,5 +1,5 @@
-import { DeleteIcon } from '@chakra-ui/icons';
-import { Box, Flex, IconButton, Image, Input, Text } from '@chakra-ui/react';
+import { ActionIcon, Box, Flex, Image, Text } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
@@ -43,14 +43,12 @@ const Dropzone = ({ setPhotos }) => {
       <Image
         src={file.preview}
         onLoad={() => URL.revokeObjectURL(file.preview)}
-        height="300px"
-        width="auto"
+        h={300}
+        w="auto"
       />
-      <IconButton
-        aria-label="Delete photo"
-        icon={<DeleteIcon />}
-        onClick={() => removePhoto(index)}
-      />
+      <ActionIcon aria-label="Delete photo" onClick={() => removePhoto(index)}>
+        <IconTrash size={16} />
+      </ActionIcon>
     </Box>
   ));
 
@@ -63,28 +61,29 @@ const Dropzone = ({ setPhotos }) => {
   }, []);
 
   return (
-    <Box w="full">
+    <Box w="100%">
       <Box
         {...getRootProps()}
-        border="1px dashed"
-        borderColor="gray.500"
-        w="full"
-        py={16}
+        style={{
+          border: '1px dashed var(--mantine-color-gray-5)',
+          cursor: 'pointer',
+        }}
+        w="100%"
+        py={64}
       >
-        <Input {...getInputProps()} cursor="pointer" />
-        <Text textAlign="center" userSelect="none">
+        <input {...getInputProps()} />
+        <Text ta="center" style={{ userSelect: 'none' }}>
           Upload photos here
         </Text>
       </Box>
       {thumbs.length > 0 && (
         <Flex
-          flexWrap="wrap"
-          border="1px solid"
-          borderColor="black"
-          mt={3}
-          py={4}
-          gap={2}
-          justifyContent="space-evenly"
+          wrap="wrap"
+          style={{ border: '1px solid black' }}
+          mt="sm"
+          py="md"
+          gap="sm"
+          justify="space-evenly"
         >
           {thumbs}
         </Flex>

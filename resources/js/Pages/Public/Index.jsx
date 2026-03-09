@@ -2,7 +2,7 @@ import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
-import { Box } from '@chakra-ui/react';
+import { Box } from '@mantine/core';
 import { useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
@@ -18,9 +18,11 @@ const Index = ({ featuredPhotos }) => {
   const customRenderPhoto = ({ renderDefaultPhoto }) => {
     return (
       <Box
-        position="relative"
-        transition="0.3s transform"
-        _hover={{ transform: 'scale(1.025)' }}
+        style={{
+          position: 'relative',
+          transition: '0.3s transform',
+        }}
+        styles={{ root: { '&:hover': { transform: 'scale(1.025)' } } }}
       >
         {renderDefaultPhoto()}
       </Box>

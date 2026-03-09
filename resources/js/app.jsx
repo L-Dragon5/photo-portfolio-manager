@@ -1,5 +1,9 @@
-import { ChakraProvider } from '@chakra-ui/react';
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import { createInertiaApp } from '@inertiajs/react';
+import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
@@ -14,9 +18,12 @@ createInertiaApp({
     ),
   setup({ el, App, props }) {
     createRoot(el).render(
-      <ChakraProvider>
-        <App {...props} />
-      </ChakraProvider>,
+      <MantineProvider defaultColorScheme="auto">
+        <ModalsProvider>
+          <Notifications />
+          <App {...props} />
+        </ModalsProvider>
+      </MantineProvider>,
     );
   },
 });

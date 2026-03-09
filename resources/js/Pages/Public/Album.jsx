@@ -1,20 +1,18 @@
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 
-import { ChevronRightIcon, DownloadIcon } from '@chakra-ui/icons';
+import { Link } from '@inertiajs/react';
 import {
+  Anchor,
+  Badge,
   Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
+  Breadcrumbs,
   Button,
   Flex,
-  Heading,
-  HStack,
-  Link,
-  Spacer,
-  Tag,
-} from '@chakra-ui/react';
+  Group,
+  Title,
+} from '@mantine/core';
+import { IconChevronRight, IconDownload } from '@tabler/icons-react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { useState } from 'react';
@@ -26,20 +24,19 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 
 import BaseLayout from './components/BaseLayout';
 
-const Breadcrumbs = ({ albumName, breadcrumbs }) => (
-  <Breadcrumb separator={<ChevronRightIcon color="gray.500" />}>
+const AlbumBreadcrumbs = ({ albumName, breadcrumbs }) => (
+  <Breadcrumbs separator={<IconChevronRight size={14} />}>
     {breadcrumbs?.map((breadcrumb) => (
-      <BreadcrumbItem key={breadcrumb.name}>
-        <BreadcrumbLink as={Link} href={`/${breadcrumb.url_alias}/`}>
-          {breadcrumb.name}
-        </BreadcrumbLink>
-      </BreadcrumbItem>
+      <Anchor
+        key={breadcrumb.name}
+        component={Link}
+        href={`/${breadcrumb.url_alias}/`}
+      >
+        {breadcrumb.name}
+      </Anchor>
     ))}
-
-    <BreadcrumbItem isCurrentPage>
-      <BreadcrumbLink>{albumName}</BreadcrumbLink>
-    </BreadcrumbItem>
-  </Breadcrumb>
+    <span>{albumName}</span>
+  </Breadcrumbs>
 );
 
 const Album = ({ album, breadcrumbs }) => {
@@ -63,9 +60,11 @@ const Album = ({ album, breadcrumbs }) => {
 
     return (
       <Box
-        position="relative"
-        transition="0.3s transform"
-        _hover={{ transform: 'scale(1.025)' }}
+        style={{
+          position: 'relative',
+          transition: '0.3s transform',
+        }}
+        styles={{ root: { '&:hover': { transform: 'scale(1.025)' } } }}
       >
         {renderDefaultPhoto()}
       </Box>
@@ -84,41 +83,38 @@ const Album = ({ album, breadcrumbs }) => {
 
   return (
     <BaseLayout title={album.name}>
-      <Breadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
+      <AlbumBreadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
 
       {album?.photos.length > 0 && (
         <>
-          <HStack mb={4}>
-            <Heading>Photos</Heading>
+          <Group mb="md" justify="space-between">
+            <Title>Photos</Title>
             {album?.is_public ? (
-              <>
-                <Spacer />
-                <Button
-                  colorScheme="teal"
-                  variant="outline"
-                  size="lg"
-                  leftIcon={<DownloadIcon />}
-                  onClick={albumDownload}
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? 'Downloading...' : 'Download'}
-                </Button>
-              </>
+              <Button
+                color="teal"
+                variant="outline"
+                size="lg"
+                leftSection={<IconDownload size={18} />}
+                onClick={albumDownload}
+                disabled={isDownloading}
+              >
+                {isDownloading ? 'Downloading...' : 'Download'}
+              </Button>
             ) : null}
-          </HStack>
+          </Group>
 
-          <Flex spacing={4} mb={6} zIndex={2} gap={1}>
+          <Flex mb="md" gap="xs" wrap="wrap">
             {album?.cosplayers?.map((cos) => (
-              <Tag
+              <Badge
                 key={cos.id}
-                as={Link}
-                p={2}
-                colorScheme="pink"
+                component="a"
                 href={`https://instagram.com/${cos.instagram}`}
-                isExternal
+                target="_blank"
+                color="pink"
+                style={{ cursor: 'pointer' }}
               >
                 {cos?.pivot?.character} - {cos.name}
-              </Tag>
+              </Badge>
             ))}
           </Flex>
 

@@ -1,5 +1,5 @@
-import { Box, Flex, useColorModeValue } from '@chakra-ui/react';
 import { Head } from '@inertiajs/react';
+import { Box, Flex } from '@mantine/core';
 
 import AdminSidebarNav from './AdminSidebarNav';
 
@@ -10,11 +10,11 @@ const AdminLayout = ({ title, children }) => {
       <Flex h="100vh" w="100vw" direction={{ base: 'column', md: 'row' }}>
         <AdminSidebarNav />
         <Box
-          bg={useColorModeValue('gray.50', 'gray.800')}
-          ml={{ base: 0, md: 60 }}
-          w="full"
-          p={4}
-          overflowY="auto"
+          bg="var(--mantine-color-body)"
+          ml={{ base: 0, md: '240px' }}
+          w="100%"
+          p="md"
+          style={{ overflowY: 'auto' }}
         >
           {children}
         </Box>

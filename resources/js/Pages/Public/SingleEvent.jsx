@@ -1,22 +1,11 @@
-import { ChevronRightIcon } from '@chakra-ui/icons';
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Flex,
-  Heading,
-  LinkBox,
-  LinkOverlay,
-  Select,
-  SimpleGrid,
-  useColorModeValue,
-} from '@chakra-ui/react';
 import { Link } from '@inertiajs/react';
+import { Anchor, Box, Breadcrumbs, Title } from '@mantine/core';
+import { IconChevronRight } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
+import SortSelect from './components/SortSelect';
 
 const SingleEvent = ({ event, albums }) => {
   const [sortingOption, setSortingOption] = useState('name-asc');
@@ -48,71 +37,60 @@ const SingleEvent = ({ event, albums }) => {
     const shoot = activeAlbums[layout.index];
 
     return (
-      <LinkBox
+      <Box
         key={shoot.id}
-        rounded="md"
-        border="1px solid"
-        borderColor="gray.300"
-        transition="0.3s transform"
-        _hover={{ transform: 'scale(1.025)' }}
-        {...wrapperStyle}
+        component={Link}
+        href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
+          shoot?.url_alias ? shoot.url_alias : shoot.id
+        }/`}
+        style={{
+          ...wrapperStyle,
+          borderRadius: 'var(--mantine-radius-md)',
+          border: '1px solid var(--mantine-color-gray-3)',
+          transition: '0.3s transform',
+          display: 'block',
+          textDecoration: 'none',
+          position: 'relative',
+        }}
+        styles={{ root: { '&:hover': { transform: 'scale(1.025)' } } }}
       >
-        <LinkOverlay
-          as={Link}
-          href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
-            shoot?.url_alias ? shoot.url_alias : shoot.id
-          }/`}
-          preserveScroll
+        <Box
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            padding: '8px',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            width: '100%',
+          }}
         >
-          <Box
-            position="absolute"
-            bottom={0}
-            left={0}
-            p={2}
-            bgColor="blackAlpha.600"
-            width="full"
-          >
-            <Heading size="md" color="gray.100">
-              {shoot.name}
-            </Heading>
-            <Heading size="xs" color="gray.100">
-              {shoot.date_taken &&
-                new Date(shoot.date_taken).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-            </Heading>
-          </Box>
-        </LinkOverlay>
+          <Title order={4} c="gray.1">
+            {shoot.name}
+          </Title>
+          <Title order={6} c="gray.1">
+            {shoot.date_taken &&
+              new Date(shoot.date_taken).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+          </Title>
+        </Box>
         {renderDefaultPhoto({ wrapped: true })}
-      </LinkBox>
+      </Box>
     );
   };
 
   return (
     <BaseLayout title={event.name}>
-      <Breadcrumb separator={<ChevronRightIcon color="gray.500" />}>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={Link} href="/events">
-            Events
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink href="#">{event.name}</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
+      <Breadcrumbs separator={<IconChevronRight size={14} />} mb="md">
+        <Anchor component={Link} href="/events">
+          Events
+        </Anchor>
+        <span>{event.name}</span>
+      </Breadcrumbs>
 
-      <Select
-        defaultValue={sortingOption}
-        my={4}
-        onChange={(e) => setSortingOption(e.target.value)}
-      >
-        <option value="name-asc">Name - A to Z</option>
-        <option value="name-desc">Name - Z to A</option>
-        <option value="date-asc">Date - Oldest to Recent</option>
-        <option value="date-desc">Date - Recent to Oldest</option>
-      </Select>
+      <SortSelect value={sortingOption} onChange={(val) => setSortingOption(val ?? 'name-asc')} />
 
       <PhotoAlbum
         layout="masonry"

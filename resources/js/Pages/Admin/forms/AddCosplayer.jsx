@@ -1,14 +1,6 @@
-import { AddIcon } from '@chakra-ui/icons';
-import {
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  Input,
-  VStack,
-} from '@chakra-ui/react';
 import { useForm } from '@inertiajs/react';
+import { Button, Group, Stack, TextInput } from '@mantine/core';
+import { IconPlus } from '@tabler/icons-react';
 
 const AddCosplayer = ({ reloadPage, onClose }) => {
   const { data, setData, post, reset, processing, errors } = useForm(
@@ -33,49 +25,43 @@ const AddCosplayer = ({ reloadPage, onClose }) => {
   };
 
   return (
-    <VStack as="form" onSubmit={onSubmit} spacing={3}>
-      <FormControl id="name" isInvalid={!!errors?.name} isRequired>
-        <FormLabel>Cosplayer Name</FormLabel>
-        <Input
-          type="text"
-          value={data.name}
-          onChange={(e) => setData('name', e.target.value)}
+    <Stack component="form" onSubmit={onSubmit} gap="sm">
+      <TextInput
+        label="Cosplayer Name"
+        required
+        value={data.name}
+        onChange={(e) => setData('name', e.target.value)}
+        error={errors?.name}
+      />
+      <Group grow>
+        <TextInput
+          label="Instagram"
+          value={data.instagram}
+          onChange={(e) => setData('instagram', e.target.value)}
+          error={errors?.instagram}
         />
-        <FormErrorMessage>{errors?.name}</FormErrorMessage>
-      </FormControl>
-      <HStack spacing={3} w="full">
-        <FormControl id="instagram" isInvalid={!!errors?.instagram}>
-          <FormLabel>Instagram</FormLabel>
-          <Input
-            type="text"
-            value={data.instagram}
-            onChange={(e) => setData('instagram', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.instagram}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="twitter" isInvalid={!!errors?.twitter}>
-          <FormLabel>Twitter</FormLabel>
-          <Input
-            type="text"
-            value={data.twitter}
-            onChange={(e) => setData('twitter', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.twitter}</FormErrorMessage>
-        </FormControl>
-      </HStack>
+        <TextInput
+          label="Twitter"
+          value={data.twitter}
+          onChange={(e) => setData('twitter', e.target.value)}
+          error={errors?.twitter}
+        />
+      </Group>
 
-      <HStack justifyContent="flex-end" my={4} w="full">
-        <Button onClick={onClose}>Cancel</Button>
+      <Group justify="flex-end" my="md">
+        <Button variant="default" onClick={onClose}>
+          Cancel
+        </Button>
         <Button
           type="submit"
-          colorScheme="green"
-          leftIcon={<AddIcon />}
-          isLoading={processing}
+          color="green"
+          leftSection={<IconPlus size={14} />}
+          loading={processing}
         >
           Add New Cosplayer
         </Button>
-      </HStack>
-    </VStack>
+      </Group>
+    </Stack>
   );
 };
 

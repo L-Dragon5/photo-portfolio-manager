@@ -1,58 +1,33 @@
+import { Link, router } from '@inertiajs/react';
 import {
-  AddIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DeleteIcon,
-  EditIcon,
-  StarIcon,
-  ViewIcon,
-} from '@chakra-ui/icons';
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
+  ActionIcon,
   Badge,
   Button,
   Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   Flex,
-  Heading,
-  HStack,
-  IconButton,
-  ListItem,
+  Group,
+  List,
   Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Popover,
-  PopoverBody,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTrigger,
+  ScrollArea,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
+  Title,
   Tooltip,
-  Tr,
-  UnorderedList,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { Link, router } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconChevronLeft,
+  IconChevronRight,
+  IconEye,
+  IconPencil,
+  IconPlus,
+  IconStar,
+  IconTrash,
+} from '@tabler/icons-react';
+import { useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddAlbum from './forms/AddAlbum';
@@ -63,22 +38,10 @@ const Index = ({ albums, events }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
   const [drawerUploadType, setDrawerUploadType] = useState(null);
 
-  const {
-    isOpen: isAlertOpen,
-    onOpen: onAlertOpen,
-    onClose: onAlertClose,
-  } = useDisclosure();
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose,
-  } = useDisclosure();
-  const {
-    isOpen: isDrawerOpen,
-    onOpen: onDrawerOpen,
-    onClose: onDrawerClose,
-  } = useDisclosure();
-  const cancelRef = useRef();
+  const [isModalOpen, { open: onModalOpen, close: onModalClose }] =
+    useDisclosure(false);
+  const [isDrawerOpen, { open: onDrawerOpen, close: onDrawerClose }] =
+    useDisclosure(false);
 
   const reloadPage = () => {
     router.reload({
@@ -105,14 +68,15 @@ const Index = ({ albums, events }) => {
   const onDeleteClick = (e, albumObj) => {
     e.stopPropagation();
     setModifyAlbum(albumObj);
-    onAlertOpen();
-  };
-
-  const handleDelete = () => {
-    router.delete(`/admin/albums/${modifyAlbum.id}`, {
-      onSuccess: () => {
-        reloadPage();
-        onAlertClose();
+    modals.openConfirmModal({
+      title: `Delete Album - ${albumObj.name}`,
+      children: "Are you sure? You can't undo this action afterwards.",
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => {
+        router.delete(`/admin/albums/${albumObj.id}`, {
+          onSuccess: () => reloadPage(),
+        });
       },
     });
   };
@@ -132,252 +96,234 @@ const Index = ({ albums, events }) => {
 
   return (
     <>
-      <HStack justifyContent="space-between" w="full">
-        <Heading size="lg">Albums</Heading>
+      <Group justify="space-between" w="100%" mb="md">
+        <Title order={2}>Albums</Title>
         <Button
-          leftIcon={<AddIcon />}
-          variant="solid"
-          colorScheme="teal"
+          leftSection={<IconPlus size={14} />}
+          color="teal"
           onClick={onModalOpen}
         >
           Add Album
         </Button>
-      </HStack>
-      <Flex>
-        <IconButton
-          as={Link}
-          icon={<ArrowLeftIcon />}
+      </Group>
+      <Flex gap="xs" mb="sm">
+        <ActionIcon
+          component={Link}
           href={albums?.first_page_url}
           only={['albums']}
-        />
-        <IconButton
-          as={Link}
-          icon={<ChevronLeftIcon boxSize={7} />}
+          variant="default"
+        >
+          <IconArrowLeft size={14} />
+        </ActionIcon>
+        <ActionIcon
+          component={Link}
           href={albums?.prev_page_url}
           only={['albums']}
-        />
+          variant="default"
+        >
+          <IconChevronLeft size={18} />
+        </ActionIcon>
         {albums?.links?.map((link, index) => {
           if (index === 0 || index === albums.links.length - 1) return;
           return (
             <Button
               key={link.url}
-              as={Link}
+              component={Link}
               href={link.url}
               only={['albums']}
-              colorScheme={link.active ? 'blue' : 'gray'}
+              color={link.active ? 'blue' : 'gray'}
+              variant={link.active ? 'filled' : 'default'}
+              size="sm"
             >
               {link.label}
             </Button>
           );
         })}
-        <IconButton
-          as={Link}
-          icon={<ChevronRightIcon boxSize={7} />}
+        <ActionIcon
+          component={Link}
           href={albums?.next_page_url}
           only={['albums']}
-        />
-        <IconButton
-          as={Link}
-          icon={<ArrowRightIcon />}
+          variant="default"
+        >
+          <IconChevronRight size={18} />
+        </ActionIcon>
+        <ActionIcon
+          component={Link}
           href={albums?.last_page_url}
           only={['albums']}
-        />
+          variant="default"
+        >
+          <IconArrowRight size={14} />
+        </ActionIcon>
       </Flex>
-      <TableContainer overflowY="auto" maxH="93%">
-        <Table variant="striped" colorScheme="teal">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Event</Th>
-              <Th>Date Taken</Th>
-              <Th>URL Alias</Th>
-              <Th>Password</Th>
-              <Th>Flags</Th>
-              <Th>Options</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollContainer minWidth={800} mah="93%">
+        <Table striped>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Event</Table.Th>
+              <Table.Th>Date Taken</Table.Th>
+              <Table.Th>URL Alias</Table.Th>
+              <Table.Th>Password</Table.Th>
+              <Table.Th>Flags</Table.Th>
+              <Table.Th>Options</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {albums?.data?.map((album) => (
-              <Tr key={album.id}>
-                <Td>{album.name}</Td>
-                <Td>{album?.event?.name}</Td>
-                <Td>{album?.date_taken}</Td>
-                <Td>{album.url_alias}</Td>
-                <Td>{album.password}</Td>
-                <Td>
+              <Table.Tr key={album.id}>
+                <Table.Td>{album.name}</Table.Td>
+                <Table.Td>{album?.event?.name}</Table.Td>
+                <Table.Td>{album?.date_taken}</Table.Td>
+                <Table.Td>{album.url_alias}</Table.Td>
+                <Table.Td>{album.password}</Table.Td>
+                <Table.Td>
                   {album.is_press ? (
-                    <Badge colorScheme="purple" variant="subtle">
+                    <Badge color="grape" variant="light">
                       Press
                     </Badge>
                   ) : null}{' '}
                   {album.is_public ? (
-                    <Badge colorScheme="green" variant="solid">
+                    <Badge color="green" variant="filled">
                       Public
                     </Badge>
                   ) : null}
                   {album?.related_photos?.length > 0 ? (
                     <Popover>
-                      <PopoverTrigger>
+                      <Popover.Target>
                         <Badge
-                          colorScheme="pink"
-                          variant="solid"
-                          cursor="pointer"
+                          color="pink"
+                          variant="filled"
+                          style={{ cursor: 'pointer' }}
                         >
                           Previews Selected
                         </Badge>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <PopoverHeader>Selected filenames</PopoverHeader>
-                        <PopoverBody>
-                          <UnorderedList h="200px" overflow="auto">
+                      </Popover.Target>
+                      <Popover.Dropdown>
+                        <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                          Selected filenames
+                        </div>
+                        <ScrollArea h={200}>
+                          <List>
                             {album.related_photos
                               .toSorted((a, b) =>
                                 a.name.localeCompare(b.name, 'en'),
                               )
                               .map((photo) => (
-                                <ListItem key={photo.id}>{photo.name}</ListItem>
+                                <List.Item key={photo.id}>
+                                  {photo.name}
+                                </List.Item>
                               ))}
-                          </UnorderedList>
-                        </PopoverBody>
-                      </PopoverContent>
+                          </List>
+                        </ScrollArea>
+                      </Popover.Dropdown>
                     </Popover>
                   ) : null}
-                </Td>
+                </Table.Td>
 
-                <Td>
-                  <HStack>
+                <Table.Td>
+                  <Group gap="xs">
                     {!album.is_public ||
                     album?.photos?.length < 1 ||
                     album?.previews?.length > 0 ? (
                       <Tooltip label="Upload previews">
-                        <IconButton
-                          label="Upload Previews"
+                        <ActionIcon
                           aria-label="Upload previews"
-                          icon={<ViewIcon />}
                           onClick={(e) => onUploadPreviewsClick(e, album)}
-                        />
+                          variant="default"
+                        >
+                          <IconEye size={16} />
+                        </ActionIcon>
                       </Tooltip>
                     ) : null}
 
                     <Tooltip label="Upload displayed photos">
-                      <IconButton
+                      <ActionIcon
                         aria-label="Upload displayed photos"
-                        icon={<StarIcon />}
                         onClick={(e) => onUploadPhotosClick(e, album)}
-                      />
+                        variant="default"
+                      >
+                        <IconStar size={16} />
+                      </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Edit album details">
-                      <IconButton
+                      <ActionIcon
                         aria-label="Edit album details"
-                        icon={<EditIcon />}
                         onClick={(e) => onEditClick(e, album)}
-                      />
+                        variant="default"
+                      >
+                        <IconPencil size={16} />
+                      </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Delete album">
-                      <IconButton
+                      <ActionIcon
                         aria-label="Delete album"
-                        icon={<DeleteIcon />}
                         onClick={(e) => onDeleteClick(e, album)}
-                      />
+                        color="red"
+                        variant="subtle"
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
                     </Tooltip>
-                  </HStack>
-                </Td>
-              </Tr>
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
             ))}
-          </Tbody>
+          </Table.Tbody>
         </Table>
-      </TableContainer>
+      </Table.ScrollContainer>
 
       <Modal
-        isOpen={isModalOpen}
+        opened={isModalOpen}
         onClose={handleModalClose}
-        closeOnOverlayClick={false}
-        scrollBehavior="inside"
+        closeOnClickOutside={false}
+        scrollAreaComponent={ScrollArea.Autosize}
         size="5xl"
+        title={
+          modifyAlbum !== null
+            ? `Edit Album - ${modifyAlbum.name}`
+            : 'Add Album'
+        }
       >
-        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-        <ModalContent>
-          <ModalHeader>
-            {modifyAlbum !== null
-              ? `Edit Album - ${modifyAlbum.name}`
-              : 'Add Album'}
-          </ModalHeader>
-          <ModalBody>
-            {modifyAlbum !== null ? (
-              <EditAlbum
-                reloadPage={reloadPage}
-                onClose={handleModalClose}
-                events={events}
-                album={modifyAlbum}
-              />
-            ) : (
-              <AddAlbum
-                reloadPage={reloadPage}
-                onClose={handleModalClose}
-                events={events}
-              />
-            )}
-          </ModalBody>
-          <ModalCloseButton />
-        </ModalContent>
+        {modifyAlbum !== null ? (
+          <EditAlbum
+            reloadPage={reloadPage}
+            onClose={handleModalClose}
+            events={events}
+            album={modifyAlbum}
+          />
+        ) : (
+          <AddAlbum
+            reloadPage={reloadPage}
+            onClose={handleModalClose}
+            events={events}
+          />
+        )}
       </Modal>
 
       <Drawer
-        isOpen={isDrawerOpen}
-        placement="bottom"
+        opened={isDrawerOpen}
+        position="bottom"
         onClose={handleDrawerClose}
-        size="full"
+        size="100%"
+        title={`Upload ${drawerUploadType} - ${modifyAlbum?.name}`}
       >
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>
-            Upload {drawerUploadType} - {modifyAlbum?.name}
-          </DrawerHeader>
-          <DrawerBody>
-            {drawerUploadType === 'previews' ? (
-              <UploadAlbum
-                reloadPage={reloadPage}
-                onClose={handleDrawerClose}
-                type="previews"
-                album={modifyAlbum}
-              />
-            ) : (
-              <UploadAlbum
-                reloadPage={reloadPage}
-                onClose={handleDrawerClose}
-                type="photos"
-                album={modifyAlbum}
-              />
-            )}
-          </DrawerBody>
-        </DrawerContent>
+        {drawerUploadType === 'previews' ? (
+          <UploadAlbum
+            reloadPage={reloadPage}
+            onClose={handleDrawerClose}
+            type="previews"
+            album={modifyAlbum}
+          />
+        ) : (
+          <UploadAlbum
+            reloadPage={reloadPage}
+            onClose={handleDrawerClose}
+            type="photos"
+            album={modifyAlbum}
+          />
+        )}
       </Drawer>
-
-      <AlertDialog
-        isOpen={isAlertOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onAlertClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Album - {modifyAlbum?.name}
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure? You can't undo this action afterwards.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onAlertClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleDelete}>
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </>
   );
 };

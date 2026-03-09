@@ -1,14 +1,6 @@
-import { RepeatIcon } from '@chakra-ui/icons';
-import {
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  Input,
-  VStack,
-} from '@chakra-ui/react';
 import { useForm } from '@inertiajs/react';
+import { Button, Group, Stack, TextInput } from '@mantine/core';
+import { IconRefresh } from '@tabler/icons-react';
 
 const EditEvent = ({ reloadPage, onClose, event }) => {
   const { data, setData, put, processing, errors } = useForm(
@@ -33,65 +25,58 @@ const EditEvent = ({ reloadPage, onClose, event }) => {
   };
 
   return (
-    <VStack as="form" onSubmit={onSubmit} spacing={3}>
-      <HStack spacing={3} w="full">
-        <FormControl id="name" isInvalid={!!errors?.name} isRequired>
-          <FormLabel>Event Name</FormLabel>
-          <Input
-            type="text"
-            value={data.name}
-            onChange={(e) => setData('name', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.name}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="url_alias" isInvalid={!!errors?.url_alias}>
-          <FormLabel>URL Alias</FormLabel>
-          <Input
-            type="text"
-            value={data.url_alias}
-            onChange={(e) => setData('url_alias', e.target.value)}
-          />
-          <FormErrorMessage>{errors?.url_alias}</FormErrorMessage>
-        </FormControl>
-      </HStack>
+    <Stack component="form" onSubmit={onSubmit} gap="sm">
+      <Group grow>
+        <TextInput
+          label="Event Name"
+          required
+          value={data.name}
+          onChange={(e) => setData('name', e.target.value)}
+          error={errors?.name}
+        />
+        <TextInput
+          label="URL Alias"
+          value={data.url_alias}
+          onChange={(e) => setData('url_alias', e.target.value)}
+          error={errors?.url_alias}
+        />
+      </Group>
 
-      <HStack spacing={3} w="full">
-        <FormControl id="start_date" isInvalid={!!errors?.start_date}>
-          <FormLabel>Start Date</FormLabel>
-          <Input
-            type="date"
-            value={data.start_date}
-            onChange={(e) => setData('start_date', e.target.value)}
-            min="2013-01-01"
-            max={new Date().toISOString().split('T')[0]}
-          />
-          <FormErrorMessage>{errors?.start_date}</FormErrorMessage>
-        </FormControl>
-        <FormControl id="end_date" isInvalid={!!errors?.end_date}>
-          <FormLabel>End Date</FormLabel>
-          <Input
-            type="date"
-            value={data.end_date}
-            onChange={(e) => setData('end_date', e.target.value)}
-            min="2013-01-01"
-            max={new Date().toISOString().split('T')[0]}
-          />
-          <FormErrorMessage>{errors?.end_date}</FormErrorMessage>
-        </FormControl>
-      </HStack>
+      <Group grow>
+        <TextInput
+          label="Start Date"
+          type="date"
+          value={data.start_date}
+          onChange={(e) => setData('start_date', e.target.value)}
+          min="2013-01-01"
+          max={new Date().toISOString().split('T')[0]}
+          error={errors?.start_date}
+        />
+        <TextInput
+          label="End Date"
+          type="date"
+          value={data.end_date}
+          onChange={(e) => setData('end_date', e.target.value)}
+          min="2013-01-01"
+          max={new Date().toISOString().split('T')[0]}
+          error={errors?.end_date}
+        />
+      </Group>
 
-      <HStack justifyContent="flex-end" my={4} w="full">
-        <Button onClick={onClose}>Cancel</Button>
+      <Group justify="flex-end" my="md">
+        <Button variant="default" onClick={onClose}>
+          Cancel
+        </Button>
         <Button
           type="submit"
-          colorScheme="green"
-          leftIcon={<RepeatIcon />}
-          isLoading={processing}
+          color="green"
+          leftSection={<IconRefresh size={14} />}
+          loading={processing}
         >
           Update Event
         </Button>
-      </HStack>
-    </VStack>
+      </Group>
+    </Stack>
   );
 };
 

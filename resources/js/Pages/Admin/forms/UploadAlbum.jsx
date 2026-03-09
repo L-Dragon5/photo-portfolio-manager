@@ -1,15 +1,19 @@
-import { AddIcon, DeleteIcon, LinkIcon, StarIcon } from '@chakra-ui/icons';
+import { router, useForm } from '@inertiajs/react';
 import {
+  ActionIcon,
   Box,
   Button,
-  Heading,
-  HStack,
-  IconButton,
+  Group,
+  Stack,
+  Title,
   Tooltip,
-  useColorModeValue,
-  VStack,
-} from '@chakra-ui/react';
-import { router, useForm } from '@inertiajs/react';
+} from '@mantine/core';
+import {
+  IconDownload,
+  IconLink,
+  IconStar,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
@@ -91,49 +95,46 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     const { id, index } = photo;
 
     return (
-      <Box position="relative" {...wrapperStyle}>
+      <Box pos="relative" style={wrapperStyle}>
         {renderDefaultPhoto({ wrapped: true })}
         <Tooltip label="Permanently delete photo">
-          <IconButton
-            icon={<DeleteIcon />}
+          <ActionIcon
             onClick={() => handleImageDelete(id, index)}
-            position="absolute"
+            pos="absolute"
             top={0}
             right={0}
-            bgColor={useColorModeValue('gray.200', 'gray.700')}
-            opacity={0.5}
-            _hover={{ opacity: 1 }}
-          />
+            style={{ opacity: 0.5 }}
+            styles={{ root: { '&:hover': { opacity: 1 } } }}
+          >
+            <IconTrash size={16} />
+          </ActionIcon>
         </Tooltip>
         {type === 'photos' ? (
           <>
             <Tooltip label="Set as album cover image">
-              <IconButton
-                icon={
-                  <StarIcon
-                    color={id === activeCoverImage ? 'yellow' : 'black'}
-                  />
-                }
+              <ActionIcon
                 onClick={() => handleSetCoverImage(id)}
-                position="absolute"
+                pos="absolute"
                 top={0}
                 left={0}
-                bgColor={useColorModeValue('gray.200', 'gray.700')}
-                opacity={0.5}
-                _hover={{ opacity: 1 }}
-              />
+                style={{ opacity: 0.5 }}
+                styles={{ root: { '&:hover': { opacity: 1 } } }}
+                color={id === activeCoverImage ? 'yellow' : undefined}
+              >
+                <IconStar size={16} />
+              </ActionIcon>
             </Tooltip>
             <Tooltip label="Set as featured photo">
-              <IconButton
-                icon={<LinkIcon />}
+              <ActionIcon
                 onClick={() => handleToggleFeaturedPhoto(id)}
-                position="absolute"
+                pos="absolute"
                 top={0}
                 left="50%"
-                bgColor={useColorModeValue('gray.200', 'gray.700')}
-                opacity={0.5}
-                _hover={{ opacity: 1 }}
-              />
+                style={{ opacity: 0.5 }}
+                styles={{ root: { '&:hover': { opacity: 1 } } }}
+              >
+                <IconLink size={16} />
+              </ActionIcon>
             </Tooltip>
           </>
         ) : null}
@@ -145,14 +146,16 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     <>
       {type === 'previews' && album.is_public && album?.photos?.length > 0 ? (
         <Button
-          colorScheme="red"
+          color="red"
           onClick={handlePurgePreviews}
-          isLoading={isSubmitting}
+          loading={isSubmitting}
         >
           Purge Previews
         </Button>
       ) : null}
-      <Heading mb={3}>Uploaded Images</Heading>
+      <Title order={3} mb="sm">
+        Uploaded Images
+      </Title>
       <PhotoAlbum
         layout="rows"
         photos={album?.[type]?.map((image, index) => ({
@@ -162,21 +165,23 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
         renderPhoto={customRenderPhoto}
       />
 
-      <VStack as="form" onSubmit={onSubmit} spacing={3} mt={8}>
+      <Stack component="form" onSubmit={onSubmit} gap="sm" mt="xl">
         <Dropzone setPhotos={setImages} />
 
-        <HStack justifyContent="flex-end" my={4} w="full">
-          <Button onClick={onClose}>Cancel</Button>
+        <Group justify="flex-end" my="md">
+          <Button variant="default" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
             type="submit"
-            colorScheme="green"
-            leftIcon={<AddIcon />}
-            isLoading={processing}
+            color="green"
+            leftSection={<IconDownload size={14} />}
+            loading={processing}
           >
             Add Images
           </Button>
-        </HStack>
-      </VStack>
+        </Group>
+      </Stack>
     </>
   );
 };

@@ -1,9 +1,9 @@
-import { Box, Flex, IconButton, useColorModeValue } from '@chakra-ui/react';
 import { Head } from '@inertiajs/react';
+import { ActionIcon, Box, Flex } from '@mantine/core';
+import { IconChevronUp } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
 import SidebarNav from './SidebarNav';
-import { ChevronUpIcon } from '@chakra-ui/icons';
-import { useEffect, useState } from 'react';
 
 const BaseLayout = ({ title, children }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -35,33 +35,37 @@ const BaseLayout = ({ title, children }) => {
       <Flex
         h="100%"
         w="100%"
-        minH="100dvh"
+        style={{ minHeight: '100dvh' }}
         direction={{ base: 'column', md: 'row' }}
       >
         <SidebarNav />
         <Box
-          bg={useColorModeValue('gray.50', 'gray.800')}
-          ml={{ base: 0, md: 60 }}
-          p={4}
-          scroll-region="true"
-          flexGrow="1"
+          bg="var(--mantine-color-body)"
+          ml={{ base: 0, md: '240px' }}
+          p="md"
+          data-scroll-region="true"
+          style={{ flexGrow: 1 }}
         >
           {children}
         </Box>
 
         {isVisible && (
-          <IconButton
-            colorScheme="blue"
-            variant="solid"
-            isRound
-            position="fixed"
-            bottom="20px"
-            right={['16px', '84px']}
-            zIndex={5}
+          <ActionIcon
+            color="blue"
+            variant="filled"
+            radius="xl"
+            size="xl"
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '16px',
+              zIndex: 5,
+            }}
             aria-label="Back to top of page"
-            icon={<ChevronUpIcon boxSize={8} />}
             onClick={scrollToTop}
-          />
+          >
+            <IconChevronUp size={24} />
+          </ActionIcon>
         )}
       </Flex>
     </>

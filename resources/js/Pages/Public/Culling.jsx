@@ -3,28 +3,21 @@ import 'yet-another-react-lightbox/plugins/counter.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import 'yet-another-react-lightbox/plugins/captions.css';
 
-import { AddIcon } from '@chakra-ui/icons';
+import { router } from '@inertiajs/react';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
   Checkbox,
-  Heading,
-  HStack,
-  Spacer,
+  Group,
+  Stack,
   Text,
-  useColorModeValue,
-  useDisclosure,
-  useToast,
-  VStack,
-} from '@chakra-ui/react';
-import { router } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+  Title,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import { IconSend } from '@tabler/icons-react';
+import { useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 import Lightbox from 'yet-another-react-lightbox';
 import Captions from 'yet-another-react-lightbox/plugins/captions';
@@ -39,15 +32,6 @@ const Culling = ({ album }) => {
     album?.related_photos?.map((r) => r.id),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const {
-    isOpen: isAlertOpen,
-    onOpen: onAlertOpen,
-    onClose: onAlertClose,
-  } = useDisclosure();
-  const cancelRef = useRef();
-
-  const toast = useToast();
 
   const customRenderPhoto = ({ renderDefaultPhoto, wrapperStyle, photo }) => {
     const { id } = photo;
@@ -64,55 +48,41 @@ const Culling = ({ album }) => {
     };
 
     return (
-      <Box position="relative" {...wrapperStyle}>
+      <Box pos="relative" style={wrapperStyle}>
         <Box
-          position="absolute"
-          bottom="56px"
-          left={0}
-          p={2}
-          bgColor="blackAlpha.600"
-          width="full"
-          zIndex={1}
+          style={{
+            position: 'absolute',
+            bottom: '56px',
+            left: 0,
+            padding: '8px',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            width: '100%',
+            zIndex: 1,
+          }}
         >
-          <Text w="full" noOfLines={1} color="gray.100">
+          <Text w="100%" lineClamp={1} c="gray.1">
             {photo.title}
           </Text>
         </Box>
 
         <Box
-          filter={!selectedIds.includes(id) ? 'grayscale(1)' : null}
-          cursor="pointer"
+          style={{
+            filter: !selectedIds.includes(id) ? 'grayscale(1)' : undefined,
+            cursor: 'pointer',
+          }}
         >
           {renderDefaultPhoto({ wrapped: true })}
         </Box>
 
-        {selectedIds.includes(id) ? (
-          <HStack bgColor={useColorModeValue('green.200', 'green.700')} p={4}>
-            <Checkbox
-              defaultChecked={selectedIds.includes(id)}
-              checked={selectedIds.includes(id)}
-              size="lg"
-              w="full"
-              h="full"
-              onChange={onSelection}
-            >
-              Selected
-            </Checkbox>
-          </HStack>
-        ) : (
-          <HStack bgColor={useColorModeValue('red.200', 'red.700')} p={4}>
-            <Checkbox
-              defaultChecked={selectedIds.includes(id)}
-              checked={selectedIds.includes(id)}
-              size="lg"
-              w="full"
-              h="full"
-              onChange={onSelection}
-            >
-              Not Selected
-            </Checkbox>
-          </HStack>
-        )}
+        <Box bg={selectedIds.includes(id) ? 'green.2' : 'red.2'} p="md">
+          <Checkbox
+            checked={selectedIds.includes(id)}
+            size="lg"
+            w="100%"
+            onChange={onSelection}
+            label={selectedIds.includes(id) ? 'Selected' : 'Not Selected'}
+          />
+        </Box>
       </Box>
     );
   };
@@ -129,47 +99,72 @@ const Culling = ({ album }) => {
       {
         onSuccess: () => {
           setIsSubmitting(false);
-          onAlertClose();
-          toast({
+          notifications.show({
             title: 'Selected Photos Updated',
-            description:
-              'Thank you for selecting the files. I will beging editing and return back to you shortly.',
-            status: 'success',
+            message:
+              'Thank you for selecting the files. I will begin editing and return back to you shortly.',
+            color: 'teal',
             position: 'top-right',
-            duration: 3000,
-            isClosable: true,
+            autoClose: 3000,
           });
         },
       },
     );
   };
 
+  const openConfirmModal = () => {
+    modals.openConfirmModal({
+      title: 'Submit Files to Edit',
+      children: (
+        <Stack gap="sm">
+          <Text>
+            By selecting these photos for editing, you agree to allow me to edit
+            your photos as I see fit.
+          </Text>
+          <Text>
+            Unless otherwise stated to me, you agree for me to post the final
+            edited photos on this website for public view and to my various
+            social media.
+          </Text>
+          <Text mt="md">
+            If you have any concerns with anything stated above, just contact
+            me.
+          </Text>
+          <Text size="xs">This isn't legally binding</Text>
+        </Stack>
+      ),
+      labels: { confirm: 'I agree', cancel: 'Cancel' },
+      confirmProps: { color: 'green', loading: isSubmitting },
+      onConfirm: onSave,
+    });
+  };
+
   return (
     <BaseLayout title={album.name}>
       {album?.previews.length > 0 && (
         <>
-          <HStack
-            mb={4}
-            position="sticky"
-            top="-1rem"
-            zIndex={2}
-            bg={useColorModeValue('gray.50', 'gray.800')}
+          <Group
+            mb="md"
+            style={{
+              position: 'sticky',
+              top: '-1rem',
+              zIndex: 2,
+              backgroundColor: 'var(--mantine-color-body)',
+            }}
           >
-            <VStack alignItems="left">
-              <Heading>Culling - {album.name}</Heading>
-              <Heading size="lg" variant="h3">
-                Selecting photos to edit
-              </Heading>
-            </VStack>
-            <Spacer />
+            <Stack gap={0}>
+              <Title>Culling - {album.name}</Title>
+              <Title order={3}>Selecting photos to edit</Title>
+            </Stack>
+            <Box style={{ flex: 1 }} />
             <Button
-              leftIcon={<AddIcon />}
-              colorScheme="teal"
-              onClick={onAlertOpen}
+              leftSection={<IconSend size={14} />}
+              color="teal"
+              onClick={openConfirmModal}
             >
               Submit
             </Button>
-          </HStack>
+          </Group>
 
           <PhotoAlbum
             layout="masonry"
@@ -196,48 +191,6 @@ const Culling = ({ album }) => {
           />
         </>
       )}
-
-      <AlertDialog
-        isOpen={isAlertOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onAlertClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Submit Files to Edit
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              <Text mb={3}>
-                By selecting these photos for editing, you agree to allow me to
-                edit your photos as I see fit.
-              </Text>
-              <Text>
-                Unless otherwise stated to me, you agree for me to post the
-                final edited photos on this website for public view and to my
-                various social media.
-              </Text>
-              <Text mt={6}>
-                If you have any concerns with anything stated above, just
-                contact me.
-              </Text>
-              <Text fontSize="2xs">This isn't legally binding</Text>
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onAlertClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="green"
-                onClick={onSave}
-                isLoading={isSubmitting}
-              >
-                I agree
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </BaseLayout>
   );
 };

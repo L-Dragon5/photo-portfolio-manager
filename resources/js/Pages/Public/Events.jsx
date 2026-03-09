@@ -1,20 +1,13 @@
-import {
-  Heading,
-  LinkBox,
-  LinkOverlay,
-  Select,
-  SimpleGrid,
-  Spacer,
-  useColorModeValue,
-  VStack,
-} from '@chakra-ui/react';
 import { Link } from '@inertiajs/react';
+import { Anchor, Box, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useState } from 'react';
 
 import BaseLayout from './components/BaseLayout';
+import SortSelect from './components/SortSelect';
 
 const Events = ({ events }) => {
   const [sortingOption, setSortingOption] = useState('date-desc');
+  const [search, setSearch] = useState('');
   const [activeEvents, setActiveEvents] = useState(events);
 
   useEffect(() => {
@@ -37,44 +30,46 @@ const Events = ({ events }) => {
     }
   }, [sortingOption]);
 
+  const visibleEvents = search
+    ? activeEvents.filter((e) =>
+        e.name.toLowerCase().includes(search.toLowerCase()),
+      )
+    : activeEvents;
+
   return (
     <>
-      <Select
-        defaultValue={sortingOption}
-        mb={4}
-        onChange={(e) => setSortingOption(e.target.value)}
-      >
-        <option value="name-asc">Name - A to Z</option>
-        <option value="name-desc">Name - Z to A</option>
-        <option value="date-asc">Date - Oldest to Recent</option>
-        <option value="date-desc">Date - Recent to Oldest</option>
-      </Select>
-      <SimpleGrid
-        minChildWidth="250px"
-        spacingX="12px"
-        spacingY="18px"
-        w="full"
-      >
-        {activeEvents?.map((event) => (
-          <LinkBox
+      <SortSelect
+        value={sortingOption}
+        onChange={(val) => setSortingOption(val ?? 'date-desc')}
+        search={search}
+        onSearchChange={setSearch}
+      />
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 3, lg: 4 }} spacing="md">
+        {visibleEvents?.map((event) => (
+          <Anchor
             key={event.id}
-            rounded="md"
-            position="relative"
-            p={4}
-            _hover={{ bg: useColorModeValue('blue.200', 'blue.800') }}
-            border="1px solid"
-            borderColor={useColorModeValue('gray.300', 'gray.600')}
+            component={Link}
+            href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
+            style={{ textDecoration: 'none', color: 'light-dark(black, white)' }}
           >
-            <LinkOverlay
-              as={Link}
-              href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
-              preserveScroll
+            <Box
+              p="md"
+              style={{
+                borderRadius: 'var(--mantine-radius-md)',
+                border: '1px solid var(--mantine-color-default-border)',
+                height: '100%',
+              }}
+              styles={{
+                root: {
+                  '&:hover': { backgroundColor: 'var(--mantine-color-blue-2)' },
+                },
+              }}
             >
-              <VStack h="full">
-                <Heading size="md" textAlign="center" fontWeight="600">
+              <Stack h="100%" justify="space-between" gap="xs">
+                <Title order={4} ta="center" fw={600}>
                   {event.name}
-                </Heading>
-                <Heading size="xs" textAlign="center" fontWeight="400">
+                </Title>
+                <Text size="xs" ta="center" fw={400}>
                   {[
                     event.start_date &&
                       new Date(event.start_date).toLocaleDateString(),
@@ -83,14 +78,14 @@ const Events = ({ events }) => {
                   ]
                     .filter((n) => n)
                     .join(' - ')}
-                </Heading>
-                <Spacer />
-                <Heading size="sm" textAlign="center" mt={4} fontWeight="500">
+                </Text>
+                <Box style={{ flex: 1 }} />
+                <Title order={5} ta="center" fw={500} mt="md">
                   {event.albums_count} albums
-                </Heading>
-              </VStack>
-            </LinkOverlay>
-          </LinkBox>
+                </Title>
+              </Stack>
+            </Box>
+          </Anchor>
         ))}
       </SimpleGrid>
     </>

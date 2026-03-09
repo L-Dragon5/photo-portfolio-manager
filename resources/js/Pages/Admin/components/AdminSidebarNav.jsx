@@ -1,20 +1,18 @@
-import { HamburgerIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
+import { Link, usePage } from '@inertiajs/react';
 import {
+  ActionIcon,
   Box,
   CloseButton,
   Drawer,
-  DrawerContent,
   Flex,
-  Heading,
-  Icon,
-  IconButton,
-  Spacer,
   Text,
-  useColorMode,
-  useColorModeValue,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { Link, usePage } from '@inertiajs/react';
+  Title,
+  UnstyledButton,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconMenu2, IconMoon, IconSun } from '@tabler/icons-react';
 
 const LinkItems = [
   { name: 'All Albums', href: '/admin' },
@@ -23,125 +21,114 @@ const LinkItems = [
 ];
 
 function AdminSidebarNav() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [opened, { open, close }] = useDisclosure(false);
 
   return (
-    <Box bg={useColorModeValue('gray.100', 'gray.900')}>
-      <SidebarContent
-        onClose={() => onClose}
-        display={{ base: 'none', md: 'flex' }}
-      />
+    <>
+      <Box visibleFrom="md">
+        <SidebarContent onClose={close} />
+      </Box>
       <Drawer
-        isOpen={isOpen}
+        opened={opened}
+        onClose={close}
         placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
         size="full"
+        hiddenFrom="md"
       >
-        <DrawerContent>
-          <SidebarContent onClose={onClose} />
-        </DrawerContent>
+        <SidebarContent onClose={close} />
       </Drawer>
-      {/* mobilenav */}
-      <MobileNav display={{ base: 'flex', md: 'none' }} onOpen={onOpen} />
-    </Box>
+      <MobileNav hiddenFrom="md" onOpen={open} />
+    </>
   );
 }
 
-const SidebarContent = ({ onClose, ...rest }) => {
-  const { colorMode, toggleColorMode } = useColorMode();
+const SidebarContent = ({ onClose }) => {
+  const { toggleColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
 
   return (
     <Flex
       direction="column"
-      bg={useColorModeValue('white', 'gray.900')}
-      borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
-      w={{ base: 'full', md: 60 }}
-      pos="fixed"
-      h="full"
-      {...rest}
+      style={{
+        borderRight: '1px solid var(--mantine-color-default-border)',
+        width: '240px',
+        position: 'fixed',
+        height: '100%',
+      }}
+      bg="var(--mantine-color-body)"
     >
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Heading size="md">Admin Panel</Heading>
-        <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+      <Flex h={80} align="center" justify="space-between" px="lg">
+        <Title order={4}>Admin Panel</Title>
+        <CloseButton hiddenFrom="md" onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
-        <NavItem key={link.name} href={link.href} icon={link.icon}>
+        <NavItem key={link.name} href={link.href}>
           {link.name}
         </NavItem>
       ))}
 
-      <Spacer />
-      <IconButton onClick={toggleColorMode}>
-        {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-      </IconButton>
+      <Box style={{ flex: 1 }} />
+      <Box p="sm">
+        <ActionIcon onClick={toggleColorScheme} variant="default" size="lg">
+          {computedColorScheme === 'light' ? (
+            <IconMoon size={16} />
+          ) : (
+            <IconSun size={16} />
+          )}
+        </ActionIcon>
+      </Box>
     </Flex>
   );
 };
 
-const NavItem = ({ icon, href, children, ...rest }) => {
+const NavItem = ({ href, children }) => {
   const { url } = usePage();
+  const isActive = url === href;
 
   return (
-    <Box
-      as={Link}
+    <UnstyledButton
+      component={Link}
       href={href}
-      style={{ textDecoration: 'none' }}
-      _focus={{ boxShadow: 'none' }}
+      p="sm"
+      mx="sm"
+      style={{
+        borderRadius: 'var(--mantine-radius-md)',
+        textDecoration: 'none',
+      }}
+      bg={isActive ? 'cyan.3' : undefined}
+      data-active={isActive || undefined}
+      styles={{
+        root: {
+          '&:hover': {
+            backgroundColor: 'var(--mantine-color-cyan-4)',
+            color: 'white',
+          },
+        },
+      }}
     >
-      <Flex
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        bg={url === href ? useColorModeValue('cyan.300', 'cyan.900') : null}
-        _hover={{
-          bg: useColorModeValue('cyan.400', 'cyan.800'),
-          color: 'white',
-        }}
-        {...rest}
-      >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: 'white',
-            }}
-            as={icon}
-          />
-        )}
-        {children}
-      </Flex>
-    </Box>
+      <Text>{children}</Text>
+    </UnstyledButton>
   );
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
   return (
     <Flex
-      ml={{ base: 0, md: 60 }}
-      px={{ base: 4, md: 24 }}
-      height={16}
-      alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
-      boxShadow="md"
-      borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      px="md"
+      h={64}
+      align="center"
+      bg="var(--mantine-color-body)"
+      style={{
+        boxShadow: 'var(--mantine-shadow-md)',
+        borderBottom: '1px solid var(--mantine-color-default-border)',
+      }}
       {...rest}
     >
-      <IconButton
-        variant="outline"
-        onClick={onOpen}
-        aria-label="open menu"
-        icon={<HamburgerIcon />}
-      />
+      <ActionIcon variant="default" onClick={onOpen} aria-label="open menu">
+        <IconMenu2 size={16} />
+      </ActionIcon>
 
-      <Text fontSize="2xl" ml={4} fontFamily="monospace" fontWeight="bold">
+      <Text fz="2xl" ml="md" ff="monospace" fw="bold">
         Admin Panel
       </Text>
     </Flex>
