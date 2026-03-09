@@ -19,6 +19,7 @@
     "@dnd-kit/react": "^0.3.2",
     "@inertiajs/react": "^2.2.9",
     "@mantine/core": "^8.3.16",
+    "@mantine/dropzone": "^8.3.16",
     "@mantine/hooks": "^8.3.16",
     "@mantine/modals": "^8.3.16",
     "@mantine/notifications": "^8.3.16",

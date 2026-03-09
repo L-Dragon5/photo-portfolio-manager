@@ -25,8 +25,7 @@ class Album extends Model implements HasMedia
         'is_press',
         'is_public',
     ];
-
-    protected $appends = ['cover_image', 'photos', 'previews'];
+    protected $appends = ['cover_image'];
 
     public function event()
     {
@@ -54,23 +53,21 @@ class Album extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 $coverPhoto = null;
-                if (! is_null($this->cover_image_id)) {
-                    $coverPhoto = $this->getMedia('photos')->where('id', $this->cover_image_id)->first();
+
+                if (!is_null($this->cover_image_id)) {
+                    $coverPhoto = $this->relationLoaded('media')
+                        ? $this->getMedia('photos')->where('id', $this->cover_image_id)->first()
+                        : Photo::query()->find($this->cover_image_id);
                 }
 
                 if (is_null($coverPhoto)) {
-                    $media = $this->getFirstMedia('photos');
-                    if (! is_null($media)) {
-                        $coverPhoto = $media;
-                    } else {
-                        $coverPhoto = [
-                            'html' => [
-                                'src' => 'https://placehold.co/600x400',
-                                'width' => 600,
-                                'height' => 400,
-                            ],
-                        ];
-                    }
+                    $coverPhoto = $this->getFirstMedia('photos') ?? [
+                        'html' => [
+                            'src' => 'https://placehold.co/600x400',
+                            'width' => 600,
+                            'height' => 400,
+                        ],
+                    ];
                 }
 
                 return $coverPhoto;
@@ -84,13 +81,14 @@ class Album extends Model implements HasMedia
             get: function () {
                 $photos = $this->getMedia('photos');
                 $sorted = $photos->sort(function (Photo $a, Photo $b): int {
-                    if (! $a->hasCustomProperty('date_taken')) {
+                    if (!$a->hasCustomProperty('date_taken')) {
                         return $b->hasCustomProperty('date_taken') ? 1 : 0;
                     }
 
-                    if (! $b->hasCustomProperty('date_taken')) {
+                    if (!$b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
+
                     return $a->getCustomProperty('date_taken') <=> $b->getCustomProperty('date_taken');
                 });
 
@@ -105,13 +103,14 @@ class Album extends Model implements HasMedia
             get: function () {
                 $photos = $this->getMedia('previews');
                 $sorted = $photos->sort(function (Photo $a, Photo $b): int {
-                    if (! $a->hasCustomProperty('date_taken')) {
+                    if (!$a->hasCustomProperty('date_taken')) {
                         return $b->hasCustomProperty('date_taken') ? 1 : 0;
                     }
 
-                    if (! $b->hasCustomProperty('date_taken')) {
+                    if (!$b->hasCustomProperty('date_taken')) {
                         return -1;
                     }
+
                     return $a->getCustomProperty('date_taken') <=> $b->getCustomProperty('date_taken');
                 });
 

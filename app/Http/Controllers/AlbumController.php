@@ -9,8 +9,6 @@ use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Cosplayer;
-use App\Models\Event;
-use App\Models\FeaturedPhoto;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -22,11 +20,12 @@ class AlbumController extends Controller
     /**
      * Display listing on admin page.
      *
-     * @return  \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
+        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers', 'media'])->orderBy('date_taken', 'DESC')->paginate(25);
+        $lengthAwarePaginator->getCollection()->each->append(['photos', 'previews']);
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [

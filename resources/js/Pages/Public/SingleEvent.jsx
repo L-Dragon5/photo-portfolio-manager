@@ -1,40 +1,27 @@
-import { Link } from '@inertiajs/react';
-import { Anchor, Box, Breadcrumbs, Title } from '@mantine/core';
+import { InfiniteScroll, Link, router } from '@inertiajs/react';
+import { Anchor, Box, Breadcrumbs, Center, Loader, Title } from '@mantine/core';
 import { IconChevronRight } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
 import SortSelect from './components/SortSelect';
 
-const SingleEvent = ({ event, albums }) => {
-  const [sortingOption, setSortingOption] = useState('name-asc');
-  const [activeAlbums, setActiveAlbums] = useState(albums);
+const SingleEvent = ({ event, albums, sort: initialSort }) => {
+  const [sort, setSort] = useState(initialSort);
 
-  useEffect(() => {
-    if (sortingOption === 'name-asc') {
-      setActiveAlbums(albums);
-    } else if (sortingOption === 'name-desc') {
-      setActiveAlbums(albums.toReversed());
-    } else if (sortingOption === 'date-asc') {
-      setActiveAlbums(
-        albums.toSorted(
-          (a, b) =>
-            new Date(a.date_taken).getTime() - new Date(b.date_taken).getTime(),
-        ),
-      );
-    } else if (sortingOption === 'date-desc') {
-      setActiveAlbums(
-        albums.toSorted(
-          (a, b) =>
-            new Date(b.date_taken).getTime() - new Date(a.date_taken).getTime(),
-        ),
-      );
-    }
-  }, [sortingOption]);
+  const handleSortChange = (val) => {
+    const newSort = val ?? 'name-asc';
+    setSort(newSort);
+    router.reload({
+      data: { sort: newSort },
+      reset: ['albums'],
+      only: ['albums'],
+    });
+  };
 
   const customRenderPhoto = ({ layout, wrapperStyle, renderDefaultPhoto }) => {
-    const shoot = activeAlbums[layout.index];
+    const shoot = albums.data[layout.index];
 
     return (
       <Box
@@ -90,21 +77,33 @@ const SingleEvent = ({ event, albums }) => {
         <span>{event.name}</span>
       </Breadcrumbs>
 
-      <SortSelect value={sortingOption} onChange={(val) => setSortingOption(val ?? 'name-asc')} />
+      <SortSelect value={sort} onChange={handleSortChange} />
 
-      <PhotoAlbum
-        layout="masonry"
-        photos={activeAlbums?.map((album) => album?.cover_image?.html)}
-        columns={(containerWidth) => {
-          if (containerWidth <= 500) return 1;
-          if (containerWidth < 600) return 2;
-          if (containerWidth < 1200) return 2;
-          if (containerWidth < 1450) return 3;
-          if (containerWidth < 2800) return 4;
-          return 5;
-        }}
-        renderPhoto={customRenderPhoto}
-      />
+      <InfiniteScroll
+        data="albums"
+        onlyNext
+        next={({ loading }) =>
+          loading ? (
+            <Center mt="md">
+              <Loader size="sm" />
+            </Center>
+          ) : null
+        }
+      >
+        <PhotoAlbum
+          layout="masonry"
+          photos={albums.data.map((album) => album?.cover_image?.html)}
+          columns={(containerWidth) => {
+            if (containerWidth <= 500) return 1;
+            if (containerWidth < 600) return 2;
+            if (containerWidth < 1200) return 2;
+            if (containerWidth < 1450) return 3;
+            if (containerWidth < 2800) return 4;
+            return 5;
+          }}
+          renderPhoto={customRenderPhoto}
+        />
+      </InfiniteScroll>
     </BaseLayout>
   );
 };
