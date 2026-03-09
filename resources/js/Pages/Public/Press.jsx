@@ -80,7 +80,10 @@ const Press = ({ albums }) => {
 
   return (
     <>
-      <SortSelect value={sortingOption} onChange={(val) => setSortingOption(val ?? 'date-desc')} />
+      <SortSelect
+        value={sortingOption}
+        onChange={(val) => setSortingOption(val ?? 'date-desc')}
+      />
 
       <PhotoAlbum
         layout="masonry"

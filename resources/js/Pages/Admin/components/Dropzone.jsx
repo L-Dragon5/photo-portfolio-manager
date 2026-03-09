@@ -1,4 +1,12 @@
-import { ActionIcon, Box, Flex, Group, Image, Stack, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Flex,
+  Group,
+  Image,
+  Stack,
+  Text,
+} from '@mantine/core';
 import { Dropzone as MantineDropzone } from '@mantine/dropzone';
 import '@mantine/dropzone/styles.css';
 import { IconPhoto, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
@@ -16,7 +24,9 @@ const Dropzone = ({ files, onFilesChange }) => {
     const withPreviews = acceptedFiles.map((file) =>
       Object.assign(file, { preview: URL.createObjectURL(file) }),
     );
-    onFilesChange(mergeArrays(files, withPreviews, (a, b) => a.name === b.name));
+    onFilesChange(
+      mergeArrays(files, withPreviews, (a, b) => a.name === b.name),
+    );
   };
 
   const removePhoto = (index) => {
@@ -31,15 +41,28 @@ const Dropzone = ({ files, onFilesChange }) => {
         accept={['image/jpeg', 'image/png']}
         w="100%"
       >
-        <Group justify="center" gap="xl" mih={80} style={{ pointerEvents: 'none' }}>
+        <Group
+          justify="center"
+          gap="xl"
+          mih={80}
+          style={{ pointerEvents: 'none' }}
+        >
           <MantineDropzone.Accept>
-            <IconUpload size={40} color="var(--mantine-color-blue-6)" stroke={1.5} />
+            <IconUpload
+              size={40}
+              color="var(--mantine-color-blue-6)"
+              stroke={1.5}
+            />
           </MantineDropzone.Accept>
           <MantineDropzone.Reject>
             <IconX size={40} color="var(--mantine-color-red-6)" stroke={1.5} />
           </MantineDropzone.Reject>
           <MantineDropzone.Idle>
-            <IconPhoto size={40} color="var(--mantine-color-dimmed)" stroke={1.5} />
+            <IconPhoto
+              size={40}
+              color="var(--mantine-color-dimmed)"
+              stroke={1.5}
+            />
           </MantineDropzone.Idle>
           <Stack gap={4}>
             <Text size="lg" fw={500}>
@@ -56,12 +79,7 @@ const Dropzone = ({ files, onFilesChange }) => {
         <Flex wrap="wrap" mt="sm" py="md" gap="sm" justify="space-evenly">
           {files.map((file, index) => (
             <Box key={file.name} display="inline-flex">
-              <Image
-                src={file.preview}
-                onLoad={() => {}}
-                h={300}
-                w="auto"
-              />
+              <Image src={file.preview} onLoad={() => {}} h={300} w="auto" />
               <ActionIcon
                 aria-label="Remove photo"
                 color="red"

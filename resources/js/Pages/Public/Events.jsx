@@ -50,7 +50,10 @@ const Events = ({ events }) => {
             key={event.id}
             component={Link}
             href={`/events/${event?.url_alias ? event.url_alias : event.id}/`}
-            style={{ textDecoration: 'none', color: 'light-dark(black, white)' }}
+            style={{
+              textDecoration: 'none',
+              color: 'light-dark(black, white)',
+            }}
           >
             <Box
               p="md"
