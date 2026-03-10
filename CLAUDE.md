@@ -86,13 +86,25 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 ### Mantine UI Conventions
 - **Layout:** `Flex`, `Group` (horizontal), `Stack` (vertical), `Box`, `SimpleGrid`
 - **Forms:** `TextInput`, `Textarea`, `Select`, `Checkbox` — all accept `label`, `error`, and `description` props directly (no wrapper needed). `Select` uses a `data` prop array, not `<option>` children.
-- **Buttons:** `Button` with `leftSection`/`rightSection`; `ActionIcon` for icon-only buttons
+- **Buttons:** `Button` with `leftSection`/`rightSection`; `ActionIcon` for icon-only buttons — default size is `lg` (set globally in `app.jsx` theme)
 - **Modals:** `Modal` with `opened` prop; confirm dialogs via `modals.openConfirmModal()` from `@mantine/modals`
 - **Notifications:** `notifications.show()` from `@mantine/notifications` (replaces toast)
 - **Dark mode:** `useMantineColorScheme` / `useComputedColorScheme`; theme-aware colors via CSS variables like `var(--mantine-color-body)`, `var(--mantine-color-default-border)`
 - **Icons:** `@tabler/icons-react` (e.g. `IconPlus`, `IconTrash`, `IconPencil`)
 - **`useDisclosure`** from `@mantine/hooks` — same API as Chakra's version
+- **`useDebouncedValue`** from `@mantine/hooks` — use for debouncing search inputs (300ms)
 - **`@dnd-kit/react`** is installed (the new unified dnd-kit package) for future drag-and-drop use
+- **Theme** is defined in `resources/js/app.jsx` via `createTheme()` and passed to `MantineProvider`
+
+### Admin Tables
+- All three admin tables (Albums, Events, Cosplayers) use **`@tanstack/react-virtual`** (`useVirtualizer`) for row virtualization inside a fixed-height `div` scroll container — no pagination or infinite scroll
+- Tables use `tableLayout: 'fixed'` with explicit `width` on each `<Table.Th>` to prevent column shifting during virtualization
+- Sticky `<Table.Thead>` with `position: sticky; top: 0; zIndex: 1; background: var(--mantine-color-body)`
+- Album media (photos/previews) is **lazy-loaded** via `GET /admin/albums/{album}/media` when the upload drawer opens — never embedded in the albums list response
+- The album index uses `withCount(['media as photos_count', 'media as previews_count'])` for cheap counts (no full media load)
+
+### Media / Album Queries
+- **Never add `->with(['media'])` to album listing queries.** The `cover_image` appended attribute on Album handles its own media access — do not eager load media on album collections.
 
 ### Key Config Files
 - `config/media-library.php` — S3 disk, custom Photo model, responsive image widths

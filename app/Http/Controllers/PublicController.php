@@ -57,12 +57,14 @@ class PublicController extends Controller
     public function indexLocation(\Illuminate\Http\Request $request): \Inertia\Response
     {
         $sort = $request->input('sort', 'date-desc');
+        $search = $request->input('search');
 
         $query = \App\Models\Album::query()
             ->where('is_public', true)
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
-            });
+            })
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"));
 
         match ($sort) {
             'date-asc' => $query->orderBy('date_taken', 'ASC'),
@@ -73,10 +75,10 @@ class PublicController extends Controller
 
         return Inertia::render('Public/OnLocation', [
             'albums' => Inertia::scroll(function () use ($query) {
-                $albums = $query->paginate(20);
-                return $albums;
+                return $query->paginate(20);
             }),
             'sort' => $sort,
+            'search' => $search ?? '',
         ]);
     }
 

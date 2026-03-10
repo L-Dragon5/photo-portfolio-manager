@@ -35,8 +35,7 @@ const Cosplayers = ({ cosplayers }) => {
   const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
   const paddingBottom =
     virtualItems.length > 0
-      ? virtualizer.getTotalSize() -
-        virtualItems[virtualItems.length - 1].end
+      ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
       : 0;
 
   useEffect(() => {
@@ -111,7 +110,7 @@ const Cosplayers = ({ cosplayers }) => {
         ref={parentRef}
         style={{ height: 'calc(100vh - 130px)', overflow: 'auto' }}
       >
-        <Table striped style={{ minWidth: 600 }}>
+        <Table style={{ minWidth: 600, tableLayout: 'fixed' }}>
           <Table.Thead
             style={{
               position: 'sticky',
@@ -121,10 +120,10 @@ const Cosplayers = ({ cosplayers }) => {
             }}
           >
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Instagram</Table.Th>
-              <Table.Th>Twitter</Table.Th>
-              <Table.Th>Options</Table.Th>
+              <Table.Th style={{ width: 220 }}>Name</Table.Th>
+              <Table.Th style={{ width: 200 }}>Instagram</Table.Th>
+              <Table.Th style={{ width: 200 }}>Twitter</Table.Th>
+              <Table.Th style={{ width: 90 }}>Options</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>

@@ -34,8 +34,7 @@ const Events = ({ events }) => {
   const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
   const paddingBottom =
     virtualItems.length > 0
-      ? virtualizer.getTotalSize() -
-        virtualItems[virtualItems.length - 1].end
+      ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
       : 0;
 
   useEffect(() => {
@@ -47,14 +46,16 @@ const Events = ({ events }) => {
       setActiveEvents(
         events.toSorted(
           (a, b) =>
-            new Date(a.start_date + 'T00:00:00').getTime() - new Date(b.start_date + 'T00:00:00').getTime(),
+            new Date(a.start_date + 'T00:00:00').getTime() -
+            new Date(b.start_date + 'T00:00:00').getTime(),
         ),
       );
     } else if (sortingOption === 'date-desc') {
       setActiveEvents(
         events.toSorted(
           (a, b) =>
-            new Date(b.start_date + 'T00:00:00').getTime() - new Date(a.start_date + 'T00:00:00').getTime(),
+            new Date(b.start_date + 'T00:00:00').getTime() -
+            new Date(a.start_date + 'T00:00:00').getTime(),
         ),
       );
     }
@@ -126,7 +127,7 @@ const Events = ({ events }) => {
         ref={parentRef}
         style={{ height: 'calc(100vh - 130px)', overflow: 'auto' }}
       >
-        <Table striped style={{ minWidth: 600 }}>
+        <Table style={{ minWidth: 600, tableLayout: 'fixed' }}>
           <Table.Thead
             style={{
               position: 'sticky',
@@ -136,11 +137,11 @@ const Events = ({ events }) => {
             }}
           >
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>URL Alias</Table.Th>
-              <Table.Th>Start Date</Table.Th>
-              <Table.Th>End Date</Table.Th>
-              <Table.Th>Options</Table.Th>
+              <Table.Th style={{ width: 220 }}>Name</Table.Th>
+              <Table.Th style={{ width: 180 }}>URL Alias</Table.Th>
+              <Table.Th style={{ width: 120 }}>Start Date</Table.Th>
+              <Table.Th style={{ width: 120 }}>End Date</Table.Th>
+              <Table.Th style={{ width: 90 }}>Options</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -160,11 +161,15 @@ const Events = ({ events }) => {
                   <Table.Td>{event?.url_alias ?? 'N/A'}</Table.Td>
                   <Table.Td>
                     {event.start_date &&
-                      new Date(event.start_date + 'T00:00:00').toLocaleDateString()}
+                      new Date(
+                        event.start_date + 'T00:00:00',
+                      ).toLocaleDateString()}
                   </Table.Td>
                   <Table.Td>
                     {event.end_date &&
-                      new Date(event.end_date + 'T00:00:00').toLocaleDateString()}
+                      new Date(
+                        event.end_date + 'T00:00:00',
+                      ).toLocaleDateString()}
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs">

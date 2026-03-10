@@ -124,6 +124,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
           <ActionIcon
             onClick={() => handleImageDelete(id, index)}
             pos="absolute"
+            color="red"
             top={0}
             right={0}
             style={{ opacity: 0.5 }}

@@ -50,8 +50,7 @@ const Index = ({ albums, events }) => {
   const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
   const paddingBottom =
     virtualItems.length > 0
-      ? virtualizer.getTotalSize() -
-        virtualItems[virtualItems.length - 1].end
+      ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
       : 0;
 
   const reloadPage = () => {
@@ -121,7 +120,7 @@ const Index = ({ albums, events }) => {
         ref={parentRef}
         style={{ height: 'calc(100vh - 130px)', overflow: 'auto' }}
       >
-        <Table striped style={{ minWidth: 800 }}>
+        <Table style={{ minWidth: 800, tableLayout: 'fixed' }}>
           <Table.Thead
             style={{
               position: 'sticky',
@@ -131,13 +130,13 @@ const Index = ({ albums, events }) => {
             }}
           >
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Event</Table.Th>
-              <Table.Th>Date Taken</Table.Th>
-              <Table.Th>URL Alias</Table.Th>
-              <Table.Th>Password</Table.Th>
-              <Table.Th>Flags</Table.Th>
-              <Table.Th>Options</Table.Th>
+              <Table.Th style={{ width: 200 }}>Name</Table.Th>
+              <Table.Th style={{ width: 150 }}>Event</Table.Th>
+              <Table.Th style={{ width: 120 }}>Date Taken</Table.Th>
+              <Table.Th style={{ width: 150 }}>URL Alias</Table.Th>
+              <Table.Th style={{ width: 110 }}>Password</Table.Th>
+              <Table.Th style={{ width: 160 }}>Flags</Table.Th>
+              <Table.Th style={{ width: 140 }}>Options</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>

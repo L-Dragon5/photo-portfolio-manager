@@ -1,19 +1,36 @@
 import { InfiniteScroll, Link, router } from '@inertiajs/react';
 import { Box, Center, Loader, Title } from '@mantine/core';
-import { useState } from 'react';
+import { useDebouncedValue } from '@mantine/hooks';
+import { useEffect, useRef, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
 import SortSelect from './components/SortSelect';
 
-const OnLocation = ({ albums, sort: initialSort }) => {
+const OnLocation = ({ albums, sort: initialSort, search: initialSearch }) => {
   const [sort, setSort] = useState(initialSort);
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch] = useDebouncedValue(search, 300);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    router.reload({
+      data: { sort, search: debouncedSearch || undefined },
+      reset: ['albums'],
+      only: ['albums'],
+    });
+  }, [debouncedSearch]);
 
   const handleSortChange = (val) => {
     const newSort = val ?? 'date-desc';
     setSort(newSort);
     router.reload({
-      data: { sort: newSort },
+      data: { sort: newSort, search: debouncedSearch || undefined },
       reset: ['albums'],
       only: ['albums'],
     });
@@ -53,11 +70,14 @@ const OnLocation = ({ albums, sort: initialSort }) => {
           </Title>
           <Title order={6} c="gray.1">
             {shoot.date_taken &&
-              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString(
+                'en-US',
+                {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+              )}
           </Title>
         </Box>
         {renderDefaultPhoto({ wrapped: true })}
@@ -67,10 +87,15 @@ const OnLocation = ({ albums, sort: initialSort }) => {
 
   return (
     <>
-      <SortSelect value={sort} onChange={handleSortChange} />
+      <SortSelect
+        value={sort}
+        onChange={handleSortChange}
+        search={search}
+        onSearchChange={setSearch}
+      />
       <InfiniteScroll
         data="albums"
-        buffer={300}
+        buffer={500}
         onlyNext
         next={({ loading }) =>
           loading ? (

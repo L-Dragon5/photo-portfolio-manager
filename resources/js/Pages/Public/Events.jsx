@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Anchor, Box, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
 import BaseLayout from './components/BaseLayout';
@@ -8,6 +9,7 @@ import SortSelect from './components/SortSelect';
 const Events = ({ events }) => {
   const [sortingOption, setSortingOption] = useState('date-desc');
   const [search, setSearch] = useState('');
+  const [debouncedSearch] = useDebouncedValue(search, 300);
   const [activeEvents, setActiveEvents] = useState(events);
 
   useEffect(() => {
@@ -30,9 +32,9 @@ const Events = ({ events }) => {
     }
   }, [sortingOption]);
 
-  const visibleEvents = search
+  const visibleEvents = debouncedSearch
     ? activeEvents.filter((e) =>
-        e.name.toLowerCase().includes(search.toLowerCase()),
+        e.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
       )
     : activeEvents;
 
