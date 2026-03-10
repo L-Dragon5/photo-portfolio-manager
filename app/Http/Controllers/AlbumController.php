@@ -26,11 +26,12 @@ class AlbumController extends Controller
     {
         $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])
             ->withCount([
-                'media as photos_count' => fn ($q) => $q->where('collection_name', 'photos'),
-                'media as previews_count' => fn ($q) => $q->where('collection_name', 'previews'),
+                'media as photos_count' => fn($q) => $q->where('collection_name', 'photos'),
+                'media as previews_count' => fn($q) => $q->where('collection_name', 'previews'),
             ])
             ->orderBy('date_taken', 'DESC')
             ->get();
+        data_forget($albums, 'album.media');
 
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 

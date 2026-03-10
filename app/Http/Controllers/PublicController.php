@@ -62,8 +62,7 @@ class PublicController extends Controller
             ->where('is_public', true)
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
-            })
-            ->with(['media' => fn ($q) => $q->where('collection_name', 'photos')]);
+            });
 
         match ($sort) {
             'date-asc' => $query->orderBy('date_taken', 'ASC'),
@@ -75,7 +74,7 @@ class PublicController extends Controller
         return Inertia::render('Public/OnLocation', [
             'albums' => Inertia::scroll(function () use ($query) {
                 $albums = $query->paginate(20);
-
+                data_forget($albums->getCollection(), 'album.media');
                 return $albums;
             }),
             'sort' => $sort,
@@ -152,8 +151,7 @@ class PublicController extends Controller
 
         $albumQuery = \App\Models\Album::query()
             ->where('event_id', $event->id)
-            ->where('is_public', 1)
-            ->with(['media' => fn ($q) => $q->where('collection_name', 'photos')]);
+            ->where('is_public', 1);
 
         match ($sort) {
             'date-asc' => $albumQuery->orderBy('date_taken', 'ASC'),
@@ -166,7 +164,7 @@ class PublicController extends Controller
             'event' => $event,
             'albums' => Inertia::scroll(function () use ($albumQuery) {
                 $albums = $albumQuery->paginate(20);
-
+                data_forget($albums->getCollection(), 'album.media');
                 return $albums;
             }),
             'sort' => $sort,
