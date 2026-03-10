@@ -62,7 +62,8 @@ class PublicController extends Controller
             ->where('is_public', true)
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
-            });
+            })
+            ->with(['media' => fn ($q) => $q->where('collection_name', 'photos')]);
 
         match ($sort) {
             'date-asc' => $query->orderBy('date_taken', 'ASC'),
@@ -151,7 +152,8 @@ class PublicController extends Controller
 
         $albumQuery = \App\Models\Album::query()
             ->where('event_id', $event->id)
-            ->where('is_public', 1);
+            ->where('is_public', 1)
+            ->with(['media' => fn ($q) => $q->where('collection_name', 'photos')]);
 
         match ($sort) {
             'date-asc' => $albumQuery->orderBy('date_taken', 'ASC'),

@@ -70,6 +70,7 @@ const OnLocation = ({ albums, sort: initialSort }) => {
       <SortSelect value={sort} onChange={handleSortChange} />
       <InfiniteScroll
         data="albums"
+        buffer={300}
         onlyNext
         next={({ loading }) =>
           loading ? (
