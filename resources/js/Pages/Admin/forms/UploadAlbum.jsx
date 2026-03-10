@@ -70,11 +70,19 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
   };
 
   const handleImageDelete = (id, index) => {
-    router.delete(`/admin/photos/${id}`, {
-      onSuccess: () => {
-        reloadPage();
-        setAlbumMedia((prev) => prev.filter((_, i) => i !== index));
-      },
+    const csrfToken = decodeURIComponent(
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1] ?? '',
+    );
+
+    fetch(`/admin/photos/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-XSRF-TOKEN': csrfToken },
+    }).then(() => {
+      reloadPage();
+      setAlbumMedia((prev) => prev.filter((_, i) => i !== index));
     });
   };
 
