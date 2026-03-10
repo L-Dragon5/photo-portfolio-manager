@@ -24,6 +24,7 @@
     "@mantine/modals": "^8.3.16",
     "@mantine/notifications": "^8.3.16",
     "@tabler/icons-react": "^3.40.0",
+    "@tanstack/react-virtual": "^3.13.21",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-photo-album": "^2.0.0",

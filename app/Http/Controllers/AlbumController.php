@@ -24,13 +24,29 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        $lengthAwarePaginator = Album::with(['relatedPhotos', 'event', 'cosplayers'])->orderBy('date_taken', 'DESC')->paginate(25);
-        $lengthAwarePaginator->getCollection()->each->append(['photos', 'previews']);
+        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])
+            ->withCount([
+                'media as photos_count' => fn ($q) => $q->where('collection_name', 'photos'),
+                'media as previews_count' => fn ($q) => $q->where('collection_name', 'previews'),
+            ])
+            ->orderBy('date_taken', 'DESC')
+            ->get();
+
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
-            'albums' => $lengthAwarePaginator,
+            'albums' => $albums,
             'events' => $events,
+        ]);
+    }
+
+    public function showMedia(Album $album): \Illuminate\Http\JsonResponse
+    {
+        $album->append(['photos', 'previews']);
+
+        return response()->json([
+            'photos' => $album->photos,
+            'previews' => $album->previews,
         ]);
     }
 

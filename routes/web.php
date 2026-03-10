@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 // Admin Routes
 Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): void {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
+    Route::get('/albums/{album}/media', [AlbumController::class, 'showMedia']);
     Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
     Route::put('/albums/{album}/cosplayer/add', [AlbumController::class, 'updateAlbumCosplayerAdd']);
@@ -58,4 +59,4 @@ Route::get('/culling/{password}', [PublicController::class, 'indexCulling']);
 Route::put('/culling', [PublicController::class, 'updateCulling']);
 
 // Fallback
-Route::fallback(fn() => to_route('home'));
+Route::fallback(fn () => to_route('home'));

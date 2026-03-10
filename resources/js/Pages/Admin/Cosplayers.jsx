@@ -12,7 +12,8 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useEffect, useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddCosplayer from './forms/AddCosplayer';
@@ -22,6 +23,21 @@ const Cosplayers = ({ cosplayers }) => {
   const [sortingOption, setSortingOption] = useState('name-asc');
   const [activeCosplayers, setActiveCosplayers] = useState(cosplayers);
   const [modifyCosplayer, setModifyCosplayer] = useState(null);
+
+  const parentRef = useRef(null);
+  const virtualizer = useVirtualizer({
+    count: activeCosplayers.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+    overscan: 10,
+  });
+  const virtualItems = virtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom =
+    virtualItems.length > 0
+      ? virtualizer.getTotalSize() -
+        virtualItems[virtualItems.length - 1].end
+      : 0;
 
   useEffect(() => {
     if (sortingOption === 'name-asc') {
@@ -91,9 +107,19 @@ const Cosplayers = ({ cosplayers }) => {
         </Button>
       </Group>
 
-      <Table.ScrollContainer minWidth={600} mah="95%">
-        <Table striped>
-          <Table.Thead>
+      <div
+        ref={parentRef}
+        style={{ height: 'calc(100vh - 130px)', overflow: 'auto' }}
+      >
+        <Table striped style={{ minWidth: 600 }}>
+          <Table.Thead
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 1,
+              background: 'var(--mantine-color-body)',
+            }}
+          >
             <Table.Tr>
               <Table.Th>Name</Table.Th>
               <Table.Th>Instagram</Table.Th>
@@ -102,57 +128,76 @@ const Cosplayers = ({ cosplayers }) => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {activeCosplayers?.map((cosplayer) => (
-              <Table.Tr key={cosplayer.id}>
-                <Table.Td>{cosplayer.name}</Table.Td>
-                <Table.Td>
-                  {cosplayer?.instagram ? (
-                    <Anchor
-                      href={`https://instagram.com/${cosplayer.instagram}`}
-                      target="_blank"
-                    >
-                      {cosplayer.instagram}
-                    </Anchor>
-                  ) : (
-                    'N/A'
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  {cosplayer?.twitter ? (
-                    <Anchor
-                      href={`https://x.com/${cosplayer.twitter}`}
-                      target="_blank"
-                    >
-                      {cosplayer.twitter}
-                    </Anchor>
-                  ) : (
-                    'N/A'
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  <Group gap="xs">
-                    <ActionIcon
-                      aria-label="Edit cosplayer"
-                      onClick={(e) => onEditClick(e, cosplayer)}
-                      variant="default"
-                    >
-                      <IconPencil size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      aria-label="Delete cosplayer"
-                      onClick={(e) => onDeleteClick(e, cosplayer)}
-                      color="red"
-                      variant="subtle"
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Table.Td>
+            {paddingTop > 0 && (
+              <Table.Tr>
+                <Table.Td
+                  colSpan={4}
+                  style={{ height: paddingTop, padding: 0, border: 0 }}
+                />
               </Table.Tr>
-            ))}
+            )}
+            {virtualItems.map((virtualRow) => {
+              const cosplayer = activeCosplayers[virtualRow.index];
+              return (
+                <Table.Tr key={cosplayer.id}>
+                  <Table.Td>{cosplayer.name}</Table.Td>
+                  <Table.Td>
+                    {cosplayer?.instagram ? (
+                      <Anchor
+                        href={`https://instagram.com/${cosplayer.instagram}`}
+                        target="_blank"
+                      >
+                        {cosplayer.instagram}
+                      </Anchor>
+                    ) : (
+                      'N/A'
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {cosplayer?.twitter ? (
+                      <Anchor
+                        href={`https://x.com/${cosplayer.twitter}`}
+                        target="_blank"
+                      >
+                        {cosplayer.twitter}
+                      </Anchor>
+                    ) : (
+                      'N/A'
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <ActionIcon
+                        aria-label="Edit cosplayer"
+                        onClick={(e) => onEditClick(e, cosplayer)}
+                        variant="default"
+                      >
+                        <IconPencil size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        aria-label="Delete cosplayer"
+                        onClick={(e) => onDeleteClick(e, cosplayer)}
+                        color="red"
+                        variant="subtle"
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+            {paddingBottom > 0 && (
+              <Table.Tr>
+                <Table.Td
+                  colSpan={4}
+                  style={{ height: paddingBottom, padding: 0, border: 0 }}
+                />
+              </Table.Tr>
+            )}
           </Table.Tbody>
         </Table>
-      </Table.ScrollContainer>
+      </div>
 
       <Modal
         opened={isModalOpen}

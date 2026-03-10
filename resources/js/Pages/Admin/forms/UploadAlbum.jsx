@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Group,
+  Loader,
   Stack,
   Title,
   Tooltip,
@@ -20,12 +21,12 @@ import PhotoAlbum from 'react-photo-album';
 import Dropzone from '../components/Dropzone';
 
 const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
-  const [activeAlbum, setActiveAlbum] = useState(album);
+  const [albumMedia, setAlbumMedia] = useState([]);
+  const [isLoadingMedia, setIsLoadingMedia] = useState(true);
   const [activeCoverImage, setActiveCoverImage] = useState(
     album?.cover_image_id,
   );
   const [files, setFiles] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { setData, post, processing, reset } = useForm('UploadAlbum', {
     images: [],
   });
@@ -33,6 +34,22 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
   useEffect(() => {
     return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
   }, []);
+
+  useEffect(() => {
+    if (!album?.id) {
+      return;
+    }
+
+    setIsLoadingMedia(true);
+
+    fetch(`/admin/albums/${album.id}/media`)
+      .then((res) => res.json())
+      .then((data) => {
+        setAlbumMedia(data[type] ?? []);
+        setIsLoadingMedia(false);
+      })
+      .catch(() => setIsLoadingMedia(false));
+  }, [album?.id, type]);
 
   const handleFilesChange = (updated) => {
     setFiles(updated);
@@ -56,7 +73,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     router.delete(`/admin/photos/${id}`, {
       onSuccess: () => {
         reloadPage();
-        delete activeAlbum?.[type][index];
+        setAlbumMedia((prev) => prev.filter((_, i) => i !== index));
       },
     });
   };
@@ -150,26 +167,29 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
 
   return (
     <>
-      {type === 'previews' && album.is_public && album?.photos?.length > 0 ? (
-        <Button
-          color="red"
-          onClick={handlePurgePreviews}
-          loading={isSubmitting}
-        >
+      {type === 'previews' && album.is_public && album?.photos_count > 0 ? (
+        <Button color="red" onClick={handlePurgePreviews}>
           Purge Previews
         </Button>
       ) : null}
       <Title order={3} mb="sm">
         Uploaded Images
       </Title>
-      <PhotoAlbum
-        layout="rows"
-        photos={album?.[type]?.map((image, index) => ({
-          ...image?.html,
-          index,
-        }))}
-        renderPhoto={customRenderPhoto}
-      />
+      {isLoadingMedia ? (
+        <Group justify="center" py="xl">
+          <Loader />
+        </Group>
+      ) : (
+        <PhotoAlbum
+          layout="rows"
+          photos={albumMedia.map((image, index) => ({
+            ...image?.html,
+            index,
+            id: image.id,
+          }))}
+          renderPhoto={customRenderPhoto}
+        />
+      )}
 
       <Stack component="form" onSubmit={onSubmit} gap="sm" mt="xl">
         <Dropzone files={files} onFilesChange={handleFilesChange} />

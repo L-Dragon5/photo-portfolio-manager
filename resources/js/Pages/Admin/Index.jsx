@@ -1,10 +1,9 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import {
   ActionIcon,
   Badge,
   Button,
   Drawer,
-  Flex,
   Group,
   List,
   Modal,
@@ -17,17 +16,14 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconChevronLeft,
-  IconChevronRight,
   IconEye,
   IconPencil,
   IconPlus,
   IconStar,
   IconTrash,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddAlbum from './forms/AddAlbum';
@@ -42,6 +38,21 @@ const Index = ({ albums, events }) => {
     useDisclosure(false);
   const [isDrawerOpen, { open: onDrawerOpen, close: onDrawerClose }] =
     useDisclosure(false);
+
+  const parentRef = useRef(null);
+  const virtualizer = useVirtualizer({
+    count: albums?.length ?? 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+    overscan: 10,
+  });
+  const virtualItems = virtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom =
+    virtualItems.length > 0
+      ? virtualizer.getTotalSize() -
+        virtualItems[virtualItems.length - 1].end
+      : 0;
 
   const reloadPage = () => {
     router.reload({
@@ -106,64 +117,19 @@ const Index = ({ albums, events }) => {
           Add Album
         </Button>
       </Group>
-      <Flex gap="xs" mb="sm">
-        <ActionIcon
-          component={albums?.current_page > 1 ? Link : 'button'}
-          href={albums?.first_page_url}
-          only={['albums']}
-          variant="default"
-          disabled={!(albums?.current_page > 1)}
-        >
-          <IconArrowLeft size={14} />
-        </ActionIcon>
-        <ActionIcon
-          component={albums?.prev_page_url ? Link : 'button'}
-          href={albums?.prev_page_url}
-          only={['albums']}
-          variant="default"
-          disabled={!albums?.prev_page_url}
-        >
-          <IconChevronLeft size={18} />
-        </ActionIcon>
-        {albums?.links?.map((link, index) => {
-          if (index === 0 || index === albums.links.length - 1) return;
-          return (
-            <Button
-              key={`${link.label}-${index}`}
-              component={link.url ? Link : 'button'}
-              href={link.url ?? undefined}
-              only={['albums']}
-              color={link.active ? 'blue' : 'gray'}
-              variant={link.active ? 'filled' : 'default'}
-              disabled={!link.url}
-              size="sm"
-            >
-              {link.label}
-            </Button>
-          );
-        })}
-        <ActionIcon
-          component={albums?.next_page_url ? Link : 'button'}
-          href={albums?.next_page_url}
-          only={['albums']}
-          variant="default"
-          disabled={!albums?.next_page_url}
-        >
-          <IconChevronRight size={18} />
-        </ActionIcon>
-        <ActionIcon
-          component={albums?.current_page < albums?.last_page ? Link : 'button'}
-          href={albums?.last_page_url}
-          only={['albums']}
-          variant="default"
-          disabled={!(albums?.current_page < albums?.last_page)}
-        >
-          <IconArrowRight size={14} />
-        </ActionIcon>
-      </Flex>
-      <Table.ScrollContainer minWidth={800} mah="93%">
-        <Table striped>
-          <Table.Thead>
+      <div
+        ref={parentRef}
+        style={{ height: 'calc(100vh - 130px)', overflow: 'auto' }}
+      >
+        <Table striped style={{ minWidth: 800 }}>
+          <Table.Thead
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 1,
+              background: 'var(--mantine-color-body)',
+            }}
+          >
             <Table.Tr>
               <Table.Th>Name</Table.Th>
               <Table.Th>Event</Table.Th>
@@ -175,108 +141,127 @@ const Index = ({ albums, events }) => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {albums?.data?.map((album) => (
-              <Table.Tr key={album.id}>
-                <Table.Td>{album.name}</Table.Td>
-                <Table.Td>{album?.event?.name}</Table.Td>
-                <Table.Td>{album?.date_taken}</Table.Td>
-                <Table.Td>{album.url_alias}</Table.Td>
-                <Table.Td>{album.password}</Table.Td>
-                <Table.Td>
-                  {album.is_press ? (
-                    <Badge color="grape" variant="light">
-                      Press
-                    </Badge>
-                  ) : null}{' '}
-                  {album.is_public ? (
-                    <Badge color="green" variant="filled">
-                      Public
-                    </Badge>
-                  ) : null}
-                  {album?.related_photos?.length > 0 ? (
-                    <Popover>
-                      <Popover.Target>
-                        <Badge
-                          color="pink"
-                          variant="filled"
-                          style={{ cursor: 'pointer' }}
-                        >
-                          Previews Selected
-                        </Badge>
-                      </Popover.Target>
-                      <Popover.Dropdown>
-                        <div style={{ fontWeight: 600, marginBottom: 4 }}>
-                          Selected filenames
-                        </div>
-                        <ScrollArea h={200}>
-                          <List>
-                            {album.related_photos
-                              .toSorted((a, b) =>
-                                a.name.localeCompare(b.name, 'en'),
-                              )
-                              .map((photo) => (
-                                <List.Item key={photo.id}>
-                                  {photo.name}
-                                </List.Item>
-                              ))}
-                          </List>
-                        </ScrollArea>
-                      </Popover.Dropdown>
-                    </Popover>
-                  ) : null}
-                </Table.Td>
+            {paddingTop > 0 && (
+              <Table.Tr>
+                <Table.Td
+                  colSpan={7}
+                  style={{ height: paddingTop, padding: 0, border: 0 }}
+                />
+              </Table.Tr>
+            )}
+            {virtualItems.map((virtualRow) => {
+              const album = albums[virtualRow.index];
+              return (
+                <Table.Tr key={album.id}>
+                  <Table.Td>{album.name}</Table.Td>
+                  <Table.Td>{album?.event?.name}</Table.Td>
+                  <Table.Td>{album?.date_taken}</Table.Td>
+                  <Table.Td>{album.url_alias}</Table.Td>
+                  <Table.Td>{album.password}</Table.Td>
+                  <Table.Td>
+                    {album.is_press ? (
+                      <Badge color="grape" variant="light">
+                        Press
+                      </Badge>
+                    ) : null}{' '}
+                    {album.is_public ? (
+                      <Badge color="green" variant="filled">
+                        Public
+                      </Badge>
+                    ) : null}
+                    {album?.related_photos?.length > 0 ? (
+                      <Popover>
+                        <Popover.Target>
+                          <Badge
+                            color="pink"
+                            variant="filled"
+                            style={{ cursor: 'pointer' }}
+                          >
+                            Previews Selected
+                          </Badge>
+                        </Popover.Target>
+                        <Popover.Dropdown>
+                          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                            Selected filenames
+                          </div>
+                          <ScrollArea h={200}>
+                            <List>
+                              {album.related_photos
+                                .toSorted((a, b) =>
+                                  a.name.localeCompare(b.name, 'en'),
+                                )
+                                .map((photo) => (
+                                  <List.Item key={photo.id}>
+                                    {photo.name}
+                                  </List.Item>
+                                ))}
+                            </List>
+                          </ScrollArea>
+                        </Popover.Dropdown>
+                      </Popover>
+                    ) : null}
+                  </Table.Td>
 
-                <Table.Td>
-                  <Group gap="xs">
-                    {!album.is_public ||
-                    album?.photos?.length < 1 ||
-                    album?.previews?.length > 0 ? (
-                      <Tooltip label="Upload previews">
+                  <Table.Td>
+                    <Group gap="xs">
+                      {!album.is_public ||
+                      album?.photos_count < 1 ||
+                      album?.previews_count > 0 ? (
+                        <Tooltip label="Upload previews">
+                          <ActionIcon
+                            aria-label="Upload previews"
+                            onClick={(e) => onUploadPreviewsClick(e, album)}
+                            variant="default"
+                          >
+                            <IconEye size={16} />
+                          </ActionIcon>
+                        </Tooltip>
+                      ) : null}
+
+                      <Tooltip label="Upload displayed photos">
                         <ActionIcon
-                          aria-label="Upload previews"
-                          onClick={(e) => onUploadPreviewsClick(e, album)}
+                          aria-label="Upload displayed photos"
+                          onClick={(e) => onUploadPhotosClick(e, album)}
                           variant="default"
                         >
-                          <IconEye size={16} />
+                          <IconStar size={16} />
                         </ActionIcon>
                       </Tooltip>
-                    ) : null}
-
-                    <Tooltip label="Upload displayed photos">
-                      <ActionIcon
-                        aria-label="Upload displayed photos"
-                        onClick={(e) => onUploadPhotosClick(e, album)}
-                        variant="default"
-                      >
-                        <IconStar size={16} />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Edit album details">
-                      <ActionIcon
-                        aria-label="Edit album details"
-                        onClick={(e) => onEditClick(e, album)}
-                        variant="default"
-                      >
-                        <IconPencil size={16} />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Delete album">
-                      <ActionIcon
-                        aria-label="Delete album"
-                        onClick={(e) => onDeleteClick(e, album)}
-                        color="red"
-                        variant="subtle"
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
-                </Table.Td>
+                      <Tooltip label="Edit album details">
+                        <ActionIcon
+                          aria-label="Edit album details"
+                          onClick={(e) => onEditClick(e, album)}
+                          variant="default"
+                        >
+                          <IconPencil size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                      <Tooltip label="Delete album">
+                        <ActionIcon
+                          aria-label="Delete album"
+                          onClick={(e) => onDeleteClick(e, album)}
+                          color="red"
+                          variant="subtle"
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+            {paddingBottom > 0 && (
+              <Table.Tr>
+                <Table.Td
+                  colSpan={7}
+                  style={{ height: paddingBottom, padding: 0, border: 0 }}
+                />
               </Table.Tr>
-            ))}
+            )}
           </Table.Tbody>
         </Table>
-      </Table.ScrollContainer>
+      </div>
 
       <Modal
         opened={isModalOpen}
