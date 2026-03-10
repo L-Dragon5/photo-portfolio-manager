@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   IconDownload,
   IconLink,
@@ -40,15 +41,22 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
       return;
     }
 
+    const controller = new AbortController();
     setIsLoadingMedia(true);
 
-    fetch(`/admin/albums/${album.id}/media`)
+    fetch(`/admin/albums/${album.id}/media`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         setAlbumMedia(data[type] ?? []);
         setIsLoadingMedia(false);
       })
-      .catch(() => setIsLoadingMedia(false));
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setIsLoadingMedia(false);
+        }
+      });
+
+    return () => controller.abort();
   }, [album?.id, type]);
 
   const handleFilesChange = (updated) => {
@@ -80,10 +88,18 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     fetch(`/admin/photos/${id}`, {
       method: 'DELETE',
       headers: { 'X-XSRF-TOKEN': csrfToken },
-    }).then(() => {
-      reloadPage();
-      setAlbumMedia((prev) => prev.filter((_, i) => i !== index));
-    });
+    })
+      .then(() => {
+        reloadPage();
+        setAlbumMedia((prev) => prev.filter((_, i) => i !== index));
+      })
+      .catch(() => {
+        notifications.show({
+          color: 'red',
+          title: 'Delete failed',
+          message: 'The photo could not be deleted. Please try again.',
+        });
+      });
   };
 
   const handleSetCoverImage = (id) => {

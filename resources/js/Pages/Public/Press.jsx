@@ -12,9 +12,17 @@ const Press = ({ albums }) => {
 
   useEffect(() => {
     if (sortingOption === 'name-asc') {
-      setActiveAlbums(albums);
+      setActiveAlbums(
+        albums.toSorted((a, b) =>
+          a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }),
+        ),
+      );
     } else if (sortingOption === 'name-desc') {
-      setActiveAlbums(albums.toReversed());
+      setActiveAlbums(
+        albums.toSorted((a, b) =>
+          b.name.localeCompare(a.name, 'en', { sensitivity: 'base' }),
+        ),
+      );
     } else if (sortingOption === 'date-asc') {
       setActiveAlbums(
         albums.toSorted(

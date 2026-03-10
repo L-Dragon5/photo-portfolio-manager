@@ -24,7 +24,7 @@ const OnLocation = ({ albums, sort: initialSort, search: initialSearch }) => {
       reset: ['albums'],
       only: ['albums'],
     });
-  }, [debouncedSearch]);
+  }, [debouncedSearch, sort]);
 
   const handleSortChange = (val) => {
     const newSort = val ?? 'date-desc';

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Mail\PreviewsSelected;
 use App\Models\Album;
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\Support\MediaStream;
 
@@ -22,15 +20,9 @@ class PublicController extends Controller
      */
     public function index()
     {
-        $fps = \App\Models\FeaturedPhoto::query()->inRandomOrder()->get()->toArray();
-        $photos = array_reduce($fps, function ($carry, array $fp) {
-            $photo = \App\Models\Photo::query()->find($fp['media_id']);
-            if (!empty($photo)) {
-                $carry[] = $photo;
-            }
-
-            return $carry;
-        }, []);
+        $fps = \App\Models\FeaturedPhoto::query()->inRandomOrder()->get();
+        $photosById = \App\Models\Photo::query()->whereIn('id', $fps->pluck('media_id'))->get()->keyBy('id');
+        $photos = $fps->map(fn ($fp) => $photosById->get($fp->media_id))->filter()->values();
 
         return Inertia::render('Public/Index', [
             'featuredPhotos' => $photos,
@@ -64,7 +56,7 @@ class PublicController extends Controller
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
             })
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"));
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"));
 
         match ($sort) {
             'date-asc' => $query->orderBy('date_taken', 'ASC'),
@@ -121,7 +113,7 @@ class PublicController extends Controller
             'album_id' => ['required', 'numeric'],
         ]);
 
-        $album = \App\Models\Album::query()->find($validated['album_id']);
+        $album = \App\Models\Album::query()->findOrFail($validated['album_id']);
         if (empty($validated['ids'])) {
             $album->relatedPhotos()->detach();
         } else {
@@ -129,10 +121,6 @@ class PublicController extends Controller
         }
 
         $album->save();
-
-        if (app()->isProduction()) {
-            // Mail::to('me@joseph-oh.com')->send(new PreviewsSelected(($album)));
-        }
 
         return $this->redirector->back();
     }
@@ -145,9 +133,9 @@ class PublicController extends Controller
         $sort = $request->input('sort', 'name-asc');
 
         if (is_numeric($id)) {
-            $event = Event::find($id);
+            $event = Event::findOrFail($id);
         } else {
-            $event = \App\Models\Event::query()->where('url_alias', $id)->first();
+            $event = \App\Models\Event::query()->where('url_alias', $id)->firstOrFail();
         }
 
         $albumQuery = \App\Models\Album::query()

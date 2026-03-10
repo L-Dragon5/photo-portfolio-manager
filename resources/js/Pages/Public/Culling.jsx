@@ -108,6 +108,14 @@ const Culling = ({ album }) => {
             autoClose: 3000,
           });
         },
+        onError: () => {
+          setIsSubmitting(false);
+          notifications.show({
+            color: 'red',
+            title: 'Submission failed',
+            message: 'Something went wrong. Please try again.',
+          });
+        },
       },
     );
   };

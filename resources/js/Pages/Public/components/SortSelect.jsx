@@ -20,13 +20,15 @@ const SortSelect = ({ value, onChange, search, onSearchChange }) => (
     }}
   >
     <Group>
-      <TextInput
-        placeholder="Search by name..."
-        leftSection={<IconSearch size={16} />}
-        value={search}
-        onChange={(e) => onSearchChange(e.currentTarget.value)}
-        style={{ flex: 1 }}
-      />
+      {onSearchChange && (
+        <TextInput
+          placeholder="Search by name..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => onSearchChange(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+      )}
       <Select value={value} onChange={onChange} data={SORT_OPTIONS} />
     </Group>
   </Box>
