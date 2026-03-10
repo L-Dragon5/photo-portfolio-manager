@@ -26,6 +26,7 @@ class Album extends Model implements HasMedia
         'is_public',
     ];
     protected $appends = ['cover_image'];
+    protected $hidden = ['media'];
 
     public function event()
     {

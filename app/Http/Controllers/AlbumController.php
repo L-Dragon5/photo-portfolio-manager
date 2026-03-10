@@ -31,7 +31,6 @@ class AlbumController extends Controller
             ])
             ->orderBy('date_taken', 'DESC')
             ->get();
-        data_forget($albums, 'album.media');
 
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 

@@ -74,7 +74,6 @@ class PublicController extends Controller
         return Inertia::render('Public/OnLocation', [
             'albums' => Inertia::scroll(function () use ($query) {
                 $albums = $query->paginate(20);
-                data_forget($albums->getCollection(), 'album.media');
                 return $albums;
             }),
             'sort' => $sort,
@@ -164,7 +163,7 @@ class PublicController extends Controller
             'event' => $event,
             'albums' => Inertia::scroll(function () use ($albumQuery) {
                 $albums = $albumQuery->paginate(20);
-                data_forget($albums->getCollection(), 'album.media');
+
                 return $albums;
             }),
             'sort' => $sort,
