@@ -73,7 +73,6 @@ const SidebarContent = ({ onClose, isDrawer = false }) => {
           alt="logo"
           w="100%"
         />
-        <CloseButton hiddenFrom="md" onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
         <NavLink
@@ -96,8 +95,7 @@ const SidebarContent = ({ onClose, isDrawer = false }) => {
         />
       ))}
 
-      <Box style={{ flex: 1 }} />
-      <Box p="sm">
+      <Box p="sm" mt="auto">
         <ActionIcon onClick={toggleColorScheme} variant="default" size="lg">
           {computedColorScheme === 'light' ? (
             <IconMoon size={16} />

@@ -12,12 +12,14 @@ const SortSelect = ({ value, onChange, search, onSearchChange }) => (
   <Box
     style={{
       position: 'sticky',
-      top: 0,
       zIndex: 10,
       backgroundColor: 'var(--mantine-color-body)',
-      paddingBottom: 'var(--mantine-spacing-md)',
-      paddingTop: 'var(--mantine-spacing-xs)',
     }}
+    top={{ base: 64, md: 0 }}
+    pt="xs"
+    pb="md"
+    mx="-1rem"
+    px="1rem"
   >
     <Group>
       {onSearchChange && (
