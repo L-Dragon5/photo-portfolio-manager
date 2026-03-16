@@ -36,17 +36,18 @@ function SidebarNav() {
         opened={opened}
         onClose={close}
         placement="left"
-        size="full"
+        size="xs"
         hiddenFrom="md"
+        styles={{ body: { padding: 0, height: '100%' } }}
       >
-        <SidebarContent onClose={close} />
+        <SidebarContent onClose={close} isDrawer />
       </Drawer>
       <MobileNav hiddenFrom="md" onOpen={open} />
     </>
   );
 }
 
-const SidebarContent = ({ onClose }) => {
+const SidebarContent = ({ onClose, isDrawer = false }) => {
   const { toggleColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light');
   const { url } = usePage();
@@ -56,8 +57,8 @@ const SidebarContent = ({ onClose }) => {
       direction="column"
       style={{
         borderRight: '1px solid var(--mantine-color-default-border)',
-        width: '240px',
-        position: 'fixed',
+        width: isDrawer ? '100%' : '240px',
+        position: isDrawer ? 'relative' : 'fixed',
         height: '100%',
       }}
       bg="var(--mantine-color-body)"
@@ -119,6 +120,9 @@ const MobileNav = ({ onOpen, ...rest }) => {
       style={{
         boxShadow: 'var(--mantine-shadow-md)',
         borderBottom: '1px solid var(--mantine-color-default-border)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 3,
       }}
       {...rest}
     >
