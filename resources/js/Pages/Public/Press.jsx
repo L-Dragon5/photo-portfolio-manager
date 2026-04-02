@@ -27,14 +27,16 @@ const Press = ({ albums }) => {
       setActiveAlbums(
         albums.toSorted(
           (a, b) =>
-            new Date(a.date_taken + 'T00:00:00').getTime() - new Date(b.date_taken + 'T00:00:00').getTime(),
+            new Date(a.date_taken + 'T00:00:00').getTime() -
+            new Date(b.date_taken + 'T00:00:00').getTime(),
         ),
       );
     } else if (sortingOption === 'date-desc') {
       setActiveAlbums(
         albums.toSorted(
           (a, b) =>
-            new Date(b.date_taken + 'T00:00:00').getTime() - new Date(a.date_taken + 'T00:00:00').getTime(),
+            new Date(b.date_taken + 'T00:00:00').getTime() -
+            new Date(a.date_taken + 'T00:00:00').getTime(),
         ),
       );
     }
@@ -47,6 +49,7 @@ const Press = ({ albums }) => {
       <Box
         key={shoot.id}
         component={Link}
+        prefetch
         href={`/press/${shoot?.url_alias ? shoot.url_alias : shoot.id}/`}
         style={{
           ...wrapperStyle,
@@ -74,11 +77,14 @@ const Press = ({ albums }) => {
           </Title>
           <Title order={6} c="gray.1">
             {shoot.date_taken &&
-              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString(
+                'en-US',
+                {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+              )}
           </Title>
         </Box>
         {renderDefaultPhoto({ wrapped: true })}

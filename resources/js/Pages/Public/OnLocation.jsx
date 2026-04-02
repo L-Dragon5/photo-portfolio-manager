@@ -43,6 +43,7 @@ const OnLocation = ({ albums, sort: initialSort, search: initialSearch }) => {
       <Box
         key={shoot.id}
         component={Link}
+        prefetch
         href={`/on-location/${shoot?.url_alias ? shoot.url_alias : shoot.id}/`}
         style={{
           ...wrapperStyle,

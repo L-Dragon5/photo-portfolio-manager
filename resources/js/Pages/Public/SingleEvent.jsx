@@ -27,6 +27,7 @@ const SingleEvent = ({ event, albums, sort: initialSort }) => {
       <Box
         key={shoot.id}
         component={Link}
+        prefetch
         href={`/events/${event?.url_alias ? event.url_alias : event.id}/${
           shoot?.url_alias ? shoot.url_alias : shoot.id
         }/`}
@@ -56,11 +57,14 @@ const SingleEvent = ({ event, albums, sort: initialSort }) => {
           </Title>
           <Title order={6} c="gray.1">
             {shoot.date_taken &&
-              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              new Date(shoot.date_taken + 'T00:00:00').toLocaleDateString(
+                'en-US',
+                {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+              )}
           </Title>
         </Box>
         {renderDefaultPhoto({ wrapped: true })}
