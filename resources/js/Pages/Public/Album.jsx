@@ -1,15 +1,17 @@
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 
-import { Link } from '@inertiajs/react';
+import { Deferred, Link } from '@inertiajs/react';
 import {
   Anchor,
   Badge,
   Box,
   Breadcrumbs,
   Button,
+  Center,
   Flex,
   Group,
+  Loader,
   Title,
 } from '@mantine/core';
 import { IconChevronRight, IconDownload } from '@tabler/icons-react';
@@ -38,7 +40,7 @@ const AlbumBreadcrumbs = ({ albumName, breadcrumbs }) => (
   </Breadcrumbs>
 );
 
-const Album = ({ album, breadcrumbs }) => {
+const Album = ({ album, breadcrumbs, photos }) => {
   const [photoIndex, setPhotoIndex] = useState(-1);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -96,69 +98,78 @@ const Album = ({ album, breadcrumbs }) => {
     <BaseLayout title={album.name}>
       <AlbumBreadcrumbs albumName={album.name} breadcrumbs={breadcrumbs} />
 
-      {album?.photos.length > 0 && (
-        <>
-          <Group mb="md" justify="space-between">
-            <Title>Photos</Title>
-            {album?.is_public ? (
-              <Button
-                color="teal"
-                variant="outline"
-                size="lg"
-                leftSection={<IconDownload size={18} />}
-                onClick={albumDownload}
-                disabled={isDownloading}
-              >
-                {isDownloading ? 'Downloading...' : 'Download'}
-              </Button>
-            ) : null}
-          </Group>
+      <Group mb="md" justify="space-between">
+        <Title>Photos</Title>
+        {album?.is_public ? (
+          <Button
+            color="teal"
+            variant="outline"
+            size="lg"
+            leftSection={<IconDownload size={18} />}
+            onClick={albumDownload}
+            disabled={isDownloading || !photos?.length}
+          >
+            {isDownloading ? 'Downloading...' : 'Download'}
+          </Button>
+        ) : null}
+      </Group>
 
-          <Flex mb="md" gap="xs" wrap="wrap">
-            {album?.cosplayers?.map((cos) => (
-              <Badge
-                key={cos.id}
-                component="a"
-                href={`https://instagram.com/${cos.instagram}`}
-                target="_blank"
-                color="pink"
-                style={{ cursor: 'pointer' }}
-              >
-                {cos?.pivot?.character} - {cos.name}
-              </Badge>
-            ))}
-          </Flex>
+      <Flex mb="md" gap="xs" wrap="wrap">
+        {album?.cosplayers?.map((cos) => (
+          <Badge
+            key={cos.id}
+            component="a"
+            href={`https://instagram.com/${cos.instagram}`}
+            target="_blank"
+            color="pink"
+            style={{ cursor: 'pointer' }}
+          >
+            {cos?.pivot?.character} - {cos.name}
+          </Badge>
+        ))}
+      </Flex>
 
-          <PhotoAlbum
-            layout="masonry"
-            photos={album?.photos?.map((photo) => photo?.html)}
-            columns={(containerWidth) => {
-              if (containerWidth <= 500) return 1;
-              if (containerWidth < 600) return 2;
-              if (containerWidth < 1200) return 2;
-              if (containerWidth < 1450) return 3;
-              if (containerWidth < 2800) return 4;
-              return 5;
-            }}
-            renderPhoto={customRenderPhoto}
-            onClick={({ index: current }) => setPhotoIndex(current)}
-          />
+      <Deferred
+        data="photos"
+        fallback={
+          <Center py="xl">
+            <Loader size="lg" />
+          </Center>
+        }
+      >
+        {photos?.length > 0 && (
+          <>
+            <PhotoAlbum
+              layout="masonry"
+              photos={photos.map((photo) => photo?.html)}
+              columns={(containerWidth) => {
+                if (containerWidth <= 500) return 1;
+                if (containerWidth < 600) return 2;
+                if (containerWidth < 1200) return 2;
+                if (containerWidth < 1450) return 3;
+                if (containerWidth < 2800) return 4;
+                return 5;
+              }}
+              renderPhoto={customRenderPhoto}
+              onClick={({ index: current }) => setPhotoIndex(current)}
+            />
 
-          <Lightbox
-            open={photoIndex >= 0}
-            close={() => setPhotoIndex(-1)}
-            index={photoIndex}
-            slides={album?.photos?.map((photo) => photo?.html)}
-            plugins={[Counter, Download, Zoom]}
-            counter={{ container: { style: { top: 'unset', bottom: 0 } } }}
-            download={{
-              download: ({ slide }) => {
-                photoDownload(slide.download, `${slide.title}.jpg`);
-              },
-            }}
-          />
-        </>
-      )}
+            <Lightbox
+              open={photoIndex >= 0}
+              close={() => setPhotoIndex(-1)}
+              index={photoIndex}
+              slides={photos.map((photo) => photo?.html)}
+              plugins={[Counter, Download, Zoom]}
+              counter={{ container: { style: { top: 'unset', bottom: 0 } } }}
+              download={{
+                download: ({ slide }) => {
+                  photoDownload(slide.download, `${slide.title}.jpg`);
+                },
+              }}
+            />
+          </>
+        )}
+      </Deferred>
     </BaseLayout>
   );
 };

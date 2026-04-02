@@ -209,7 +209,6 @@ class PublicController extends Controller
                 $album = $album->firstOrFail();
             }
 
-            $album->append('photos');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
@@ -240,6 +239,7 @@ class PublicController extends Controller
         return Inertia::render('Public/Album', [
             'album' => $album,
             'breadcrumbs' => $breadcrumbs ?? [],
+            'photos' => Inertia::defer(fn () => $album->photos),
         ]);
     }
 
