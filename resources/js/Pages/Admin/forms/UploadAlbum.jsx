@@ -104,7 +104,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
 
   const handleSetCoverImage = (id) => {
     router.put(
-      `/admin/albums/${album?.id}`,
+      `/admin/albums/${album?.id}/cover`,
       {
         cover_image_id: id,
       },

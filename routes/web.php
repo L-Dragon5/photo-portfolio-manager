@@ -28,6 +28,7 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): v
     Route::put('/albums/{album}/cosplayer/add', [AlbumController::class, 'updateAlbumCosplayerAdd']);
     Route::delete('/albums/{album}/cosplayer/{cosplayer}', [AlbumController::class, 'updateAlbumCosplayerRemove']);
     Route::delete('/albums/{album}/previews/purge', [AlbumController::class, 'destroyPreviews']);
+    Route::put('/albums/{album}/cover', [AlbumController::class, 'updateCoverImage']);
     Route::put('/photos/{photo}/featured', [AlbumController::class, 'updateFeaturedPhoto']);
     Route::delete('/photos/{photo}', [AlbumController::class, 'destroyImage']);
 

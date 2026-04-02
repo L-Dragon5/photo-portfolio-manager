@@ -142,6 +142,17 @@ class AlbumController extends Controller
         return to_route('admin-base');
     }
 
+    public function updateCoverImage(Request $request, Album $album): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'cover_image_id' => ['required', 'numeric'],
+        ]);
+
+        $album->update($validated);
+
+        return to_route('admin-base');
+    }
+
     public function updateFeaturedPhoto(Request $request, Photo $photo): void
     {
         $fp = \App\Models\FeaturedPhoto::query()->where('media_id', $photo->id)->first();
