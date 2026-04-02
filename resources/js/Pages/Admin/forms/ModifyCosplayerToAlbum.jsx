@@ -75,6 +75,7 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
             <Table.Td>{cos?.pivot?.character}</Table.Td>
             <Table.Td>
               <ActionIcon
+                type="button"
                 loading={processing}
                 onClick={() => handleRemoveCosplayer(cos.id)}
                 color="red"
@@ -89,6 +90,7 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
           <Table.Tr>
             <Table.Td>
               <Select
+                searchable
                 value={data.cosplayer_id}
                 onChange={(val) => setData('cosplayer_id', val ?? '')}
                 data={[
@@ -104,7 +106,7 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
               />
             </Table.Td>
             <Table.Td>
-              <ActionIcon loading={processing} onClick={handleAddCosplayer}>
+              <ActionIcon type="button" loading={processing} onClick={handleAddCosplayer}>
                 <IconPlus size={16} />
               </ActionIcon>
             </Table.Td>

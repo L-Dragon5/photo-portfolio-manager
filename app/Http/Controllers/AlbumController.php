@@ -30,7 +30,7 @@ class AlbumController extends Controller
                 'media as previews_count' => fn ($q) => $q->where('collection_name', 'previews'),
             ])
             ->orderBy('date_taken', 'DESC')
-            ->get();
+            ->paginate(25);
 
         $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
 
@@ -132,14 +132,14 @@ class AlbumController extends Controller
 
         $album->cosplayers()->attach($validated['cosplayer_id'], ['character' => $validated['character']]);
 
-        return to_route('admin-base');
+        return back();
     }
 
     public function updateAlbumCosplayerRemove(Request $request, Album $album, Cosplayer $cosplayer)
     {
         $album->cosplayers()->detach($cosplayer->id);
 
-        return to_route('admin-base');
+        return back();
     }
 
     public function updateCoverImage(Request $request, Album $album): \Illuminate\Http\RedirectResponse
@@ -150,7 +150,7 @@ class AlbumController extends Controller
 
         $album->update($validated);
 
-        return to_route('admin-base');
+        return back();
     }
 
     public function updateFeaturedPhoto(Request $request, Photo $photo): void

@@ -55,6 +55,7 @@ const EditAlbum = ({ events, reloadPage, onClose, album }) => {
         />
         <Select
           label="Event"
+          searchable
           value={data.event_id}
           onChange={(val) => setData('event_id', val ?? '')}
           error={errors?.event_id}
@@ -66,6 +67,8 @@ const EditAlbum = ({ events, reloadPage, onClose, album }) => {
             })) ?? []),
           ]}
         />
+      </Group>
+      <Group>
         <Checkbox
           label="Is Press?"
           checked={data.is_press}
