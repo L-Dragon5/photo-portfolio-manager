@@ -1,4 +1,4 @@
-php artisan migrate --force
-php artisan optimize:clear
-php artisan optimize
-php artisan reload
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan optimize:clear
+sudo -u www-data php artisan optimize
+sudo -u www-data php artisan reload
