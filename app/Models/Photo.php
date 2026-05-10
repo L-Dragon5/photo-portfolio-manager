@@ -31,16 +31,20 @@ class Photo extends BaseMedia
                 ];
 
                 $responsiveImages = $this->responsiveImages();
-                $responsiveSrcSet = $responsiveImages->files->map(fn($ri): array => [
+                $responsiveSrcSet = $responsiveImages->files->map(fn ($ri): array => [
                     'src' => $ri->url(),
                     'width' => $ri->width(),
                     'height' => $ri->height(),
                 ]);
-                $responsiveSrcSet[] = [
-                    'src' => $responsiveImages->getPlaceholderSvg(),
-                    'width' => 32,
-                    'height' => 32,
-                ];
+
+                if ($responsiveImages->files->isNotEmpty()) {
+                    $responsiveSrcSet[] = [
+                        'src' => $responsiveImages->getPlaceholderSvg(),
+                        'width' => 32,
+                        'height' => 32,
+                    ];
+                }
+
                 $imageInfo['srcSet'] = $responsiveSrcSet;
 
                 return $imageInfo;

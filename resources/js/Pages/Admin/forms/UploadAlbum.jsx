@@ -5,7 +5,9 @@ import {
   Button,
   Group,
   Loader,
+  Progress,
   Stack,
+  Text,
   Title,
   Tooltip,
 } from '@mantine/core';
@@ -19,6 +21,7 @@ import {
 import { useEffect, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
+import { uploadPreviewsDirect } from '../../../lib/directUpload';
 import Dropzone from '../components/Dropzone';
 
 const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
@@ -28,9 +31,12 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     album?.cover_image_id,
   );
   const [files, setFiles] = useState([]);
+  const [directUploadProgress, setDirectUploadProgress] = useState(null);
   const { setData, post, processing, reset } = useForm('UploadAlbum', {
     images: [],
   });
+  const isPreviews = type === 'previews';
+  const isDirectUploading = directUploadProgress !== null;
 
   useEffect(() => {
     return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
@@ -64,17 +70,60 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     setData('images', updated);
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    post(`/admin/albums/${album?.id}/${type}`, {
-      onSuccess: () => {
-        reloadPage();
-        onClose();
-        reset();
-        setFiles([]);
-      },
-    });
+    if (!isPreviews) {
+      post(`/admin/albums/${album?.id}/${type}`, {
+        onSuccess: () => {
+          reloadPage();
+          onClose();
+          reset();
+          setFiles([]);
+        },
+      });
+      return;
+    }
+
+    if (files.length === 0) {
+      return;
+    }
+
+    setDirectUploadProgress({ completed: 0, total: files.length, failures: 0 });
+
+    try {
+      const result = await uploadPreviewsDirect(files, album.id, {
+        concurrency: 5,
+        onProgress: setDirectUploadProgress,
+      });
+
+      if (result.failures.length > 0) {
+        notifications.show({
+          color: 'orange',
+          title: 'Some uploads failed',
+          message: `${result.failures.length} of ${result.total} uploads failed.`,
+        });
+      } else {
+        notifications.show({
+          color: 'green',
+          title: 'Previews uploaded',
+          message: `${result.completed} previews added.`,
+        });
+      }
+
+      reloadPage();
+      onClose();
+      reset();
+      setFiles([]);
+    } catch (error) {
+      notifications.show({
+        color: 'red',
+        title: 'Upload failed',
+        message: error.message,
+      });
+    } finally {
+      setDirectUploadProgress(null);
+    }
   };
 
   const handleImageDelete = (id, index) => {
@@ -219,15 +268,39 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
       <Stack component="form" onSubmit={onSubmit} gap="sm" mt="xl">
         <Dropzone files={files} onFilesChange={handleFilesChange} />
 
+        {isDirectUploading && (
+          <Stack gap={4}>
+            <Progress
+              value={
+                (directUploadProgress.completed / directUploadProgress.total) *
+                100
+              }
+              animated
+            />
+            <Text size="sm" c="dimmed">
+              Uploading {directUploadProgress.completed} of{' '}
+              {directUploadProgress.total}
+              {directUploadProgress.failures > 0
+                ? ` — ${directUploadProgress.failures} failed`
+                : ''}
+            </Text>
+          </Stack>
+        )}
+
         <Group justify="flex-end" my="md">
-          <Button variant="default" onClick={onClose}>
+          <Button
+            variant="default"
+            onClick={onClose}
+            disabled={isDirectUploading}
+          >
             Cancel
           </Button>
           <Button
             type="submit"
             color="green"
             leftSection={<IconDownload size={14} />}
-            loading={processing}
+            loading={processing || isDirectUploading}
+            disabled={files.length === 0}
           >
             Add Images
           </Button>

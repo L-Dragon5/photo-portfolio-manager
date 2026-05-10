@@ -24,6 +24,8 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): v
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     Route::get('/albums/{album}/media', [AlbumController::class, 'showMedia']);
     Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
+    Route::post('/albums/{album}/previews/sign', [AlbumController::class, 'signPreviewUpload']);
+    Route::post('/albums/{album}/previews/register', [AlbumController::class, 'registerPreviewUpload']);
     Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
     Route::put('/albums/{album}/cosplayer/add', [AlbumController::class, 'updateAlbumCosplayerAdd']);
     Route::delete('/albums/{album}/cosplayer/{cosplayer}', [AlbumController::class, 'updateAlbumCosplayerRemove']);

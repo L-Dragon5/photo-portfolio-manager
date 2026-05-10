@@ -54,7 +54,7 @@ class Album extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos')->withResponsiveImages();
-        $this->addMediaCollection('previews')->withResponsiveImages();
+        $this->addMediaCollection('previews');
     }
 
     protected function coverImage(): Attribute
