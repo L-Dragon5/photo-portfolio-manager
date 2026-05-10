@@ -57,7 +57,8 @@ Route::get('/album-download/{album}', [PublicController::class, 'download']);
 Route::post('/photo-download', [PublicController::class, 'downloadPhoto']);
 
 Route::get('/culling/{password}', [PublicController::class, 'indexCulling']);
-Route::put('/culling', [PublicController::class, 'updateCulling']);
+Route::put('/culling/{password}/photos/{photo}', [PublicController::class, 'togglePhoto']);
+Route::post('/culling/{password}/complete', [PublicController::class, 'markCulled']);
 
 // Fallback
 Route::fallback(fn () => to_route('home'));

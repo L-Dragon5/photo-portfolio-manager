@@ -102,24 +102,42 @@ class PublicController extends Controller
 
         return Inertia::render('Public/Culling', [
             'album' => $album,
+            'password' => $password,
         ]);
     }
 
-    public function updateCulling(Request $request)
+    public function togglePhoto(string $password, \App\Models\Photo $photo, Request $request)
     {
         $validated = $request->validate([
-            'ids' => ['required', 'nullable', 'array'],
-            'ids.*' => ['numeric'],
-            'album_id' => ['required', 'numeric'],
+            'selected' => ['required', 'boolean'],
         ]);
 
-        $album = \App\Models\Album::query()->findOrFail($validated['album_id']);
-        if (empty($validated['ids'])) {
-            $album->relatedPhotos()->detach();
-        } else {
-            $album->relatedPhotos()->sync($validated['ids']);
+        $album = \App\Models\Album::query()->where('password', $password)->firstOrFail();
+
+        $belongsToAlbum = $album->getMedia('previews')->contains('id', $photo->id)
+            || $album->getMedia('photos')->contains('id', $photo->id);
+
+        if (!$belongsToAlbum) {
+            abort(422, 'Photo does not belong to this album.');
         }
 
+        if ($validated['selected']) {
+            $album->relatedPhotos()->syncWithoutDetaching([$photo->id]);
+        } else {
+            $album->relatedPhotos()->detach($photo->id);
+        }
+
+        return $this->redirector->back();
+    }
+
+    public function markCulled(string $password, Request $request)
+    {
+        $validated = $request->validate([
+            'completed' => ['required', 'boolean'],
+        ]);
+
+        $album = \App\Models\Album::query()->where('password', $password)->firstOrFail();
+        $album->culling_completed_at = $validated['completed'] ? now() : null;
         $album->save();
 
         return $this->redirector->back();

@@ -106,7 +106,11 @@ const ModifyCosplayerToAlbum = ({ reloadPage, album }) => {
               />
             </Table.Td>
             <Table.Td>
-              <ActionIcon type="button" loading={processing} onClick={handleAddCosplayer}>
+              <ActionIcon
+                type="button"
+                loading={processing}
+                onClick={handleAddCosplayer}
+              >
                 <IconPlus size={16} />
               </ActionIcon>
             </Table.Td>

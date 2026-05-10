@@ -155,9 +155,7 @@ const Index = ({ albums, events }) => {
                               a.name.localeCompare(b.name, 'en'),
                             )
                             .map((photo) => (
-                              <List.Item key={photo.id}>
-                                {photo.name}
-                              </List.Item>
+                              <List.Item key={photo.id}>{photo.name}</List.Item>
                             ))}
                         </List>
                       </ScrollArea>

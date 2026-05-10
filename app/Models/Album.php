@@ -24,9 +24,17 @@ class Album extends Model implements HasMedia
         'date_taken',
         'is_press',
         'is_public',
+        'culling_completed_at',
     ];
     protected $appends = ['cover_image'];
     protected $hidden = ['media'];
+
+    protected function casts(): array
+    {
+        return [
+            'culling_completed_at' => 'datetime',
+        ];
+    }
 
     public function event()
     {
