@@ -123,3 +123,29 @@ it('includes public album videos on the album page', function (): void {
             ->where('album.videos.0.id', $shown->id)
         );
 });
+
+/**
+ * The album Select on this page only needs id and name. Serialising Album's
+ * appended `cover_image` fired one media query per album, which made the page
+ * slow in proportion to the album count rather than the video count.
+ */
+it('does not query media while building the album select', function (): void {
+    $this->actingAs(User::factory()->create());
+    Album::factory()->count(5)->create();
+
+    $mediaQueries = 0;
+    DB::listen(function ($query) use (&$mediaQueries): void {
+        if (str_contains($query->sql, '"media"')) {
+            $mediaQueries++;
+        }
+    });
+
+    $this->get('/admin/videos')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('albums', 5)
+            ->missing('albums.0.cover_image')
+        );
+
+    expect($mediaQueries)->toBe(0);
+});

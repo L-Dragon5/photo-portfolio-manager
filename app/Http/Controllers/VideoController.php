@@ -9,14 +9,16 @@ use App\Http\Requests\UpdateVideoRequest;
 use App\Models\Album;
 use App\Models\Video;
 use App\Support\YouTube;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class VideoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): \Inertia\Response
+    public function index(): Response
     {
         $videos = Video::query()
             ->with('album:id,name')
@@ -24,7 +26,11 @@ class VideoController extends Controller
             ->orderBy('title', 'ASC')
             ->get();
 
-        $albums = Album::query()->orderBy('name', 'ASC')->get(['id', 'name']);
+        /**
+         * Only the album Select needs this list. Serialising the appended
+         * `cover_image` would fire a media query per album, so hide it.
+         */
+        $albums = Album::query()->orderBy('name', 'ASC')->get(['id', 'name'])->makeHidden('cover_image');
 
         return Inertia::render('Admin/Videos', [
             'videos' => $videos,
@@ -35,7 +41,7 @@ class VideoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreVideoRequest $storeVideoRequest): \Illuminate\Http\RedirectResponse
+    public function store(StoreVideoRequest $storeVideoRequest): RedirectResponse
     {
         Video::query()->create($this->attributes($storeVideoRequest->validated()));
 
@@ -45,7 +51,7 @@ class VideoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVideoRequest $updateVideoRequest, Video $video): \Illuminate\Http\RedirectResponse
+    public function update(UpdateVideoRequest $updateVideoRequest, Video $video): RedirectResponse
     {
         $video->update($this->attributes($updateVideoRequest->validated()));
 
@@ -55,7 +61,7 @@ class VideoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Video $video): \Illuminate\Http\RedirectResponse
+    public function destroy(Video $video): RedirectResponse
     {
         $video->delete();
 
