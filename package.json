@@ -4,7 +4,8 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "lint": "biome check --write resources/js"
+    "lint": "biome check --write resources/js",
+    "test:js": "node --test 'resources/js/**/*.test.js'"
   },
   "devDependencies": {
     "@babel/core": "^7.23.2",
