@@ -173,6 +173,67 @@ it('ingests into the previews collection when asked', function (): void {
         ->and($album->getMedia('photos'))->toHaveCount(0);
 });
 
+it('replaces an existing photo with the same filename', function (): void {
+    Bus::fake([GenerateResponsiveImagesJob::class, PerformConversionsJob::class]);
+    fakeS3();
+
+    $album = Album::factory()->create();
+
+    $first = validKey();
+    Storage::disk('s3')->put($first, UploadedFile::fake()->image('shot.jpg', 800, 600)->getContent());
+    (new IngestUploadedMedia($album->id, $first, 'shot.jpg', 'photos', 800, 600))->handle();
+    $originalId = $album->refresh()->getMedia('photos')->first()->id;
+
+    $second = validKey();
+    Storage::disk('s3')->put($second, UploadedFile::fake()->image('shot.jpg', 400, 300)->getContent());
+    (new IngestUploadedMedia($album->id, $second, 'shot.jpg', 'photos', 400, 300))->handle();
+
+    $media = $album->refresh()->getMedia('photos');
+
+    expect($media)->toHaveCount(1)
+        ->and($media->first()->id)->not->toBe($originalId)
+        ->and($media->first()->getCustomProperty('width'))->toBe(400);
+});
+
+it('moves featured status onto the replacement photo', function (): void {
+    Bus::fake([GenerateResponsiveImagesJob::class, PerformConversionsJob::class]);
+    fakeS3();
+
+    $album = Album::factory()->create();
+
+    $first = validKey();
+    Storage::disk('s3')->put($first, UploadedFile::fake()->image('shot.jpg', 800, 600)->getContent());
+    (new IngestUploadedMedia($album->id, $first, 'shot.jpg', 'photos', 800, 600))->handle();
+    $featured = \App\Models\FeaturedPhoto::query()->create([
+        'media_id' => $album->refresh()->getMedia('photos')->first()->id,
+    ]);
+
+    $second = validKey();
+    Storage::disk('s3')->put($second, UploadedFile::fake()->image('shot.jpg', 400, 300)->getContent());
+    (new IngestUploadedMedia($album->id, $second, 'shot.jpg', 'photos', 400, 300))->handle();
+
+    expect($featured->refresh()->media_id)
+        ->toBe($album->refresh()->getMedia('photos')->first()->id);
+});
+
+it('leaves same-named files in other collections alone', function (): void {
+    Bus::fake([GenerateResponsiveImagesJob::class, PerformConversionsJob::class]);
+    fakeS3();
+
+    $album = Album::factory()->create();
+
+    $preview = validKey();
+    Storage::disk('s3')->put($preview, UploadedFile::fake()->image('shot.jpg', 100, 100)->getContent());
+    (new IngestUploadedMedia($album->id, $preview, 'shot.jpg', 'previews', 100, 100))->handle();
+
+    $photo = validKey();
+    Storage::disk('s3')->put($photo, UploadedFile::fake()->image('shot.jpg', 800, 600)->getContent());
+    (new IngestUploadedMedia($album->id, $photo, 'shot.jpg', 'photos', 800, 600))->handle();
+
+    expect($album->refresh()->getMedia('previews'))->toHaveCount(1)
+        ->and($album->getMedia('photos'))->toHaveCount(1);
+});
+
 it('discards the staged object when the album has been deleted', function (): void {
     fakeS3();
 

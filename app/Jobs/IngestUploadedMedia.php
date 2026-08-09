@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\Album;
+use App\Models\FeaturedPhoto;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -51,7 +52,7 @@ class IngestUploadedMedia implements ShouldQueue
             return;
         }
 
-        $album
+        $media = $album
             ->addMediaFromDisk($this->key, 's3')
             ->usingName(pathinfo($this->originalName, PATHINFO_FILENAME))
             ->usingFileName($this->originalName)
@@ -61,6 +62,24 @@ class IngestUploadedMedia implements ShouldQueue
                 'date_taken' => $this->dateTaken(),
             ])
             ->toMediaCollection($this->collection);
+
+        // ponytail: re-uploading the same filename replaces the old file. Deleting
+        // after the copy lands means a failed ingest never destroys what was there.
+        $replaced = $album->media()
+            ->where('collection_name', $this->collection)
+            ->where('file_name', $media->file_name)
+            ->whereKeyNot($media->getKey())
+            ->get();
+
+        if ($replaced->isEmpty()) {
+            return;
+        }
+
+        FeaturedPhoto::query()
+            ->whereIn('media_id', $replaced->modelKeys())
+            ->update(['media_id' => $media->getKey()]);
+
+        $replaced->each->delete();
     }
 
     public function failed(\Throwable $throwable): void
