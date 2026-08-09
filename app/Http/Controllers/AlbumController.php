@@ -162,7 +162,9 @@ class AlbumController extends Controller
         $album->password = null;
         $album->save();
 
-        return to_route('admin-base');
+        // back() rather than to_route() so the paginated admin list stays on
+        // the page the previews were purged from.
+        return back();
     }
 
     private function nameToUrlAlias($inputString): string

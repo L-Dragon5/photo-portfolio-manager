@@ -108,6 +108,17 @@ it('still renders the admin list on a page past the end', function (): void {
         ->assertInertia(fn ($page) => $page->component('Admin/Index')->has('albums.data', 0));
 });
 
+it('returns to the page the admin was on after purging previews', function (): void {
+    $album = Album::factory()->create(['password' => 'client-pw']);
+
+    $this->from('/admin?page=3')
+        ->delete("/admin/albums/{$album->id}/previews/purge")
+        ->assertRedirect('/admin?page=3');
+
+    expect($album->refresh()->password)->toBeNull()
+        ->and($album->getMedia('previews'))->toHaveCount(0);
+});
+
 it('still rejects a blank name', function (): void {
     $album = Album::factory()->create();
 
