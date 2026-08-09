@@ -6,6 +6,8 @@ use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\CosplayerController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,8 +25,8 @@ use Illuminate\Support\Facades\Route;
 Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): void {
     Route::get('/', [AlbumController::class, 'index'])->name('admin-base');
     Route::get('/albums/{album}/media', [AlbumController::class, 'showMedia']);
-    Route::post('/albums/{album}/previews', [AlbumController::class, 'storePreviews']);
-    Route::post('/albums/{album}/photos', [AlbumController::class, 'storePhotos']);
+    Route::post('/albums/{album}/uploads/sign', [UploadController::class, 'sign']);
+    Route::post('/albums/{album}/uploads/complete', [UploadController::class, 'complete']);
     Route::put('/albums/{album}/cosplayer/add', [AlbumController::class, 'updateAlbumCosplayerAdd']);
     Route::delete('/albums/{album}/cosplayer/{cosplayer}', [AlbumController::class, 'updateAlbumCosplayerRemove']);
     Route::delete('/albums/{album}/previews/purge', [AlbumController::class, 'destroyPreviews']);
@@ -41,6 +43,9 @@ Route::group(['middleware' => 'auth.basic', 'prefix' => 'admin'], function (): v
     Route::resource('cosplayers', CosplayerController::class)->except([
         'create', 'edit', 'show',
     ]);
+    Route::resource('videos', VideoController::class)->except([
+        'create', 'edit', 'show',
+    ]);
 });
 
 // Public Routes
@@ -50,6 +55,7 @@ Route::get('/events/{id}', [PublicController::class, 'showEvent']);
 Route::get('/events/{id}/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
 Route::get('/on-location', [PublicController::class, 'indexLocation'])->name('on-location');
 Route::get('/on-location/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
+Route::get('/videos', [PublicController::class, 'indexVideos'])->name('videos');
 Route::get('/press', [PublicController::class, 'indexPress'])->name('press');
 Route::get('/press/{alias}', [PublicController::class, 'showAlbum'])->where('alias', '.*');
 

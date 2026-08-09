@@ -91,6 +91,23 @@ class PublicController extends Controller
         ]);
     }
 
+    /**
+     * Display standalone videos, i.e. those not attached to an album.
+     */
+    public function indexVideos(): \Inertia\Response
+    {
+        $videos = \App\Models\Video::query()
+            ->whereNull('album_id')
+            ->where('is_public', true)
+            ->orderByRaw('date_taken IS NULL, date_taken DESC')
+            ->orderBy('title', 'ASC')
+            ->get();
+
+        return Inertia::render('Public/Videos', [
+            'videos' => $videos,
+        ]);
+    }
+
     public function indexCulling($password)
     {
         try {
@@ -204,7 +221,7 @@ class PublicController extends Controller
 
         try {
             if (is_numeric($albumToPresentId)) {
-                $album = Album::with(['cosplayers']);
+                $album = Album::with(['cosplayers', 'videos' => fn ($q) => $q->where('is_public', true)]);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {
@@ -215,7 +232,7 @@ class PublicController extends Controller
 
                 $album = $album->findOrFail($albumToPresentId);
             } else {
-                $album = Album::with(['cosplayers'])->where('url_alias', $albumToPresentId);
+                $album = Album::with(['cosplayers', 'videos' => fn ($q) => $q->where('is_public', true)])->where('url_alias', $albumToPresentId);
                 if (!is_null($event)) {
                     $album = $album->where('event_id', $event->id);
                 } else {

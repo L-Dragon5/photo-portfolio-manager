@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreAlbumImagesRequest;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Cosplayer;
 use App\Models\Photo;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
-use Spatie\Image\Image;
 
 class AlbumController extends Controller
 {
@@ -65,48 +62,6 @@ class AlbumController extends Controller
         }
 
         \App\Models\Album::query()->create([...$validated]);
-
-        return to_route('admin-base');
-    }
-
-    public function storePreviews(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
-    {
-        foreach ($storeAlbumImagesRequest->validated()['images'] as $preview) {
-            [$width, $height] = $this->getDimensions($preview);
-            $exifData = exif_read_data($preview);
-            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime((string) $exifData['DateTimeOriginal']) : null;
-
-            $album
-                ->addMedia($preview)
-                ->preservingOriginal()
-                ->withCustomProperties([
-                    'width' => $width,
-                    'height' => $height,
-                    'date_taken' => $dateTaken,
-                ])
-                ->toMediaCollection('previews');
-        }
-
-        return to_route('admin-base');
-    }
-
-    public function storePhotos(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
-    {
-        foreach ($storeAlbumImagesRequest->validated()['images'] as $photo) {
-            [$width, $height] = $this->getDimensions($photo);
-            $exifData = exif_read_data($photo);
-            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
-
-            $album
-                ->addMedia($photo)
-                ->preservingOriginal()
-                ->withCustomProperties([
-                    'width' => $width,
-                    'height' => $height,
-                    'date_taken' => $dateTaken,
-                ])
-                ->toMediaCollection('photos');
-        }
 
         return to_route('admin-base');
     }
@@ -202,16 +157,5 @@ class AlbumController extends Controller
     private function nameToUrlAlias($inputString): string
     {
         return str_replace(' ', '-', str_replace('-', '', strtolower((string) $inputString)));
-    }
-
-    private function getDimensions(UploadedFile $uploadedFile): array
-    {
-        try {
-            $image = Image::load($uploadedFile->getPathname());
-
-            return [$image->getWidth(), $image->getHeight()];
-        } catch (\Throwable) {
-            return [null, null];
-        }
     }
 }

@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import {
   ActionIcon,
   Box,
@@ -6,6 +6,7 @@ import {
   Group,
   Loader,
   Stack,
+  Text,
   Title,
   Tooltip,
 } from '@mantine/core';
@@ -20,6 +21,10 @@ import { useEffect, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
 import Dropzone from '../components/Dropzone';
+import useDirectUpload from '../hooks/useDirectUpload';
+
+const POLL_INTERVAL_MS = 3000;
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
   const [albumMedia, setAlbumMedia] = useState([]);
@@ -28,13 +33,16 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     album?.cover_image_id,
   );
   const [files, setFiles] = useState([]);
-  const { setData, post, processing, reset } = useForm('UploadAlbum', {
-    images: [],
+  const [pendingIngest, setPendingIngest] = useState(0);
+  const { upload, reset, progress, isUploading, error } = useDirectUpload({
+    albumId: album?.id,
+    collection: type,
   });
 
-  useEffect(() => {
-    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, []);
+  const fetchMedia = (signal) =>
+    fetch(`/admin/albums/${album.id}/media`, { signal })
+      .then((res) => res.json())
+      .then((data) => data[type] ?? []);
 
   useEffect(() => {
     if (!album?.id) {
@@ -44,10 +52,9 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     const controller = new AbortController();
     setIsLoadingMedia(true);
 
-    fetch(`/admin/albums/${album.id}/media`, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setAlbumMedia(data[type] ?? []);
+    fetchMedia(controller.signal)
+      .then((media) => {
+        setAlbumMedia(media);
         setIsLoadingMedia(false);
       })
       .catch((err) => {
@@ -59,22 +66,82 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     return () => controller.abort();
   }, [album?.id, type]);
 
-  const handleFilesChange = (updated) => {
-    setFiles(updated);
-    setData('images', updated);
+  /**
+   * Ingest happens on the queue, so the media list lags the upload. Poll until
+   * every queued file has landed, or give up quietly after the timeout.
+   */
+  const pollForIngest = async (expectedCount) => {
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+
+      try {
+        const media = await fetchMedia();
+        setAlbumMedia(media);
+        setPendingIngest(Math.max(expectedCount - media.length, 0));
+
+        if (media.length >= expectedCount) {
+          return true;
+        }
+      } catch {
+        // Transient failure; the next tick retries.
+      }
+    }
+
+    return false;
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    post(`/admin/albums/${album?.id}/${type}`, {
-      onSuccess: () => {
-        reloadPage();
-        onClose();
-        reset();
-        setFiles([]);
-      },
+    const { uploaded, failed } = await upload(files);
+
+    if (uploaded === 0) {
+      notifications.show({
+        color: 'red',
+        title: 'Upload failed',
+        message: error ?? 'No files were uploaded. See the list for details.',
+      });
+      return;
+    }
+
+    setFiles(files.filter((file) => failed.includes(file.name)));
+    setPendingIngest(uploaded);
+
+    notifications.show({
+      color: 'blue',
+      title: `Processing ${uploaded} image${uploaded === 1 ? '' : 's'}`,
+      message: 'Uploaded to storage. Generating web versions now.',
     });
+
+    const settled = await pollForIngest(albumMedia.length + uploaded);
+    setPendingIngest(0);
+    reloadPage();
+
+    if (settled) {
+      reset();
+      notifications.show({
+        color: 'green',
+        title: 'Upload complete',
+        message: `${uploaded} image${uploaded === 1 ? '' : 's'} added.`,
+      });
+    } else {
+      notifications.show({
+        color: 'yellow',
+        title: 'Still processing',
+        message:
+          'Some images are still being processed. Reopen this drawer shortly.',
+      });
+    }
+
+    if (failed.length > 0) {
+      notifications.show({
+        color: 'red',
+        title: `${failed.length} upload${failed.length === 1 ? '' : 's'} failed`,
+        message: 'The failed files are still selected. Try again.',
+      });
+    }
   };
 
   const handleImageDelete = (id, index) => {
@@ -217,17 +284,39 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
       )}
 
       <Stack component="form" onSubmit={onSubmit} gap="sm" mt="xl">
-        <Dropzone files={files} onFilesChange={handleFilesChange} />
+        <Dropzone
+          files={files}
+          onFilesChange={setFiles}
+          progress={progress}
+          disabled={isUploading}
+        />
+
+        {error ? (
+          <Text size="sm" c="red">
+            {error}
+          </Text>
+        ) : null}
+
+        {pendingIngest > 0 ? (
+          <Group gap="xs">
+            <Loader size="xs" />
+            <Text size="sm" c="dimmed">
+              Processing {pendingIngest} image
+              {pendingIngest === 1 ? '' : 's'}…
+            </Text>
+          </Group>
+        ) : null}
 
         <Group justify="flex-end" my="md">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onClose} disabled={isUploading}>
             Cancel
           </Button>
           <Button
             type="submit"
             color="green"
             leftSection={<IconDownload size={14} />}
-            loading={processing}
+            loading={isUploading || pendingIngest > 0}
+            disabled={files.length === 0}
           >
             Add Images
           </Button>
