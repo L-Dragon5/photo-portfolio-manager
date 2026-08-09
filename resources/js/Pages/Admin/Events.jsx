@@ -7,10 +7,16 @@ import {
   ScrollArea,
   Select,
   Table,
+  TextInput,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+  IconPencil,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useRef, useState } from 'react';
 
@@ -22,10 +28,19 @@ const Events = ({ events }) => {
   const [sortingOption, setSortingOption] = useState('name-asc');
   const [activeEvents, setActiveEvents] = useState(events);
   const [modifyEvent, setModifyEvent] = useState(null);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch] = useDebouncedValue(search, 300);
+
+  const query = debouncedSearch.trim().toLowerCase();
+  const visibleEvents = query
+    ? activeEvents.filter((event) =>
+        `${event.name} ${event.url_alias ?? ''}`.toLowerCase().includes(query),
+      )
+    : activeEvents;
 
   const parentRef = useRef(null);
   const virtualizer = useVirtualizer({
-    count: activeEvents.length,
+    count: visibleEvents.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 50,
     overscan: 10,
@@ -36,6 +51,10 @@ const Events = ({ events }) => {
     virtualItems.length > 0
       ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
       : 0;
+
+  useEffect(() => {
+    parentRef.current?.scrollTo({ top: 0 });
+  }, [query]);
 
   useEffect(() => {
     if (sortingOption === 'name-asc') {
@@ -113,10 +132,16 @@ const Events = ({ events }) => {
           ]}
           style={{ flex: 1 }}
         />
+        <TextInput
+          placeholder="Search events"
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
         <Button
           color="teal"
           leftSection={<IconPlus size={14} />}
-          w="50%"
           onClick={onModalOpen}
         >
           Add Event
@@ -154,7 +179,7 @@ const Events = ({ events }) => {
               </Table.Tr>
             )}
             {virtualItems.map((virtualRow) => {
-              const event = activeEvents[virtualRow.index];
+              const event = visibleEvents[virtualRow.index];
               return (
                 <Table.Tr key={event.id}>
                   <Table.Td>{event.name}</Table.Td>
