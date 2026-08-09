@@ -125,3 +125,18 @@ it('still rejects a blank name', function (): void {
     $this->put("/admin/albums/{$album->id}", ['name' => ''])
         ->assertSessionHasErrors('name');
 });
+
+/**
+ * bootstrap/app.php, not app/Http/Kernel.php, is what registers middleware in
+ * this app. Without HandleInertiaRequests in the web group, back() returns a
+ * 302 and the browser replays the PUT against /admin ("The PUT method is not
+ * supported for route admin").
+ */
+it('redirects an inertia album update with 303 so the browser follows with GET', function (): void {
+    $album = Album::factory()->create();
+
+    $this->from('/admin')
+        ->put("/admin/albums/{$album->id}", ['name' => 'Renamed'], ['X-Inertia' => 'true'])
+        ->assertStatus(303)
+        ->assertRedirect('/admin');
+});
