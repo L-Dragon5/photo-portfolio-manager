@@ -73,7 +73,14 @@ class AlbumController extends Controller
      */
     public function update(UpdateAlbumRequest $updateAlbumRequest, Album $album)
     {
-        $album->update([...$updateAlbumRequest->validated()]);
+        $validated = $updateAlbumRequest->validated();
+
+        // The edit form invites a blank alias; derive one rather than storing null.
+        if (array_key_exists('url_alias', $validated) && empty($validated['url_alias'])) {
+            $validated['url_alias'] = $this->nameToUrlAlias($validated['name'] ?? $album->name);
+        }
+
+        $album->update([...$validated]);
 
         return to_route('admin-base');
     }

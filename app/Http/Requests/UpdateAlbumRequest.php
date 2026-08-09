@@ -28,7 +28,7 @@ class UpdateAlbumRequest extends FormRequest
             'event_id' => ['sometimes', 'nullable', 'numeric'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'cover_image_id' => ['sometimes', 'nullable', 'numeric'],
-            'url_alias' => ['sometimes', 'string'],
+            'url_alias' => ['sometimes', 'nullable', 'string'],
             'password' => ['sometimes', 'nullable', 'string'],
             'date_taken' => ['sometimes', 'nullable', 'date'],
             'is_press' => ['sometimes', 'nullable', 'boolean'],
