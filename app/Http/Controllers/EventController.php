@@ -41,7 +41,14 @@ class EventController extends Controller
      */
     public function update(UpdateEventRequest $updateEventRequest, Event $event)
     {
-        $event->update($updateEventRequest->validated());
+        $validated = $updateEventRequest->validated();
+
+        // The edit form invites a blank alias; derive one rather than storing null.
+        if (array_key_exists('url_alias', $validated) && empty($validated['url_alias'])) {
+            $validated['url_alias'] = $this->nameToUrlAlias($validated['name'] ?? $event->name);
+        }
+
+        $event->update($validated);
 
         return to_route('events.index');
     }

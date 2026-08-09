@@ -18,6 +18,7 @@ const LinkItems = [
   { name: 'Featured', href: '/' },
   { name: 'Events', href: '/events' },
   { name: 'On-Location', href: '/on-location' },
+  { name: 'Videos', href: '/videos' },
 ];
 
 function SidebarNav() {

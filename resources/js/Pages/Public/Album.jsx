@@ -24,6 +24,7 @@ import Download from 'yet-another-react-lightbox/plugins/download';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 
 import BaseLayout from './components/BaseLayout';
+import VideoGrid from './components/VideoGrid';
 
 const AlbumBreadcrumbs = ({ albumName, breadcrumbs }) => (
   <Breadcrumbs separator={<IconChevronRight size={14} />}>
@@ -128,6 +129,18 @@ const Album = ({ album, breadcrumbs, photos }) => {
           </Badge>
         ))}
       </Flex>
+
+      {album?.videos?.length > 0 ? (
+        <>
+          <Title order={2} mb="sm">
+            Videos
+          </Title>
+          <VideoGrid videos={album.videos} />
+          <Title order={2} mt="xl" mb="sm">
+            Photos
+          </Title>
+        </>
+      ) : null}
 
       <Deferred
         data="photos"

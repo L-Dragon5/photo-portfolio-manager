@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreAlbumImagesRequest;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Cosplayer;
 use App\Models\Photo;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
-use Spatie\Image\Image;
 
 class AlbumController extends Controller
 {
@@ -69,48 +66,6 @@ class AlbumController extends Controller
         return to_route('admin-base');
     }
 
-    public function storePreviews(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
-    {
-        foreach ($storeAlbumImagesRequest->validated()['images'] as $preview) {
-            [$width, $height] = $this->getDimensions($preview);
-            $exifData = exif_read_data($preview);
-            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime((string) $exifData['DateTimeOriginal']) : null;
-
-            $album
-                ->addMedia($preview)
-                ->preservingOriginal()
-                ->withCustomProperties([
-                    'width' => $width,
-                    'height' => $height,
-                    'date_taken' => $dateTaken,
-                ])
-                ->toMediaCollection('previews');
-        }
-
-        return to_route('admin-base');
-    }
-
-    public function storePhotos(StoreAlbumImagesRequest $storeAlbumImagesRequest, Album $album)
-    {
-        foreach ($storeAlbumImagesRequest->validated()['images'] as $photo) {
-            [$width, $height] = $this->getDimensions($photo);
-            $exifData = exif_read_data($photo);
-            $dateTaken = isset($exifData['DateTimeOriginal']) ? strtotime($exifData['DateTimeOriginal']) : null;
-
-            $album
-                ->addMedia($photo)
-                ->preservingOriginal()
-                ->withCustomProperties([
-                    'width' => $width,
-                    'height' => $height,
-                    'date_taken' => $dateTaken,
-                ])
-                ->toMediaCollection('photos');
-        }
-
-        return to_route('admin-base');
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -118,9 +73,18 @@ class AlbumController extends Controller
      */
     public function update(UpdateAlbumRequest $updateAlbumRequest, Album $album)
     {
-        $album->update([...$updateAlbumRequest->validated()]);
+        $validated = $updateAlbumRequest->validated();
 
-        return to_route('admin-base');
+        // The edit form invites a blank alias; derive one rather than storing null.
+        if (array_key_exists('url_alias', $validated) && empty($validated['url_alias'])) {
+            $validated['url_alias'] = $this->nameToUrlAlias($validated['name'] ?? $album->name);
+        }
+
+        $album->update([...$validated]);
+
+        // back() rather than to_route() so the paginated admin list stays on
+        // the page the album was edited from.
+        return back();
     }
 
     public function updateAlbumCosplayerAdd(Request $request, Album $album)
@@ -175,7 +139,9 @@ class AlbumController extends Controller
     {
         $album->delete();
 
-        return to_route('admin-base');
+        // back() rather than to_route() so the paginated admin list stays on
+        // the page the album was deleted from.
+        return back();
     }
 
     public function destroyImage(Photo $photo)
@@ -196,22 +162,13 @@ class AlbumController extends Controller
         $album->password = null;
         $album->save();
 
-        return to_route('admin-base');
+        // back() rather than to_route() so the paginated admin list stays on
+        // the page the previews were purged from.
+        return back();
     }
 
     private function nameToUrlAlias($inputString): string
     {
         return str_replace(' ', '-', str_replace('-', '', strtolower((string) $inputString)));
-    }
-
-    private function getDimensions(UploadedFile $uploadedFile): array
-    {
-        try {
-            $image = Image::load($uploadedFile->getPathname());
-
-            return [$image->getWidth(), $image->getHeight()];
-        } catch (\Throwable) {
-            return [null, null];
-        }
     }
 }

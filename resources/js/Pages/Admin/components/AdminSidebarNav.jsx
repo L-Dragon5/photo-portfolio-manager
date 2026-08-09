@@ -18,6 +18,7 @@ const LinkItems = [
   { name: 'All Albums', href: '/admin' },
   { name: 'All Events', href: '/admin/events' },
   { name: 'All Cosplayers', href: '/admin/cosplayers' },
+  { name: 'All Videos', href: '/admin/videos' },
 ];
 
 function AdminSidebarNav() {

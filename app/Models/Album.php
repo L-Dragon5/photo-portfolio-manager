@@ -51,6 +51,11 @@ class Album extends Model implements HasMedia
         return $this->belongsToMany(Photo::class, 'albums_media', 'album_id', 'media_id');
     }
 
+    public function videos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Video::class)->orderBy('order_column')->orderBy('title');
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos')->withResponsiveImages();

@@ -1,15 +1,23 @@
 import {
   ActionIcon,
   Box,
-  Flex,
   Group,
-  Image,
+  Progress,
+  ScrollArea,
   Stack,
   Text,
+  ThemeIcon,
 } from '@mantine/core';
 import { Dropzone as MantineDropzone } from '@mantine/dropzone';
 import '@mantine/dropzone/styles.css';
-import { IconPhoto, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconPhoto,
+  IconTrash,
+  IconUpload,
+  IconX,
+} from '@tabler/icons-react';
 
 const mergeArrays = (a, b, predicate = (a, b) => a === b) => {
   const c = [...a];
@@ -19,26 +27,54 @@ const mergeArrays = (a, b, predicate = (a, b) => a === b) => {
   return c;
 };
 
-const Dropzone = ({ files, onFilesChange }) => {
-  const handleDrop = (acceptedFiles) => {
-    const withPreviews = acceptedFiles.map((file) =>
-      Object.assign(file, { preview: URL.createObjectURL(file) }),
+const formatSize = (bytes) => {
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const StatusIcon = ({ status }) => {
+  if (status === 'done') {
+    return (
+      <ThemeIcon color="green" variant="light" size="sm">
+        <IconCheck size={14} />
+      </ThemeIcon>
     );
+  }
+  if (status === 'failed') {
+    return (
+      <ThemeIcon color="red" variant="light" size="sm">
+        <IconAlertTriangle size={14} />
+      </ThemeIcon>
+    );
+  }
+  return null;
+};
+
+/**
+ * Files are listed as compact rows rather than image previews. Rendering
+ * full-resolution thumbnails is what made large batches choke the browser.
+ */
+const Dropzone = ({ files, onFilesChange, progress = {}, disabled }) => {
+  const handleDrop = (acceptedFiles) => {
     onFilesChange(
-      mergeArrays(files, withPreviews, (a, b) => a.name === b.name),
+      mergeArrays(files, acceptedFiles, (a, b) => a.name === b.name),
     );
   };
 
-  const removePhoto = (index) => {
-    URL.revokeObjectURL(files[index].preview);
+  const removeFile = (index) => {
     onFilesChange(files.toSpliced(index, 1));
   };
+
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
 
   return (
     <Box w="100%">
       <MantineDropzone
         onDrop={handleDrop}
         accept={['image/jpeg', 'image/png']}
+        disabled={disabled}
         w="100%"
       >
         <Group
@@ -76,21 +112,58 @@ const Dropzone = ({ files, onFilesChange }) => {
       </MantineDropzone>
 
       {files.length > 0 && (
-        <Flex wrap="wrap" mt="sm" py="md" gap="sm" justify="space-evenly">
-          {files.map((file, index) => (
-            <Box key={file.name} display="inline-flex">
-              <Image src={file.preview} onLoad={() => {}} h={300} w="auto" />
-              <ActionIcon
-                aria-label="Remove photo"
-                color="red"
-                variant="subtle"
-                onClick={() => removePhoto(index)}
-              >
-                <IconTrash size={16} />
-              </ActionIcon>
-            </Box>
-          ))}
-        </Flex>
+        <>
+          <Text size="sm" c="dimmed" mt="sm">
+            {files.length} file{files.length === 1 ? '' : 's'} selected (
+            {formatSize(totalSize)})
+          </Text>
+          <ScrollArea.Autosize mah={320} mt="xs">
+            <Stack gap={4}>
+              {files.map((file, index) => {
+                const state = progress[file.name];
+
+                return (
+                  <Group key={file.name} gap="sm" wrap="nowrap">
+                    <Box style={{ flex: 1, minWidth: 0 }}>
+                      <Group gap="xs" wrap="nowrap">
+                        <StatusIcon status={state?.status} />
+                        <Text size="sm" truncate style={{ flex: 1 }}>
+                          {file.name}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {formatSize(file.size)}
+                        </Text>
+                      </Group>
+                      {state && state.status !== 'failed' && (
+                        <Progress
+                          value={state.percent ?? 0}
+                          size="xs"
+                          mt={2}
+                          color={state.status === 'done' ? 'green' : 'blue'}
+                        />
+                      )}
+                      {state?.status === 'failed' && (
+                        <Text size="xs" c="red">
+                          {state.error}
+                        </Text>
+                      )}
+                    </Box>
+                    <ActionIcon
+                      aria-label={`Remove ${file.name}`}
+                      color="red"
+                      variant="subtle"
+                      size="sm"
+                      disabled={disabled}
+                      onClick={() => removeFile(index)}
+                    >
+                      <IconTrash size={14} />
+                    </ActionIcon>
+                  </Group>
+                );
+              })}
+            </Stack>
+          </ScrollArea.Autosize>
+        </>
       )}
     </Box>
   );

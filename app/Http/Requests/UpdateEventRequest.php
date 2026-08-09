@@ -25,7 +25,7 @@ class UpdateEventRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'url_alias' => ['sometimes', 'string', 'max:255'],
+            'url_alias' => ['sometimes', 'nullable', 'string', 'max:255'],
             'start_date' => ['sometimes', 'nullable', 'date'],
             'end_date' => ['sometimes', 'nullable', 'date'],
         ];
