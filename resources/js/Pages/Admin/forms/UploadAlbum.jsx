@@ -8,7 +8,6 @@ import {
   Stack,
   Text,
   Title,
-  Tooltip,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
@@ -33,6 +32,7 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     album?.cover_image_id,
   );
   const [files, setFiles] = useState([]);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const [pendingIngest, setPendingIngest] = useState(0);
   const { upload, reset, progress, isUploading, error } = useDirectUpload({
     albumId: album?.id,
@@ -205,52 +205,58 @@ const UploadAlbum = ({ reloadPage, onClose, type, album }) => {
     });
   };
 
+  /**
+   * ponytail: overlay controls render only for the hovered tile. Mounting them
+   * for every photo put 3 Mantine Tooltips + 3 ActionIcons per image on the
+   * page, which froze (and at ~1800 photos crashed) the tab. Native `title`
+   * replaces Tooltip for the same reason — no Floating UI instance per button.
+   */
   const customRenderPhoto = ({ renderDefaultPhoto, wrapperStyle, photo }) => {
     const { id, index } = photo;
 
     return (
-      <Box pos="relative" style={wrapperStyle}>
+      <Box
+        pos="relative"
+        style={wrapperStyle}
+        onMouseEnter={() => setHoveredIndex(index)}
+        onMouseLeave={() => setHoveredIndex(null)}
+      >
         {renderDefaultPhoto({ wrapped: true })}
-        <Tooltip label="Permanently delete photo">
-          <ActionIcon
-            onClick={() => handleImageDelete(id, index)}
-            pos="absolute"
-            color="red"
-            top={0}
-            right={0}
-            style={{ opacity: 0.5 }}
-            styles={{ root: { '&:hover': { opacity: 1 } } }}
-          >
-            <IconTrash size={16} />
-          </ActionIcon>
-        </Tooltip>
-        {type === 'photos' ? (
+        {hoveredIndex === index ? (
           <>
-            <Tooltip label="Set as album cover image">
-              <ActionIcon
-                onClick={() => handleSetCoverImage(id)}
-                pos="absolute"
-                top={0}
-                left={0}
-                style={{ opacity: 0.5 }}
-                styles={{ root: { '&:hover': { opacity: 1 } } }}
-                color={id === activeCoverImage ? 'yellow' : undefined}
-              >
-                <IconStar size={16} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label="Set as featured photo">
-              <ActionIcon
-                onClick={() => handleToggleFeaturedPhoto(id)}
-                pos="absolute"
-                top={0}
-                left="50%"
-                style={{ opacity: 0.5 }}
-                styles={{ root: { '&:hover': { opacity: 1 } } }}
-              >
-                <IconLink size={16} />
-              </ActionIcon>
-            </Tooltip>
+            <ActionIcon
+              title="Permanently delete photo"
+              onClick={() => handleImageDelete(id, index)}
+              pos="absolute"
+              color="red"
+              top={0}
+              right={0}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+            {type === 'photos' ? (
+              <>
+                <ActionIcon
+                  title="Set as album cover image"
+                  onClick={() => handleSetCoverImage(id)}
+                  pos="absolute"
+                  top={0}
+                  left={0}
+                  color={id === activeCoverImage ? 'yellow' : undefined}
+                >
+                  <IconStar size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  title="Set as featured photo"
+                  onClick={() => handleToggleFeaturedPhoto(id)}
+                  pos="absolute"
+                  top={0}
+                  left="50%"
+                >
+                  <IconLink size={16} />
+                </ActionIcon>
+              </>
+            ) : null}
           </>
         ) : null}
       </Box>

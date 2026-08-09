@@ -30,18 +30,16 @@ class Photo extends BaseMedia
                     'download' => $this->getUrl(),
                 ];
 
-                $responsiveImages = $this->responsiveImages();
-                $responsiveSrcSet = $responsiveImages->files->map(fn($ri): array => [
+                /**
+                 * The base64 placeholder SVG used to be appended here as a 32w
+                 * candidate. A browser never picks a 32w candidate for a real
+                 * thumbnail, so it only inflated the JSON by ~1-3KB per photo.
+                 */
+                $imageInfo['srcSet'] = $this->responsiveImages()->files->map(fn ($ri): array => [
                     'src' => $ri->url(),
                     'width' => $ri->width(),
                     'height' => $ri->height(),
                 ]);
-                $responsiveSrcSet[] = [
-                    'src' => $responsiveImages->getPlaceholderSvg(),
-                    'width' => 32,
-                    'height' => 32,
-                ];
-                $imageInfo['srcSet'] = $responsiveSrcSet;
 
                 return $imageInfo;
             },
