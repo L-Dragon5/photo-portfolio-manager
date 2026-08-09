@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Album;
 use App\Models\Photo;
+use Illuminate\Support\Str;
 
 function makeAlbumWithPhotos(string $password, int $count = 3): array
 {
@@ -16,7 +17,7 @@ function makeAlbumWithPhotos(string $password, int $count = 3): array
     $photos = collect(range(1, $count))->map(fn (int $i): Photo => Photo::query()->create([
         'model_type' => Album::class,
         'model_id' => $album->id,
-        'uuid' => (string) \Illuminate\Support\Str::uuid(),
+        'uuid' => (string) Str::uuid(),
         'collection_name' => 'previews',
         'name' => "preview-{$i}",
         'file_name' => "preview-{$i}.jpg",
@@ -121,4 +122,28 @@ it('clears the completed timestamp when undoing', function (): void {
         ->assertRedirect();
 
     expect($album->fresh()->culling_completed_at)->toBeNull();
+});
+
+/**
+ * Culling.jsx reads ids out of related_photos and `html` off each preview.
+ * Everything else on a Photo row, above all the responsive_images blob, used
+ * to ship with every one of the hundreds of previews on this page.
+ */
+it('ships lean photo payloads to the culling page', function (): void {
+    [$album, $photos] = makeAlbumWithPhotos('lean-pw');
+    $album->relatedPhotos()->attach($photos[0]->id);
+
+    $this->get('/culling/lean-pw')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('album.related_photos.0.id', $photos[0]->id)
+            ->missing('album.related_photos.0.html')
+            ->missing('album.related_photos.0.name')
+            ->missing('album.previews.0.responsive_images')
+            ->missing('album.previews.0.custom_properties')
+            ->missing('album.previews.0.generated_conversions')
+            ->missing('album.previews.0.uuid')
+            ->missing('album.cover_image')
+            ->has('album.previews.0.html')
+        );
 });

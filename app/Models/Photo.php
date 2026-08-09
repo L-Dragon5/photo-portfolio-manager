@@ -11,6 +11,23 @@ class Photo extends BaseMedia
 {
     protected $appends = ['html'];
 
+    /**
+     * The frontend reads `html` and nothing else off a photo. These columns are
+     * still available to the accessors server-side; they just stop riding along
+     * in every JSON response. `responsive_images` alone carries the source URLs
+     * plus a base64 placeholder, roughly 2KB per photo.
+     */
+    protected $hidden = [
+        'responsive_images',
+        'manipulations',
+        'generated_conversions',
+        'custom_properties',
+        'conversions_disk',
+        'model_type',
+        'uuid',
+        'order_column',
+    ];
+
     public function albums()
     {
         return $this->belongsToMany(Album::class, 'albums_media', 'media_id', 'album_id');

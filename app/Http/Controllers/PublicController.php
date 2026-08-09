@@ -6,13 +6,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Album;
 use App\Models\Event;
+use App\Models\FeaturedPhoto;
+use App\Models\Photo;
+use App\Models\Video;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\MediaLibrary\Support\MediaStream;
 
 class PublicController extends Controller
 {
-    public function __construct(private readonly \Illuminate\Routing\Redirector $redirector) {}
+    public function __construct(private readonly Redirector $redirector) {}
     /**
      * Display featured photos that I like.
      *
@@ -20,8 +26,8 @@ class PublicController extends Controller
      */
     public function index()
     {
-        $fps = \App\Models\FeaturedPhoto::query()->inRandomOrder()->get();
-        $photosById = \App\Models\Photo::query()->whereIn('id', $fps->pluck('media_id'))->get()->keyBy('id');
+        $fps = FeaturedPhoto::query()->inRandomOrder()->get();
+        $photosById = Photo::query()->whereIn('id', $fps->pluck('media_id'))->get()->keyBy('id');
         $photos = $fps->map(fn ($fp) => $photosById->get($fp->media_id))->filter()->values();
 
         return Inertia::render('Public/Index', [
@@ -32,11 +38,11 @@ class PublicController extends Controller
     /**
      * Display list of events.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function indexEvents()
     {
-        $events = \App\Models\Event::query()->withCount('albums')->latest('start_date')->get();
+        $events = Event::query()->withCount('albums')->latest('start_date')->get();
 
         return Inertia::render('Public/Events', [
             'events' => $events,
@@ -46,12 +52,12 @@ class PublicController extends Controller
     /**
      * Display listing of location shoots.
      */
-    public function indexLocation(\Illuminate\Http\Request $request): \Inertia\Response
+    public function indexLocation(Request $request): Response
     {
         $sort = $request->input('sort', 'date-desc');
         $search = $request->input('search');
 
-        $query = \App\Models\Album::query()
+        $query = Album::query()
             ->where('is_public', true)
             ->where(function ($q): void {
                 $q->where('event_id', null)->orWhere('event_id', '');
@@ -77,11 +83,11 @@ class PublicController extends Controller
     /**
      * Display listing of press shoots.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function indexPress()
     {
-        $albums = \App\Models\Album::query()->where([
+        $albums = Album::query()->where([
             ['is_public', '=', true],
             ['is_press', '=', true],
         ])->latest('start_date')->get();
@@ -94,9 +100,9 @@ class PublicController extends Controller
     /**
      * Display standalone videos, i.e. those not attached to an album.
      */
-    public function indexVideos(): \Inertia\Response
+    public function indexVideos(): Response
     {
-        $videos = \App\Models\Video::query()
+        $videos = Video::query()
             ->whereNull('album_id')
             ->where('is_public', true)
             ->orderByRaw('date_taken IS NULL, date_taken DESC')
@@ -111,9 +117,17 @@ class PublicController extends Controller
     public function indexCulling($password)
     {
         try {
-            $album = \App\Models\Album::query()->where('password', $password)->with(['relatedPhotos'])->firstOrFail();
-            $album->append(['previews']);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            /**
+             * Culling.jsx only reads the ids out of related_photos, to mark
+             * which previews are already selected.
+             */
+            $album = Album::query()
+                ->where('password', $password)
+                ->with(['relatedPhotos' => fn ($q) => $q->select('media.id')])
+                ->firstOrFail();
+            $album->append(['previews'])->makeHidden('cover_image');
+            $album->relatedPhotos->each->makeHidden('html');
+        } catch (ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
 
@@ -123,13 +137,13 @@ class PublicController extends Controller
         ]);
     }
 
-    public function togglePhoto(string $password, \App\Models\Photo $photo, Request $request)
+    public function togglePhoto(string $password, Photo $photo, Request $request)
     {
         $validated = $request->validate([
             'selected' => ['required', 'boolean'],
         ]);
 
-        $album = \App\Models\Album::query()->where('password', $password)->firstOrFail();
+        $album = Album::query()->where('password', $password)->firstOrFail();
 
         $belongsToAlbum = $album->getMedia('previews')->contains('id', $photo->id)
             || $album->getMedia('photos')->contains('id', $photo->id);
@@ -153,7 +167,7 @@ class PublicController extends Controller
             'completed' => ['required', 'boolean'],
         ]);
 
-        $album = \App\Models\Album::query()->where('password', $password)->firstOrFail();
+        $album = Album::query()->where('password', $password)->firstOrFail();
         $album->culling_completed_at = $validated['completed'] ? now() : null;
         $album->save();
 
@@ -163,17 +177,17 @@ class PublicController extends Controller
     /**
      * Display albums of specified event.
      */
-    public function showEvent(\Illuminate\Http\Request $request, $id): \Inertia\Response
+    public function showEvent(Request $request, $id): Response
     {
         $sort = $request->input('sort', 'name-asc');
 
         if (is_numeric($id)) {
             $event = Event::findOrFail($id);
         } else {
-            $event = \App\Models\Event::query()->where('url_alias', $id)->firstOrFail();
+            $event = Event::query()->where('url_alias', $id)->firstOrFail();
         }
 
-        $albumQuery = \App\Models\Album::query()
+        $albumQuery = Album::query()
             ->where('event_id', $event->id)
             ->where('is_public', 1);
 
@@ -211,9 +225,9 @@ class PublicController extends Controller
             $eventQuery = array_shift($queries);
 
             if (is_numeric($eventQuery)) {
-                $event = \App\Models\Event::query()->findOrFail($eventQuery);
+                $event = Event::query()->findOrFail($eventQuery);
             } else {
-                $event = \App\Models\Event::query()->where('url_alias', $eventQuery)->firstOrFail();
+                $event = Event::query()->where('url_alias', $eventQuery)->firstOrFail();
             }
         }
 
@@ -244,7 +258,7 @@ class PublicController extends Controller
                 $album = $album->firstOrFail();
             }
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+        } catch (ModelNotFoundException) {
             return Inertia::render('Public/AlbumNotFound');
         }
 
@@ -272,7 +286,8 @@ class PublicController extends Controller
         }
 
         return Inertia::render('Public/Album', [
-            'album' => $album,
+            /** Album.jsx renders the photo grid, never the cover thumbnail. */
+            'album' => $album->makeHidden('cover_image'),
             'breadcrumbs' => $breadcrumbs ?? [],
             'photos' => Inertia::defer(fn () => $album->photos),
         ]);
@@ -281,7 +296,7 @@ class PublicController extends Controller
     /**
      * Zip archive all photos in album and send download.
      */
-    public function download(Album $album): ?\Spatie\MediaLibrary\Support\MediaStream
+    public function download(Album $album): ?MediaStream
     {
         if ($album->is_public) {
             return MediaStream::create($album->id . '.zip')->addMedia($album->getMedia('photos'));
