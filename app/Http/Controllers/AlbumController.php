@@ -8,8 +8,13 @@ use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Models\Cosplayer;
+use App\Models\Event;
+use App\Models\FeaturedPhoto;
 use App\Models\Photo;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Inertia\Inertia;
 
 class AlbumController extends Controller
@@ -17,11 +22,20 @@ class AlbumController extends Controller
     /**
      * Display listing on admin page.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
-        $albums = Album::with(['relatedPhotos', 'event', 'cosplayers'])
+        $albums = Album::with([
+            /**
+             * The culled-previews popover shows filenames only. Loading whole
+             * Photo rows dragged the `responsive_images` blob and the appended
+             * `html` srcSet along for every selected photo in every album.
+             */
+            'relatedPhotos' => fn ($q) => $q->select('media.id', 'media.name'),
+            'event',
+            'cosplayers',
+        ])
             ->withCount([
                 'media as photos_count' => fn ($q) => $q->where('collection_name', 'photos'),
                 'media as previews_count' => fn ($q) => $q->where('collection_name', 'previews'),
@@ -29,7 +43,16 @@ class AlbumController extends Controller
             ->orderBy('date_taken', 'DESC')
             ->paginate(25);
 
-        $events = \App\Models\Event::query()->orderBy('name', 'ASC')->get();
+        /**
+         * This page never renders a cover image, and the appended accessor
+         * costs one media query per album.
+         */
+        $albums->getCollection()->each(function (Album $album): void {
+            $album->makeHidden('cover_image');
+            $album->relatedPhotos->each->makeHidden('html');
+        });
+
+        $events = Event::query()->orderBy('name', 'ASC')->get();
 
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
@@ -37,7 +60,7 @@ class AlbumController extends Controller
         ]);
     }
 
-    public function showMedia(Album $album): \Illuminate\Http\JsonResponse
+    public function showMedia(Album $album): JsonResponse
     {
         $album->append(['photos', 'previews']);
 
@@ -50,7 +73,7 @@ class AlbumController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(StoreAlbumRequest $storeAlbumRequest)
     {
@@ -61,7 +84,7 @@ class AlbumController extends Controller
             $validated['url_alias'] = $this->nameToUrlAlias($validated['name']);
         }
 
-        \App\Models\Album::query()->create([...$validated]);
+        Album::query()->create([...$validated]);
 
         return to_route('admin-base');
     }
@@ -69,7 +92,7 @@ class AlbumController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(UpdateAlbumRequest $updateAlbumRequest, Album $album)
     {
@@ -106,7 +129,7 @@ class AlbumController extends Controller
         return back();
     }
 
-    public function updateCoverImage(Request $request, Album $album): \Illuminate\Http\RedirectResponse
+    public function updateCoverImage(Request $request, Album $album): RedirectResponse
     {
         $validated = $request->validate([
             'cover_image_id' => ['required', 'numeric'],
@@ -119,10 +142,10 @@ class AlbumController extends Controller
 
     public function updateFeaturedPhoto(Request $request, Photo $photo): void
     {
-        $fp = \App\Models\FeaturedPhoto::query()->where('media_id', $photo->id)->first();
+        $fp = FeaturedPhoto::query()->where('media_id', $photo->id)->first();
 
         if (empty($fp)) {
-            \App\Models\FeaturedPhoto::query()->create([
+            FeaturedPhoto::query()->create([
                 'media_id' => $photo->id,
             ]);
         } else {
@@ -133,7 +156,7 @@ class AlbumController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Album $album)
     {
@@ -146,7 +169,7 @@ class AlbumController extends Controller
 
     public function destroyImage(Photo $photo)
     {
-        $fp = \App\Models\FeaturedPhoto::query()->where('media_id', $photo->id)->first();
+        $fp = FeaturedPhoto::query()->where('media_id', $photo->id)->first();
         if (!empty($fp)) {
             $fp->delete();
         }

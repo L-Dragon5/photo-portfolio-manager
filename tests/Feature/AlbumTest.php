@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Album;
+use App\Models\Event;
+use App\Models\Photo;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function (): void {
     $this->actingAs(User::factory()->create());
@@ -62,7 +65,7 @@ it('never leaves an album without a url alias', function (): void {
 });
 
 it('clears the event when the select is emptied', function (): void {
-    $event = \App\Models\Event::query()->create([
+    $event = Event::query()->create([
         'name' => 'Con',
         'url_alias' => 'con',
         'start_date' => '2026-01-01',
@@ -139,4 +142,41 @@ it('redirects an inertia album update with 303 so the browser follows with GET',
         ->put("/admin/albums/{$album->id}", ['name' => 'Renamed'], ['X-Inertia' => 'true'])
         ->assertStatus(303)
         ->assertRedirect('/admin');
+});
+
+/**
+ * The index popover lists culled preview filenames only. Loading whole Photo
+ * rows pulled the responsive_images blob and the appended `html` srcSet along
+ * for every selected photo, and the appended `cover_image` fired one media
+ * query per album on a page that never renders a cover.
+ */
+it('ships only id and name for culled previews and no cover image', function (): void {
+    $album = Album::factory()->create();
+    $photo = Photo::query()->create([
+        'model_type' => Album::class,
+        'model_id' => $album->id,
+        'uuid' => (string) Str::uuid(),
+        'collection_name' => 'previews',
+        'name' => 'chosen-shot',
+        'file_name' => 'chosen-shot.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'conversions_disk' => 'public',
+        'size' => 1000,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => ['media_library_original' => ['urls' => ['a_300_225.jpg'], 'base64svg' => 'x']],
+        'order_column' => 1,
+    ]);
+    $album->relatedPhotos()->attach($photo->id);
+
+    $this->get('/admin')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('albums.data.0.related_photos.0.name', 'chosen-shot')
+            ->missing('albums.data.0.related_photos.0.html')
+            ->missing('albums.data.0.related_photos.0.responsive_images')
+            ->missing('albums.data.0.cover_image')
+        );
 });
