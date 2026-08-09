@@ -139,7 +139,9 @@ class AlbumController extends Controller
     {
         $album->delete();
 
-        return to_route('admin-base');
+        // back() rather than to_route() so the paginated admin list stays on
+        // the page the album was deleted from.
+        return back();
     }
 
     public function destroyImage(Photo $photo)

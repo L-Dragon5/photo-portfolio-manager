@@ -90,6 +90,24 @@ it('returns to the page the admin was on after saving', function (): void {
         ->assertRedirect('/admin?page=3');
 });
 
+it('returns to the page the admin was on after deleting', function (): void {
+    $album = Album::factory()->create();
+
+    $this->from('/admin?page=3')
+        ->delete("/admin/albums/{$album->id}")
+        ->assertRedirect('/admin?page=3');
+
+    expect(Album::query()->count())->toBe(0);
+});
+
+it('still renders the admin list on a page past the end', function (): void {
+    Album::factory()->create();
+
+    $this->get('/admin?page=3')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/Index')->has('albums.data', 0));
+});
+
 it('still rejects a blank name', function (): void {
     $album = Album::factory()->create();
 
