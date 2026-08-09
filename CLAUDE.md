@@ -33,8 +33,11 @@ composer install           # Install PHP dependencies
 
 ### Deployment
 ```bash
-fly deploy  # Deploy to Fly.io
+./scripts/build.sh   # composer install --no-dev, npm ci, npm run build
+./scripts/deploy.sh  # artisan migrate, optimize, queue:restart, reload (needs sudo)
 ```
+Runs on a self-hosted VPS behind Pangolin, not Fly.io. The `sudo` lines in
+`deploy.sh` are Joe's to run — never run them yourself.
 
 ## Laravel Boost (MCP)
 
@@ -50,7 +53,7 @@ Laravel Boost is installed as an MCP server and provides tools Claude should use
 
 ## Architecture
 
-**Stack:** Laravel 12 (PHP 8.4) + React 19 + Inertia.js + Mantine 8 + `@tabler/icons-react`, deployed on Fly.io via Docker with SQLite (metadata) and AWS S3 (media).
+**Stack:** Laravel 12 (PHP 8.4) + React 19 + Inertia.js + Mantine 8 + `@tabler/icons-react`, self-hosted on a VPS with SQLite (metadata), AWS S3 (media), and a Redis queue worker (media ingest and image processing).
 
 ### How Inertia.js Works Here
 Laravel handles all routing (`routes/web.php`). Controllers return `Inertia::render('Public/Album', $data)` instead of Blade views. React page components in `resources/js/Pages/` receive Laravel data as props. There is no separate API for page navigation — Inertia intercepts link clicks and makes XHR requests that return JSON page data.
@@ -61,9 +64,28 @@ Laravel handles all routing (`routes/web.php`). Controllers return `Inertia::ren
 - **Event** — groups albums by photography event
 - **Cosplayer** — tagged on albums with character names (many-to-many via `albums_cosplayers`)
 - **FeaturedPhoto** — tracks which photos appear on the homepage
+- **Video** — a YouTube embed, not a stored file. Nullable `album_id`: null means it shows in the standalone `/videos` section, set means it renders on that album's page
 
 ### Media Handling
-Spatie Media Library (`spatie/laravel-medialibrary`) manages all image storage. The custom `PhotoWidthCalculator` class drives responsive image srcset generation. Production media goes to S3; local dev uses local disk. The custom media model is `App\Models\Photo`.
+Spatie Media Library (`spatie/laravel-medialibrary`) manages all image storage. The custom `PhotoWidthCalculator` class drives responsive image srcset generation. Production media goes to S3 (`MEDIA_DISK=s3`); local dev uses the local `public` disk. The custom media model is `App\Models\Photo`.
+
+### Uploads — direct browser to S3
+**Never route uploaded files through PHP.** Adding a plain multipart `POST` route for images reintroduces the `post_max_size` / `max_execution_time` ceiling that this design exists to remove.
+
+The flow, all in `app/Http/Controllers/UploadController.php` and `resources/js/Pages/Admin/hooks/useDirectUpload.js`:
+1. `POST /admin/albums/{album}/uploads/sign` returns one presigned PUT per file from `Storage::disk('s3')->temporaryUploadUrl()`. Keys are server-generated (`tmp/{uuid}.{ext}`) and the extension comes from the validated mime type, never the client filename.
+2. The browser PUTs straight to S3, 4 concurrent, progress from `xhr.upload.onprogress`. **It must replay the returned `headers` verbatim** or the signature breaks.
+3. `POST /admin/albums/{album}/uploads/complete` validates each key against `CompleteUploadRequest::KEY_PATTERN` and dispatches `App\Jobs\IngestUploadedMedia` per file.
+4. The job calls `addMediaFromDisk($key, 's3')`, which Spatie routes to `toMediaCollectionFromRemote()` — a server-side S3 copy, no bytes through PHP. It also deletes the staged `tmp/` object.
+
+Notes:
+- `width` / `height` come from the browser (`naturalWidth`). Do not re-add a server-side `Spatie\Image::load()` decode to get them.
+- `date_taken` is read from EXIF inside the job, which is why it can afford to pull the file to a temp path.
+- The bucket needs a CORS rule allowing `PUT` with `Content-Type` from the site origin. Uploads fail silently without it — check this first when uploads break.
+- The admin drawer polls `GET /admin/albums/{album}/media` after upload because ingest is async, so the media list lags by seconds.
+
+### Videos
+YouTube unlisted embeds. There is deliberately no video file storage, no ffmpeg, and no transcoding — do not add any. `app/Support/YouTube.php` parses an ID out of any URL form; thumbnail and embed URLs are derived from that ID, never stored. `VideoGrid.jsx` renders a thumbnail grid with a modal player, kept separate from the photo masonry rather than interleaved.
 
 ### Auth
 Admin routes use HTTP Basic Auth (`auth.basic` middleware). No session-based login — credentials come from the `users` table directly. Public routes have no auth, except the culling feature which uses a per-album password in the URL.
@@ -72,6 +94,7 @@ Admin routes use HTTP Basic Auth (`auth.basic` middleware). No session-based log
 - `GET /` — featured photos homepage
 - `GET /events`, `/events/{id}` — event listings and detail
 - `GET /on-location`, `/press` — album category pages
+- `GET /videos` — standalone videos (those with no `album_id`)
 - `GET /culling/{password}` — password-protected photo selection for clients
 - `/admin/*` — all admin CRUD (basic auth required)
 - `/api/admin/cosplayers` — only API route (basic auth)
@@ -97,7 +120,8 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 - **Theme** is defined in `resources/js/app.jsx` via `createTheme()` and passed to `MantineProvider`
 
 ### Admin Tables
-- All three admin tables (Albums, Events, Cosplayers) use **`@tanstack/react-virtual`** (`useVirtualizer`) for row virtualization inside a fixed-height `div` scroll container — no pagination or infinite scroll
+- Events, Cosplayers, and Videos use **`@tanstack/react-virtual`** (`useVirtualizer`) for row virtualization inside a fixed-height `div` scroll container
+- Albums is the exception — it uses server-side `Pagination` (25/page), because the album list carries counts and relations that make loading everything expensive
 - Tables use `tableLayout: 'fixed'` with explicit `width` on each `<Table.Th>` to prevent column shifting during virtualization
 - Sticky `<Table.Thead>` with `position: sticky; top: 0; zIndex: 1; background: var(--mantine-color-body)`
 - Album media (photos/previews) is **lazy-loaded** via `GET /admin/albums/{album}/media` when the upload drawer opens — never embedded in the albums list response
@@ -107,9 +131,10 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 - **Never add `->with(['media'])` to album listing queries.** The `cover_image` appended attribute on Album handles its own media access — do not eager load media on album collections.
 
 ### Key Config Files
-- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths
+- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too)
 - `config/database.php` — SQLite for both local and production
-- `fly.toml` — Fly.io region (iad), VM size (1 CPU / 1GB RAM), volume mount for storage
+- `config/queue.php` — Redis in production, `sync` locally. Conversions and responsive images are queued, so `sync` runs them inline in the request; set `QUEUE_CONNECTION=redis` and run `php artisan queue:work` when testing the upload path locally
+- `scripts/deploy.sh` — deploy steps; includes `queue:restart` so the worker picks up new code
 - `biome.json` — JS linting/formatting rules
 - `postcss.config.cjs` — PostCSS setup required by Mantine (auto-detected by Vite)
 - `vite.config.js` — Laravel Vite plugin config
