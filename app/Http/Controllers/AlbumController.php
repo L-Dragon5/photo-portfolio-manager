@@ -24,8 +24,10 @@ class AlbumController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+
         $albums = Album::with([
             /**
              * The culled-previews popover shows filenames only. Loading whole
@@ -40,8 +42,14 @@ class AlbumController extends Controller
                 'media as photos_count' => fn ($q) => $q->where('collection_name', 'photos'),
                 'media as previews_count' => fn ($q) => $q->where('collection_name', 'previews'),
             ])
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('url_alias', 'LIKE', "%{$search}%")
+                ->orWhereHas('event', fn ($e) => $e->where('name', 'LIKE', "%{$search}%"))
+            ))
             ->orderBy('date_taken', 'DESC')
-            ->paginate(25);
+            ->paginate(25)
+            ->withQueryString();
 
         /**
          * This page never renders a cover image, and the appended accessor
@@ -57,6 +65,7 @@ class AlbumController extends Controller
         return Inertia::render('Admin/Index', [
             'albums' => $albums,
             'events' => $events,
+            'search' => $search,
         ]);
     }
 

@@ -11,28 +11,43 @@ import {
   Popover,
   ScrollArea,
   Table,
+  TextInput,
   Title,
   Tooltip,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import {
   IconEye,
   IconPencil,
   IconPlus,
+  IconSearch,
   IconStar,
   IconTrash,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AdminLayout from './components/AdminLayout';
 import AddAlbum from './forms/AddAlbum';
 import EditAlbum from './forms/EditAlbum';
 import UploadAlbum from './forms/UploadAlbum';
 
-const Index = ({ albums, events }) => {
+const Index = ({ albums, events, search }) => {
   const [modifyAlbum, setModifyAlbum] = useState(null);
   const [drawerUploadType, setDrawerUploadType] = useState(null);
+  const [searchInput, setSearchInput] = useState(search ?? '');
+  const [debouncedSearch] = useDebouncedValue(searchInput, 300);
+  const lastSearch = useRef(search ?? '');
+
+  useEffect(() => {
+    if (debouncedSearch === lastSearch.current) return;
+    lastSearch.current = debouncedSearch;
+    router.get('/admin', debouncedSearch ? { search: debouncedSearch } : {}, {
+      preserveState: true,
+      preserveScroll: true,
+      only: ['albums', 'search'],
+    });
+  }, [debouncedSearch]);
 
   const [isModalOpen, { open: onModalOpen, close: onModalClose }] =
     useDisclosure(false);
@@ -94,6 +109,13 @@ const Index = ({ albums, events }) => {
     <>
       <Group justify="space-between" w="100%" mb="md">
         <Title order={2}>Albums</Title>
+        <TextInput
+          placeholder="Search albums, aliases, events"
+          leftSection={<IconSearch size={16} />}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.currentTarget.value)}
+          w={320}
+        />
         <Button
           leftSection={<IconPlus size={14} />}
           color="teal"
@@ -219,11 +241,10 @@ const Index = ({ albums, events }) => {
           total={albums.last_page}
           value={albums.current_page}
           onChange={(page) =>
-            router.get(
-              '/admin',
-              { page },
-              { preserveState: true, preserveScroll: true },
-            )
+            router.get('/admin', search ? { page, search } : { page }, {
+              preserveState: true,
+              preserveScroll: true,
+            })
           }
           mt="md"
         />

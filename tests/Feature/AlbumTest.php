@@ -180,3 +180,23 @@ it('ships only id and name for culled previews and no cover image', function ():
             ->missing('albums.data.0.cover_image')
         );
 });
+
+it('filters the admin album list by name, alias, and event name', function (): void {
+    $event = Event::query()->create([
+        'name' => 'Anime Expo',
+        'url_alias' => 'anime-expo',
+        'start_date' => '2026-01-01',
+        'end_date' => '2026-01-02',
+    ]);
+    Album::factory()->create(['name' => 'Saber Shoot', 'url_alias' => 'saber-shoot']);
+    Album::factory()->create(['name' => 'Rain Set', 'url_alias' => 'rain-set', 'event_id' => $event->id]);
+
+    $names = fn (string $search) => collect(
+        $this->get("/admin?search={$search}")->viewData('page')['props']['albums']['data']
+    )->pluck('name')->all();
+
+    expect($names('saber'))->toBe(['Saber Shoot']);
+    expect($names('rain-set'))->toBe(['Rain Set']);
+    expect($names('Anime'))->toBe(['Rain Set']);
+    expect($names('zzz'))->toBe([]);
+});
