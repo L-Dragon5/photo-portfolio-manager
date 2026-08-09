@@ -7,13 +7,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * The queue runs on Redis, so there is no `jobs` table, but the failed driver
- * is `database-uuids` and needs somewhere to record jobs that exhaust retries.
+ * Where the `database-uuids` failed driver records jobs that exhaust retries.
+ *
+ * Guarded with hasTable because the table may already exist in production,
+ * created out of band before this migration was written.
  */
 return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('failed_jobs')) {
+            return;
+        }
+
         Schema::create('failed_jobs', function (Blueprint $table): void {
             $table->id();
             $table->string('uuid')->unique();

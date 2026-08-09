@@ -53,7 +53,7 @@ Laravel Boost is installed as an MCP server and provides tools Claude should use
 
 ## Architecture
 
-**Stack:** Laravel 12 (PHP 8.4) + React 19 + Inertia.js + Mantine 8 + `@tabler/icons-react`, self-hosted on a VPS with SQLite (metadata), AWS S3 (media), and a Redis queue worker (media ingest and image processing).
+**Stack:** Laravel 12 (PHP 8.4) + React 19 + Inertia.js + Mantine 8 + `@tabler/icons-react`, self-hosted on a VPS with SQLite (metadata), AWS S3 (media), and a database-backed queue worker (media ingest and image processing).
 
 ### How Inertia.js Works Here
 Laravel handles all routing (`routes/web.php`). Controllers return `Inertia::render('Public/Album', $data)` instead of Blade views. React page components in `resources/js/Pages/` receive Laravel data as props. There is no separate API for page navigation — Inertia intercepts link clicks and makes XHR requests that return JSON page data.
@@ -133,7 +133,7 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 ### Key Config Files
 - `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too)
 - `config/database.php` — SQLite for both local and production
-- `config/queue.php` — Redis in production, `sync` locally. Conversions and responsive images are queued, so `sync` runs them inline in the request; set `QUEUE_CONNECTION=redis` and run `php artisan queue:work` when testing the upload path locally
+- `config/queue.php` — `database` in production (SQLite `jobs` table), `sync` locally. Conversions and responsive images are queued, so `sync` runs them inline in the request; set `QUEUE_CONNECTION=database` and run `php artisan queue:work` when testing the upload path locally
 - `scripts/deploy.sh` — deploy steps; includes `queue:restart` so the worker picks up new code
 - `biome.json` — JS linting/formatting rules
 - `postcss.config.cjs` — PostCSS setup required by Mantine (auto-detected by Vite)
