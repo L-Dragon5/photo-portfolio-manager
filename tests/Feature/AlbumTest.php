@@ -17,7 +17,7 @@ beforeEach(function (): void {
 it('saves the edit form when the url alias is left blank', function (): void {
     $album = Album::factory()->create(['url_alias' => 'existing-alias']);
 
-    $this->put("/admin/albums/{$album->id}", [
+    $this->from('/admin')->put("/admin/albums/{$album->id}", [
         'name' => 'Renamed Album',
         'event_id' => '',
         'notes' => '',
@@ -77,6 +77,17 @@ it('clears the event when the select is emptied', function (): void {
     ])->assertSessionHasNoErrors();
 
     expect($album->refresh()->event_id)->toBeNull();
+});
+
+it('returns to the page the admin was on after saving', function (): void {
+    $album = Album::factory()->create();
+
+    $this->from('/admin?page=3')
+        ->put("/admin/albums/{$album->id}", [
+            'name' => 'Renamed',
+            'url_alias' => 'renamed',
+        ])
+        ->assertRedirect('/admin?page=3');
 });
 
 it('still rejects a blank name', function (): void {
