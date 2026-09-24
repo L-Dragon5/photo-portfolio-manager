@@ -6,6 +6,7 @@ import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
 import SortSelect from './components/SortSelect';
+import rememberSort from './utils/rememberSort';
 
 const SingleEvent = ({ event, albums, sort: initialSort }) => {
   const [sort, setSort] = useState(initialSort);
@@ -13,6 +14,7 @@ const SingleEvent = ({ event, albums, sort: initialSort }) => {
   const handleSortChange = (val) => {
     const newSort = val ?? 'name-asc';
     setSort(newSort);
+    rememberSort('event_albums_sort', newSort);
     router.reload({
       data: { sort: newSort },
       reset: ['albums'],

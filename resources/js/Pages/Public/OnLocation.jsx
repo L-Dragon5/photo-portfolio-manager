@@ -6,6 +6,7 @@ import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
 import SortSelect from './components/SortSelect';
+import rememberSort from './utils/rememberSort';
 
 const OnLocation = ({ albums, sort: initialSort, search: initialSearch }) => {
   const [sort, setSort] = useState(initialSort);
@@ -29,6 +30,7 @@ const OnLocation = ({ albums, sort: initialSort, search: initialSearch }) => {
   const handleSortChange = (val) => {
     const newSort = val ?? 'date-desc';
     setSort(newSort);
+    rememberSort('on_location_sort', newSort);
     router.reload({
       data: { sort: newSort, search: debouncedSearch || undefined },
       reset: ['albums'],

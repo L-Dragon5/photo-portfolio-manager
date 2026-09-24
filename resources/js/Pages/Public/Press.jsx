@@ -1,13 +1,22 @@
 import { Link } from '@inertiajs/react';
 import { Box, Title } from '@mantine/core';
+import { useLocalStorage } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import PhotoAlbum from 'react-photo-album';
 
 import BaseLayout from './components/BaseLayout';
-import SortSelect from './components/SortSelect';
+import SortSelect, { SORT_OPTIONS } from './components/SortSelect';
 
 const Press = ({ albums }) => {
-  const [sortingOption, setSortingOption] = useState('date-desc');
+  const [storedSort, setSortingOption] = useLocalStorage({
+    key: 'press-sort',
+    defaultValue: 'date-desc',
+    getInitialValueInEffect: false,
+  });
+  /** Ignore anything stale or hand-edited in storage. */
+  const sortingOption = SORT_OPTIONS.some((o) => o.value === storedSort)
+    ? storedSort
+    : 'date-desc';
   const [activeAlbums, setActiveAlbums] = useState(albums);
 
   useEffect(() => {

@@ -77,7 +77,11 @@ const Events = ({ events }) => {
     : 'year';
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
-  const [opened, setOpened] = useState([]);
+  const [opened, setOpened] = useLocalStorage({
+    key: 'events-opened',
+    defaultValue: [],
+    getInitialValueInEffect: false,
+  });
 
   const groups = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
@@ -89,7 +93,11 @@ const Events = ({ events }) => {
   }, [events, groupBy, debouncedSearch]);
 
   /** Searching is only useful if it shows the hits, so open every match. */
-  const value = debouncedSearch.trim() ? groups.map((g) => g.label) : opened;
+  const value = debouncedSearch.trim()
+    ? groups.map((g) => g.label)
+    : Array.isArray(opened)
+      ? opened
+      : [];
 
   return (
     <>

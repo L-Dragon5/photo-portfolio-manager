@@ -1,7 +1,7 @@
 import { Box, Group, Select, TextInput } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 
-const SORT_OPTIONS = [
+export const SORT_OPTIONS = [
   { value: 'name-asc', label: 'Name - A to Z' },
   { value: 'name-desc', label: 'Name - Z to A' },
   { value: 'date-asc', label: 'Date - Oldest to Recent' },

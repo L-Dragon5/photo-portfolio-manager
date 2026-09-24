@@ -18,7 +18,21 @@ use Spatie\MediaLibrary\Support\MediaStream;
 
 class PublicController extends Controller
 {
+    private const array SORTS = ['name-asc', 'name-desc', 'date-asc', 'date-desc'];
+
     public function __construct(private readonly Redirector $redirector) {}
+
+    /**
+     * An explicit ?sort= wins, then the viewer's remembered choice (a plain
+     * cookie written by the page), then the page default. Unknown values fall
+     * back to the default so the select never shows a bogus option.
+     */
+    private function resolveSort(Request $request, string $cookie, string $default): string
+    {
+        $sort = $request->query('sort') ?? $request->cookie($cookie);
+
+        return in_array($sort, self::SORTS, true) ? $sort : $default;
+    }
     /**
      * Display featured photos that I like.
      *
@@ -54,7 +68,7 @@ class PublicController extends Controller
      */
     public function indexLocation(Request $request): Response
     {
-        $sort = $request->input('sort', 'date-desc');
+        $sort = $this->resolveSort($request, 'on_location_sort', 'date-desc');
         $search = $request->input('search');
 
         $query = Album::query()
@@ -179,7 +193,7 @@ class PublicController extends Controller
      */
     public function showEvent(Request $request, $id): Response
     {
-        $sort = $request->input('sort', 'name-asc');
+        $sort = $this->resolveSort($request, 'event_albums_sort', 'name-asc');
 
         if (is_numeric($id)) {
             $event = Event::findOrFail($id);
