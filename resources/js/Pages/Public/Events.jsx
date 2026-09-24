@@ -11,7 +11,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useLocalStorage } from '@mantine/hooks';
 import { IconSearch } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
@@ -66,7 +66,15 @@ const EventCard = ({ event }) => (
 );
 
 const Events = ({ events }) => {
-  const [groupBy, setGroupBy] = useState('year');
+  const [storedGroupBy, setGroupBy] = useLocalStorage({
+    key: 'events-group-by',
+    defaultValue: 'year',
+    getInitialValueInEffect: false,
+  });
+  /** Ignore anything stale or hand-edited in storage. */
+  const groupBy = GROUP_OPTIONS.some((o) => o.value === storedGroupBy)
+    ? storedGroupBy
+    : 'year';
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
   const [opened, setOpened] = useState([]);
