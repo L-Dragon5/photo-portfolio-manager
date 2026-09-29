@@ -69,6 +69,8 @@ Laravel handles all routing (`routes/web.php`). Controllers return `Inertia::ren
 ### Media Handling
 Spatie Media Library (`spatie/laravel-medialibrary`) manages all image storage. The custom `PhotoWidthCalculator` class drives responsive image srcset generation. Production media goes to S3 (`MEDIA_DISK=s3`); local dev uses the local `public` disk. The custom media model is `App\Models\Photo`.
 
+Production images are served through CloudFront (`d35rqdw1pzzbg5.cloudfront.net`, distribution `E3BPMQ75ITINWV`, OAC `E3G4RJ794VUZRN`). `AWS_URL` points at it, so Spatie builds every media URL from it. The bucket `ldragonphotographymedia` is private: its policy only allows `s3:GetObject` from that distribution, and Block Public Access is on. Never re-add a public bucket policy or link to `*.s3.amazonaws.com` directly (the sidebar logos in `SidebarNav.jsx` use the CloudFront URL too). Presigned upload PUTs still go straight to S3.
+
 ### Uploads — direct browser to S3
 **Never route uploaded files through PHP.** Adding a plain multipart `POST` route for images reintroduces the `post_max_size` / `max_execution_time` ceiling that this design exists to remove.
 
@@ -81,7 +83,7 @@ The flow, all in `app/Http/Controllers/UploadController.php` and `resources/js/P
 Notes:
 - `width` / `height` come from the browser (`naturalWidth`). Do not re-add a server-side `Spatie\Image::load()` decode to get them.
 - `date_taken` is read from EXIF inside the job, which is why it can afford to pull the file to a temp path.
-- The bucket needs a CORS rule allowing `PUT` with `Content-Type` from the site origin. Uploads fail silently without it — check this first when uploads break.
+- The bucket needs a CORS rule allowing `PUT` with `Content-Type` from the site origin (`https://www.l-dragon.photography`; the apex 301s to www). Uploads fail silently without it — check this first when uploads break.
 - The admin drawer polls `GET /admin/albums/{album}/media` after upload because ingest is async, so the media list lags by seconds.
 
 ### Videos

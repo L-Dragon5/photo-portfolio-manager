@@ -68,8 +68,8 @@ const SidebarContent = ({ onClose, isDrawer = false }) => {
         <Image
           src={
             computedColorScheme === 'light'
-              ? 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-black.png'
-              : 'https://ldragonphotographymedia.s3.amazonaws.com/public/ldragon-full-white.png'
+              ? 'https://d35rqdw1pzzbg5.cloudfront.net/public/ldragon-full-black.png'
+              : 'https://d35rqdw1pzzbg5.cloudfront.net/public/ldragon-full-white.png'
           }
           alt="logo"
           w="100%"
