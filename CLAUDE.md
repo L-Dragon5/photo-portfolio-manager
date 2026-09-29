@@ -131,7 +131,7 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 - **Never add `->with(['media'])` to album listing queries.** The `cover_image` appended attribute on Album handles its own media access — do not eager load media on album collections.
 
 ### Key Config Files
-- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too), `Cache-Control: public, max-age=31536000, immutable` on every S3 write (safe only while `version_urls` stays false). Gallery `<img>` lazy loading comes from react-photo-album's `renderDefaultPhoto`, not Spatie's `default_loading_attribute_value`
+- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too), `Cache-Control: public, max-age=31536000, immutable` on every S3 write (safe only while `version_urls` stays false). Gallery `<img>` lazy loading comes from react-photo-album's `renderDefaultPhoto`, not Spatie's `default_loading_attribute_value`. Objects written before a header change keep their old value; `php artisan media:backfill-cache-control --dry-run` then without the flag rewrites them in place (snapshot + `--restore` rollback, output in `/tmp/media-cache-backfill/`)
 - `config/database.php` — SQLite for both local and production
 - `config/queue.php` — `database` in production (SQLite `jobs` table), `sync` locally. Conversions and responsive images are queued, so `sync` runs them inline in the request; set `QUEUE_CONNECTION=database` and run `php artisan queue:work` when testing the upload path locally
 - `scripts/deploy.sh` — deploy steps; includes `queue:restart` so the worker picks up new code
