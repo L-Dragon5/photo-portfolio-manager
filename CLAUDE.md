@@ -76,7 +76,7 @@ The flow, all in `app/Http/Controllers/UploadController.php` and `resources/js/P
 1. `POST /admin/albums/{album}/uploads/sign` returns one presigned PUT per file from `Storage::disk('s3')->temporaryUploadUrl()`. Keys are server-generated (`tmp/{uuid}.{ext}`) and the extension comes from the validated mime type, never the client filename.
 2. The browser PUTs straight to S3, 4 concurrent, progress from `xhr.upload.onprogress`. **It must replay the returned `headers` verbatim** or the signature breaks.
 3. `POST /admin/albums/{album}/uploads/complete` validates each key against `CompleteUploadRequest::KEY_PATTERN` and dispatches `App\Jobs\IngestUploadedMedia` per file.
-4. The job calls `addMediaFromDisk($key, 's3')`, which Spatie routes to `toMediaCollectionFromRemote()` — a server-side S3 copy, no bytes through PHP. It also deletes the staged `tmp/` object.
+4. The job calls `addMediaFromDisk($key, 's3')`, which Spatie routes to `toMediaCollectionFromRemote()`. Because `media-library.remote.extra_headers` is non-empty (the Cache-Control header), Spatie streams the object S3 → worker → S3 instead of a server-side copy. No bytes go through a PHP web request, but they do pass through the queue worker. It also deletes the staged `tmp/` object.
 
 Notes:
 - `width` / `height` come from the browser (`naturalWidth`). Do not re-add a server-side `Spatie\Image::load()` decode to get them.
@@ -131,7 +131,7 @@ Inertia page components are in `resources/js/Pages/Public/` and `resources/js/Pa
 - **Never add `->with(['media'])` to album listing queries.** The `cover_image` appended attribute on Album handles its own media access — do not eager load media on album collections.
 
 ### Key Config Files
-- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too)
+- `config/media-library.php` — S3 disk, custom Photo model, responsive image widths, `max_file_size` (500MB, enforced on the remote ingest path too), `Cache-Control: public, max-age=31536000, immutable` on every S3 write (safe only while `version_urls` stays false). Gallery `<img>` lazy loading comes from react-photo-album's `renderDefaultPhoto`, not Spatie's `default_loading_attribute_value`
 - `config/database.php` — SQLite for both local and production
 - `config/queue.php` — `database` in production (SQLite `jobs` table), `sync` locally. Conversions and responsive images are queued, so `sync` runs them inline in the request; set `QUEUE_CONNECTION=database` and run `php artisan queue:work` when testing the upload path locally
 - `scripts/deploy.sh` — deploy steps; includes `queue:restart` so the worker picks up new code

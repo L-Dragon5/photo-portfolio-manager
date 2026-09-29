@@ -52,6 +52,8 @@ const VideoGrid = ({ videos }) => {
                   src={video.thumbnail_url}
                   alt={video.title}
                   fit="cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               </AspectRatio>
               <ThemeIcon

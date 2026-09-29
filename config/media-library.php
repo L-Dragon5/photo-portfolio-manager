@@ -233,8 +233,13 @@ return [
          * Supported by S3: CacheControl, Expires, StorageClass,
          * ServerSideEncryption, Metadata, ACL, ContentEncoding
          */
+        /*
+         * Media paths are keyed by media id and version_urls is off, so a URL's
+         * bytes never change. Replacing a photo creates a new media row and a
+         * new URL, which makes a one-year immutable cache safe.
+         */
         'extra_headers' => [
-            'CacheControl' => 'max-age=604800',
+            'CacheControl' => 'public, max-age=31536000, immutable',
         ],
     ],
 
